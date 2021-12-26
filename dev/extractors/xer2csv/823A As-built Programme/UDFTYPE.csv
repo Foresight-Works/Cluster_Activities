@@ -1,0 +1,11 @@
+,udf_type_id,table_name,udf_type_name,udf_type_label,logical_data_type,super_flag,indicator_expression,summary_indicator_expression
+0,2193,TASK,user_field_2193,user_text8,FT_TEXT,N,,
+1,197790,TASK,user_field_197790,Time Gain / Loss,FT_TEXT,N,,
+2,208111,TASK,user_field_208111,Actual Up to Date,FT_TEXT,N,,
+3,208464,TASK,user_field_208464,UNITS,FT_TEXT,N,,
+4,208465,TASK,user_field_208465,Total Quantity,FT_TEXT,N,,
+5,208466,TASK,user_field_208466,Planned Up to Date,FT_TEXT,N,,
+6,208472,TASK,user_field_208472,TIme Gain/Loss,FT_TEXT,N,,
+7,235942,TASK,user_field_235942,% Planned,FT_TEXT,N,,
+8,235943,TASK,user_field_235943,% Actual,FT_TEXT,N,,
+9,235944,TASK,user_field_235944,(+/-) Weeks,FT_TEXT,N,,
