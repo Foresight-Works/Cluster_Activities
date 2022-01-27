@@ -1,6 +1,6 @@
 import time
 
-from prep import *
+from data_to_table import *
 task_names = task_names[:1000]
 print('{} tasks to cluster'.format(len(task_names)))
 
