@@ -10,7 +10,6 @@ pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.ma
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
 from modules.clustering import *
-results_dir = 'C:/Users/RonyArmon/Foresight Works/Foresight Works (OneDrive) - Documents/DS/Cluster_Activities_docs/results/clusters/AgglomerativeClustering_affinityEuclidean/duration_tests'
 
 gen_start = time.time()
 
@@ -43,7 +42,6 @@ duration_secs = round(end - start, 2)
 duration_mins = round(duration_secs / 60, 2)
 print('encoding duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
 durations.append(['data_encoding', duration_secs])
-
 
 def run_get_clusters(n_clusters):
     model_name = 'AgglomerativeClustering'

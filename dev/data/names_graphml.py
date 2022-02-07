@@ -1,7 +1,4 @@
 from setup import *
-transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
-gen_start = time.time()
-durations = []
 
 # todo: update upload or pipeline to allow more then one project in the data path
 projects = parse_graphml_file(data_path)
