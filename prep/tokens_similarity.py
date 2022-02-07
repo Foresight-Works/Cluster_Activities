@@ -9,16 +9,12 @@ import time
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
-results_dir = 'C:\\Users\\RonyArmon\\Projects_Code\\Cluster_Activities\\results'
-pos_df = pd.read_pickle(os.path.join(results_dir, 'pos.pkl'))
-#print('{} rows'.format(len(pos_df)))
-#print(pos_df.head())
-tokens = list(set(pos_df['token']))
-#tokens = tokens[:10]
+
 print('{} tokens'.format(len(tokens)))
 
 start = time.time()
 checked = []
+
 def calc_similarity (token1):
     '''
     Calculate token similarity for input token compared to all tokens
@@ -33,17 +29,7 @@ def calc_similarity (token1):
             token_scores.append((token1, token2, score))
     return token_scores
 
-# results_df = pd.DataFrame(columns=tokens, index=tokens)
-# for token in tokens:
-#     token_scores = calc_similarity(token)
-#     for result in token_scores:
-#         token1, token2, similarity = result
-#         similarity = round(similarity,2)
-#         results_df.at[token1, token2] = similarity
-# print('\nresults:')
-# print(results_df)
-
-def controller():
+def run_similarity():
     results_df = pd.DataFrame(columns=tokens, index=tokens)
     tokens_scores = []
     executor = ProcessPoolExecutor(6)
@@ -67,4 +53,4 @@ def controller():
     results_df.to_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
 
 if __name__=="__main__":
-    controller ()
+    run_similarity ()

@@ -3,7 +3,7 @@ import os
 from modules.py_postgres import *
 #
 data_files = ['CCGT D1.csv', 'CCGT D2.csv', 'DUKE S2X1CC_2013_10_27.csv', 'DUKE WAYNE COUNTY_2012-01-29.csv']
-data_path = './data/raw_data/'
+data_path = '../../data/raw_data/'
 projects_df = pd.DataFrame()
 for file in data_files:
     project_df = pd.read_csv(os.path.join(data_path, '{f}'.format(f=file)))

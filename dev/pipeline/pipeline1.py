@@ -26,7 +26,6 @@ def run_similarity(tokens, num_executors):
 
     return results_df
 
-# todo: update upload or pipeline to allow more then one project in the data path
 projects = parse_graphml_file(data_path)
 ids = list(projects[ids_col])
 names = list(projects[names_col])

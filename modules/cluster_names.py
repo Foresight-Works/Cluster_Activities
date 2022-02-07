@@ -1,13 +1,6 @@
-import pandas as pd
-
 from setup import *
-
-distances_matrix = pd.read_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
-results = pd.read_excel('results.xlsx')
-clusters = list(results['cluster'].unique())
-cluster1 = clusters[0]
-cluster1_names = list(results[names_col][results['cluster'] == cluster1])
 from modules.tokens_similarity import *
+from modules.tokenizers import *
 
 def find_nearest(array, value):
     array = np.asarray(array)
@@ -29,7 +22,7 @@ def match_tokens(token1, tokens2, distances_matrix):
          most_similar = ''
      return most_similar
 
-def find_matches(names):
+def find_matches(names, distances_matrix):
     matches, checked_names, checked_tokens = [], [], []
     for index1, name1 in enumerate(names):
         if name1 not in checked: checked.append(name1)
@@ -77,13 +70,13 @@ def find_matches(names):
         
         return cluster_key
 
-def build_clusters_response(clusters):
+def build_clusters_response(data, clusters, distances_matrix):
     response, validation_response = {}, {}
     for cluster in clusters:
         #print('cluster', cluster)
-        cluster_names = list(results[names_col][results['cluster'] == cluster])
-        cluster_ids = list(results[ids_col][results['cluster'] == cluster])
-        cluster_key = find_matches(cluster_names)
+        cluster_names = list(data[names_col][data['cluster'] == cluster])
+        cluster_ids = list(data[ids_col][data['cluster'] == cluster])
+        cluster_key = find_matches(cluster_names, distances_matrix)
         response[cluster_key] = cluster_names
         validation_response[cluster_key] = cluster_ids
         #print(30*'='+'\n{ck}\n--------'.format(ck=cluster_key))

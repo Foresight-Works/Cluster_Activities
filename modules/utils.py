@@ -1,6 +1,27 @@
 import pandas as pd
 import time
 from difflib import SequenceMatcher
+from setup import *
+
+def parse_graphml_file(file_path):
+    raw_data = open(file_path).read().split('</node>')
+    nodes = [s for s in raw_data if 'node id' in s]
+    nodes = [n.lstrip().rstrip() for n in nodes]
+    nodes = [n.replace('"', '') for n in nodes]
+    # Exclude file header
+    nodes = nodes[1:]
+
+    nodes_df = pd.DataFrame()
+    for node in nodes:
+        node_rows = node.split('\n')
+        id = re.findall('=(.*?)>', node_rows[0])[0]
+        node_rows = node_rows[1:]
+        keys = ['ID'] + [re.findall('=(.*?)>', n)[0] for n in node_rows]
+        values = [id] + [re.findall('>(.*?)<', n)[0] for n in node_rows]
+        node_df = pd.DataFrame([values], columns=keys)
+        nodes_df = nodes_df.append(node_df)
+    return nodes_df
+
 
 def df_info(df):
     cols = df.columns

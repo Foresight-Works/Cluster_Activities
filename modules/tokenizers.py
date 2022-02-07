@@ -1,9 +1,4 @@
-import nltk
-nltk.download('stopwords')
-from nltk.corpus import stopwords
-import re
-names=open('../names.txt').read().split('\n')
-
+from setup import *
 punctuation_marks="=|\+|_|\.|:|\/|\*|\'|,|?"
 
 def isfloat(value):
@@ -40,8 +35,8 @@ def tokenize(data, unique=True, is_list=False,\
               punctuation_symbols=punctuation_marks, stopwords=set(stopwords.words('english'))):
 
     if is_list:
-        data= ' '.join(data)
-        data= [re.sub('\s{2,}', ' ', t) for t in data]
+        data = ' '.join(data)
+        data = re.sub('\s{2,}', ' ', data)
 
     if exclude_parenthesis_terms:
         pattern= '\(.+?\)|\w*\d{1,}\.*\d{1,}\w*|\w+'

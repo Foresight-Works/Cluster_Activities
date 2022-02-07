@@ -1,13 +1,4 @@
-import pandas as pd
-pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.max_colwidth', 100)
-import numpy as np
-from sklearn.cluster import SpectralClustering, AgglomerativeClustering
-from matplotlib import pyplot as plt
-from scipy.cluster.hierarchy import dendrogram
-
-
-import time
-from difflib import SequenceMatcher
+from setup import *
 
 def similar(a, b):
     #return SequenceMatcher(None, a, b).ratio()

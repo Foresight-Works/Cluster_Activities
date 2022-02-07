@@ -1,86 +1,55 @@
 import os
-import time
-import psycopg2
-import pandas.io.sql as sqlio
-from sqlalchemy import create_engine
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from concurrent.futures import ProcessPoolExecutor
-import pandas as pd
-pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.max_colwidth', 100)
-import numpy as np
-from sentence_transformers import SentenceTransformer, util
+
+from modules.utils import *
 from modules.clustering import *
+from modules.cluster_names import *
 
-gen_start = time.time()
-
-durations = []
-conn = psycopg2.connect("user=postgres password='1234'")
-conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
-cur = conn.cursor()
-db_name = 'ccgt'
-engine = create_engine('postgresql+psycopg2://postgres:1234@localhost/{db}'.format(db=db_name))  #:5432
-projects = sqlio.read_sql_query('SELECT * FROM projects', engine)
-ids = list(projects['Activity ID'])
-names = list(projects['Activity Name'])
-print('{} names'.format(len(names)))
-
-names = list(projects['Activity Name'].unique())
-print('{} names'.format(len(names)))
-start = time.time()
 transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
-end = time.time()
-duration_secs = round(end - start, 2)
-duration_mins = round(duration_secs / 60, 2)
-print('load model duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
-durations.append(['load_model', duration_secs])
+gen_start = time.time()
+durations = []
+checked = []
 
-start = time.time()
+# todo: update upload or pipeline to allow more then one project in the data path
+projects = parse_graphml_file(data_path)
+ids = list(projects[ids_col])
+names = list(projects[names_col])
+print('{} names'.format(len(names)))
+tokens = tokenize(names, is_list=True, exclude_stopwords=True, \
+                  exclude_numbers=True, exclude_digit_tokens=True)
+print('{} unique tokens'.format(len(names)))
+with open(os.path.join(results_dir, tokens_file), 'w') as f:
+    for token in tokens: f.write('{t}\n'.format(t=token))
+tokens_similarity = run_similarity(tokens, 6)
+tokens_similarity.to_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
+print('distance similarity calculated')
+
 names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
 X = np.array(names_embeddings)
-end = time.time()
-duration_secs = round(end - start, 2)
-duration_mins = round(duration_secs / 60, 2)
-print('encoding duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
-durations.append(['data_encoding', duration_secs])
+print(X.shape)
+model_params['n_clusters'] = int(len(names)*n_clusters_perc/100)
+model_conf = model_conf_instance(model_name, model_params)
+clustering = model_conf.fit(X)
+clusters_labels = list(clustering.labels_)
 
+# Write results to excel (for monitoring, remove in integration)
+file_name = results_file_name(model_name, model_params) + '.xlsx'
+projects['cluster'] = clusters_labels
+print(projects.info())
+print(projects[[ids_col, names_col, 'cluster']].head())
+projects.to_excel('results.xlsx', index=False)
 
-def run_get_clusters(n_clusters):
-    model_name = 'AgglomerativeClustering'
-    affinity = 'euclidean'
-    hyper_params_conf = {'n_clusters': n_clusters, 'affinity': affinity}
-    print('model params:', hyper_params_conf)
-    file_name = results_file_name(model_name, hyper_params_conf)+'.xlsx'
-    print('file_name:', file_name)
-    clustering, clusters_df = get_clusters(X, names, model_name, hyper_params_conf)
-    return file_name, clusters_df
+# Cluster names
+clusters = list(projects['cluster'].unique())
+# for cluster in clusters:
+#     #print('cluster', cluster)
+#     cluster_names = list(projects[names_col][projects['cluster'] == cluster])
+#     cluster_key = find_matches(cluster_names, tokens_similarity)
+#     #print(30*'='+'\n{ck}\n--------'.format(ck=cluster_key))
+#     #for n in cluster_names: print(n)
 
-n_clusters = [300, 600, 900, 1200, 1500, 1800]
+response, validation_response = build_clusters_response(projects, clusters, tokens_similarity)
+with open(os.path.join(results_dir, "{p}_validation_response.json".format(p=project_name)), "w") as outfile:
+    outfile.write(response)
+with open(os.path.join(results_dir, "{p}_response.json".format(p=project_name)), "w") as outfile:
+    outfile.write(validation_response)
 
-def controller():
-    start = time.time()
-    executor = ProcessPoolExecutor(6)
-    for file_name, clusters_df in executor.map(run_get_clusters, n_clusters):
-        print('n_clusters:', n_clusters)
-        print(clusters_df.head())
-        clusters_df.to_excel(file_name, index=False)
-
-    end = time.time()
-    duration_secs = round(end - start, 2)
-    duration_mins = round(duration_secs / 60, 2)
-    print('clustering duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
-    durations.append(['clustering', duration_secs])
-
-    durations_df = pd.DataFrame(durations, columns=['action', 'durations(secs)'])
-    if len(n_clusters) == 1: file_name = 'single_cluster_durations_300.xlsx'
-    else: file_name = '{n}_clusters_duration.xlsx'.format(n=len(n_clusters))
-    durations_df.to_excel(os.path.join(file_name), index=False)
-
-    gen_end = time.time()
-    duration_secs = round(gen_end - gen_start, 2)
-    duration_mins = round(duration_secs / 60, 2)
-    print('all process duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
-    durations.append(['load_model', duration_secs])
-
-
-if __name__=="__main__":
-    controller ()
