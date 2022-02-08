@@ -1,6 +1,6 @@
 import pandas as pd
 import re
-df = pd.read_csv('../../data/raw_data/CCGT D1.csv')
+df = pd.read_csv('../../data/raw_data/CCGT_CSV/CCGT D1.csv')
 print(df.dtypes)
 # cols = df.columns
 # cid = [c for c in cols if re.findall('ID', c)]
