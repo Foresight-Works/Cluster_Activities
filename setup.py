@@ -26,8 +26,6 @@ from werkzeug.utils import secure_filename
 from sentence_transformers import SentenceTransformer, util
 
 # Data
-data_file_name = 'project1.graphml'
-project_name = data_file_name.split('.')[0]
 ALLOWED_EXTENSIONS = ['graphml']
 ids_col, names_col = ['ID', 'Label']
 
@@ -36,17 +34,25 @@ working_dir = os.getcwd()
 modules_dir = os.path.join(working_dir, 'modules')
 if modules_dir not in sys.path:
     sys.path.append(modules_dir)
-data_dir = os.path.join(working_dir, 'data')
-raw_data_dir = os.path.join(data_dir, 'raw_data')
-raw_data_path = os.path.join(raw_data_dir, data_file_name)
-data_path = os.path.join(data_dir, data_file_name)
+data_dir = os.path.join(working_dir, 'data/CCGT_graphml')
+raw_data_dir = os.path.join(working_dir, 'data/raw_data/CCGT_graphml')
+data_files_names = os.listdir(raw_data_dir)
+print('data_files_names:', data_files_names)
+data_files_paths = {}
+for data_file_name in data_files_names:
+    key = data_file_name.replace('.graphml', '')
+    data_files_paths[key] = data_file_name
+project_name = 'ccgt'
+
+# raw_data_path = os.path.join(raw_data_dir, data_file_name)
+# data_path = os.path.join(data_dir, data_file_name)
 results_dir = os.path.join(working_dir, 'results')
 tokens_file = 'tokens.txt'
 
 # Model
 model_name = 'AgglomerativeClustering'
 model_params = {'affinity': 'euclidean'}
-n_clusters_perc = 5
+n_clusters_perc = 10
 
 # Results directory and file
 #if 'results' in os.listdir():

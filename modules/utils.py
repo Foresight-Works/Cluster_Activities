@@ -2,6 +2,11 @@ import pandas as pd
 import time
 from difflib import SequenceMatcher
 from setup import *
+def allowed_file(filename):
+    """ Tests if filetype is an allowed filetype """
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
 
 def parse_graphml_file(file_path):
     raw_data = open(file_path).read().split('</node>')
@@ -21,6 +26,39 @@ def parse_graphml_file(file_path):
         node_df = pd.DataFrame([values], columns=keys)
         nodes_df = nodes_df.append(node_df)
     return nodes_df
+
+
+def parse_graphml_files(file_paths):
+    '''
+    Parse graphml files
+    file_paths (list): Paths to the files to parse
+    '''
+    nodes_df = pd.DataFrame()
+    print('===parsing graphml files===')
+    for file_path in file_paths:
+        print('file_path:', file_path)
+        file_name = re.findall('(\w+)\.graphml', file_path.replace(' ', '_'))[0]
+        raw_data = open(file_path).read().split('</node>')
+        #print('raw data:', raw_data)
+        nodes = [s for s in raw_data if 'node id' in s]
+        nodes = [n.lstrip().rstrip() for n in nodes]
+        nodes = [n.replace('"', '') for n in nodes]
+        # Exclude file header
+        nodes = nodes[1:]
+        print('{} nodes'.format(len(nodes)))
+        for node in nodes:
+            node_rows = node.split('\n')
+            id = re.findall('=(.*?)>', node_rows[0])[0]
+            node_rows = node_rows[1:]
+            keys = ['ID'] + [re.findall('=(.*?)>', n)[0] for n in node_rows]
+            values = [id] + [re.findall('>(.*?)<', n)[0] for n in node_rows]
+            node_df = pd.DataFrame([values], columns=keys)
+            node_df['source_file'] = file_name
+            nodes_df = nodes_df.append(node_df)
+
+    print('{} all nodes'.format(len(nodes_df)))
+    return nodes_df
+
 
 
 def df_info(df):
