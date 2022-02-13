@@ -44,14 +44,20 @@ data_dir = os.path.join(working_dir, 'data', data_dir)
 raw_data_dir = os.path.join(working_dir, 'data/raw_data/', raw_data_dir)
 raw_data_file = os.path.join(raw_data_dir, raw_data_file)
 results_dir = os.path.join(working_dir, 'results')
+# Results directory rewrite
+if 'results' in os.listdir():
+   shutil.rmtree('results')
+os.mkdir(results_dir)
+with open(os.path.join(results_dir, tokens_file), 'w') as f: f.write(' ')
+
+# App odules
+from modules.utils import *
+from modules.clustering import *
+from modules.cluster_names import *
 
 # Model
 model_name = 'AgglomerativeClustering'
 model_params = {'affinity': 'euclidean'}
 n_clusters_perc = 10
 
-# Results directory rewrite
-#if 'results' in os.listdir():
-#    shutil.rmtree('results')
-# os.mkdir(results_dir)
 

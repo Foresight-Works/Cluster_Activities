@@ -1,11 +1,4 @@
-import os
-import time
-
-import pandas as pd
-
-from modules.utils import *
-from modules.clustering import *
-from modules.cluster_names import *
+from setup import *
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
 duration = []
@@ -19,10 +12,12 @@ duration.append(['model_upload', round(time.time()-start, 2)])
 def pipeline():
     # Data
     zipped_files = request.files.get('file', '')
-    zipped_files.save('zipped_files3.zip')
-    zipped_object = ZipFile('zipped_files3.zip', "r")
-    #zipped_object = ZipFile(zipped_files, "r")
+    zipped_files.save(raw_data_file)
+    zipped_object = ZipFile(raw_data_file, "r")
     file_names = zipped_object.namelist()
+    if os.path.exists(raw_data_file):
+        os.remove(raw_data_file)
+
     print('file_names:', file_names)
     files = {}
     if file_names:
@@ -81,6 +76,7 @@ def pipeline():
 
             duration_df = pd.DataFrame(duration, columns=['process', 'duration'])
             duration_df.to_excel(os.path.join(results_dir, 'duration_{n}_nodes.xlsx'.format(n=len(projects))), index=False)
+            print('Calculation completed')
             return response
         else:
             return "Record not found", 400
@@ -89,6 +85,6 @@ def pipeline():
 
 if __name__ == '__main__':
     print('host name:', socket.gethostbyname(socket.gethostname()))
-    app.run(host='127.0.0.1', port=6001)
+    app.run(host='127.0.0.1', port=6002)
 
 
