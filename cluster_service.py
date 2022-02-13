@@ -15,41 +15,34 @@ transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
 duration.append(['model_upload', round(time.time()-start, 2)])
 
 # Response
-@app.route('/analysis', methods=['POST'])
+@app.route('/cluster_analysis/api/v0.1/clustering', methods=['POST'])
 def pipeline():
     # Data
-    print('request.method:', request.method)
-    files_posted = request.files.getlist("file")
-    print('uploaded_files:')
-    print(files_posted)
-    save_paths = []
-    # Validate file types
-    files = []
-    for file in files_posted:
-        if allowed_file(file.filename):
-            print(f'allowing file {file.filename}')
-            files.append(file)
+    zipped_files = request.files.get('file', '')
+    zipped_files.save('zipped_files3.zip')
+    zipped_object = ZipFile('zipped_files3.zip', "r")
+    #zipped_object = ZipFile(zipped_files, "r")
+    file_names = zipped_object.namelist()
+    print('file_names:', file_names)
+    files = {}
+    if file_names:
+        for file_name in file_names:
+            if allowed_file(file_name):
+                print(f'allowing file {file_name}')
+                print('===={f}===='.format(f=file_name))
+                file_posted = zipped_object.read(file_name).decode()
+                print(type(file_posted))
+                files[file_name] = file_posted
 
-    if files:
-        start = time.time()
-        for file in files:
-            print('>>file:', file)
-            save_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            print('save path:', save_path)
-            save_paths.append(save_path)
-            file.save(save_path)
-            print('file.filename:', file.filename)
-        duration.append(['files_upload', round(time.time() - start, 2)])
-
-        if save_paths:
-            status = 'data uploaded'
-            print('save_paths:')
-            for p in save_paths: print(p)
-
-            print('upload status:', status)
-            projects = parse_graphml_files(save_paths)
+        if files:
+            start = time.time()
+            print('===parsing the graphml files===')
+            projects = graphml_to_nodes(files)
+            print('{n} projects tasks(nodes)'.format(n=len(projects)))
+            duration.append(['pars_graphml', round(time.time() - start, 2)])
 
             # Tokens similarity
+            print('Calculate Tokens Similarity')
             start = time.time()
             names = list(projects[names_col])
             tokens = tokenize(names, is_list=True, exclude_stopwords=True, \
@@ -61,6 +54,7 @@ def pipeline():
             duration.append(['tokens_similarity', round(time.time() - start, 2)])
 
             # Encode names
+            print('Encode activity names')
             start = time.time()
             names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
             X = np.array(names_embeddings)
@@ -88,19 +82,13 @@ def pipeline():
             duration_df = pd.DataFrame(duration, columns=['process', 'duration'])
             duration_df.to_excel(os.path.join(results_dir, 'duration_{n}_nodes.xlsx'.format(n=len(projects))), index=False)
             return response
-
         else:
             return "Record not found", 400
     else:
         return "No files of allowed types", 400
 
-
 if __name__ == '__main__':
-    print(socket.gethostbyname(socket.gethostname()))
-    # app.run(host='0.0.0.0')
-    app.run(
-        host='127.0.0.1',
-        port=6001,
-        debug=True)
+    print('host name:', socket.gethostbyname(socket.gethostname()))
+    app.run(host='127.0.0.1', port=6001)
 
 

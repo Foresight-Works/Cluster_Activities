@@ -9,8 +9,8 @@ def allowed_file(filename):
 
 
 def parse_graphml_file(file_path):
-    raw_data = open(file_path).read().split('</node>')
-    nodes = [s for s in raw_data if 'node id' in s]
+    file_data = open(file_path).read().split('</node>')
+    nodes = [s for s in file_data if 'node id' in s]
     nodes = [n.lstrip().rstrip() for n in nodes]
     nodes = [n.replace('"', '') for n in nodes]
     # Exclude file header
@@ -38,9 +38,9 @@ def parse_graphml_files(file_paths):
     for file_path in file_paths:
         print('file_path:', file_path)
         file_name = re.findall('(\w+)\.graphml', file_path.replace(' ', '_'))[0]
-        raw_data = open(file_path).read().split('</node>')
-        #print('raw data:', raw_data)
-        nodes = [s for s in raw_data if 'node id' in s]
+        file_data = open(file_path).read().split('</node>')
+        #print('raw data:', file_data)
+        nodes = [s for s in file_data if 'node id' in s]
         nodes = [n.lstrip().rstrip() for n in nodes]
         nodes = [n.replace('"', '') for n in nodes]
         # Exclude file header
@@ -59,6 +59,39 @@ def parse_graphml_files(file_paths):
     print('{} all nodes'.format(len(nodes_df)))
     return nodes_df
 
+def graphml_to_nodes(raw_files_data):
+    '''
+    Parse graphml files
+    raw_files_data(dictionary): Files raw data keyed by the files' names
+    '''
+    print('file names:', raw_files_data.keys())
+    files_nodes = []
+    for name, file_data in raw_files_data.items():
+        print('name:', name)
+        #file_data = open(file_path).read().split('</node>')
+        file_data = file_data.split('</node>')
+        file_nodes = [s for s in file_data if 'node id' in s]
+        file_nodes = [n.lstrip().rstrip() for n in file_nodes]
+        file_nodes = [n.replace('"', '') for n in file_nodes]
+        # Exclude file header
+        file_nodes = file_nodes[1:]
+        print('{} file_nodes'.format(len(file_nodes)))
+        files_nodes += file_nodes
+    print('{} files_nodes'.format(len(files_nodes)))
+    nodes_values = []
+    nodes_df = pd.DataFrame()
+    for index, node in enumerate(files_nodes):
+         node_rows = node.split('\n')
+         id = re.findall('=(.*?)>', node_rows[0])[0]
+         node_rows = node_rows[1:]
+         keys = ['ID'] + [re.findall('=(.*?)>', n)[0] for n in node_rows]
+         values = [id] + [re.findall('>(.*?)<', n)[0] for n in node_rows]
+         keys_velus = dict(zip(keys, values))
+         nodes_values.append(keys_velus)
+         node_df = pd.DataFrame([values], columns=list(keys))
+         nodes_df = nodes_df.append(node_df)
+
+    return nodes_df
 
 
 def df_info(df):
