@@ -30,10 +30,10 @@ ALLOWED_EXTENSIONS = ['graphml']
 ids_col, names_col = ['ID', 'Label']
 
 # Paths
-raw_data_file = 'zipped_files2.zip'
+data_file = 'zipped2files.zip'
 project_name = 'CCGT'
 data_dir = 'CCGT_graphmls_zipped'
-raw_data_dir = 'CCGT/graphmls/zipped'
+data_dir = 'CCGT/graphmls/zipped'
 tokens_file = 'tokens.txt'
 
 working_dir = os.getcwd()
@@ -41,8 +41,7 @@ modules_dir = os.path.join(working_dir, 'modules')
 if modules_dir not in sys.path:
     sys.path.append(modules_dir)
 data_dir = os.path.join(working_dir, 'data', data_dir)
-raw_data_dir = os.path.join(working_dir, 'data/raw_data/', raw_data_dir)
-raw_data_file = os.path.join(raw_data_dir, raw_data_file)
+data_path = os.path.join(data_dir, data_file)
 results_dir = os.path.join(working_dir, 'results')
 # Results directory rewrite
 if 'results' in os.listdir():

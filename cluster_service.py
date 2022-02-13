@@ -12,11 +12,11 @@ duration.append(['model_upload', round(time.time()-start, 2)])
 def pipeline():
     # Data
     zipped_files = request.files.get('file', '')
-    zipped_files.save(raw_data_file)
-    zipped_object = ZipFile(raw_data_file, "r")
+    zipped_files.save(data_path)
+    zipped_object = ZipFile(data_path, "r")
     file_names = zipped_object.namelist()
-    if os.path.exists(raw_data_file):
-        os.remove(raw_data_file)
+    if os.path.exists(data_path):
+        os.remove(data_path)
 
     print('file_names:', file_names)
     files = {}
