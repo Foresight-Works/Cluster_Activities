@@ -9,7 +9,7 @@ app.config['UPLOAD_FOLDER'] = data_dir
 # todo: update upload or pipeline to allow more then one project in the data path
 
 # Response
-@app.route('/analysis', methods=['POST'])
+@app.route('/clusters', methods=['POST'])
 def pipeline():
     # Data
     print('request.method:', request.method)

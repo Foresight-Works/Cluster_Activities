@@ -15,7 +15,7 @@ transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
 duration.append(['model_upload', round(time.time()-start, 2)])
 
 # Response
-@app.route('/analysis', methods=['POST'])
+@app.route('/clusters', methods=['POST'])
 def pipeline():
     # Data
     print('request.method:', request.method)

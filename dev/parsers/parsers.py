@@ -1,13 +1,17 @@
-from setup import *
+import re
+from zipfile import ZipFile
+import numpy as np
+import pandas as pd
+pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.max_colwidth', 100)
 
-
-def parse_graphml_file(graphml_str, headers):
+def parse_graphml(graphml_str, headers):
     '''
     Parse a graphml file contents to a dataframe
     :param graphml_str (string): The file contents to parse
     :param headers (list): The columns to parse
     '''
-    nodes = [s for s in graphml_str if 'node id' in s]
+    nodes = graphml_str.split('</node>')
+    nodes = [s for s in nodes if 'node id' in s]
     nodes = [n.lstrip().rstrip() for n in nodes]
     nodes = [n.replace('"', '') for n in nodes]
     # Exclude file header
@@ -24,7 +28,6 @@ def parse_graphml_file(graphml_str, headers):
         nodes_df = nodes_df.append(node_df)
 
     return nodes_df[headers]
-
 
 def parse_csv(csv_string, headers):
     '''
@@ -47,3 +50,35 @@ def parse_csv(csv_string, headers):
 
     return pd.DataFrame(rows, columns=headers)
 
+#format_parser = {'graphml': parse_graphml('', []), 'csv': parse_csv('', [])}
+
+def parse_files(raw_files, headers, format):
+    '''
+    Parse graphml files and join the parsed products to a dataframe
+    raw_files(dictionary): Files raw data keyed by the files' names
+    '''
+    parsed_dfs = pd.DataFrame()
+    for name, file_data in raw_files.items():
+        print('name:', name)
+        if format == 'graphml': parsed_df = parse_graphml(file_data, headers)
+        elif format == 'csv': parsed_df = parse_csv(file_data, headers)
+        parsed_dfs = parsed_dfs.append(parsed_df)
+    return parsed_dfs
+
+headers = ['ID', 'Label', 'PlannedStart', 'PlannedEnd']
+
+format = 'csv'
+zipped_object = ZipFile('./zipped_files/{f}.zip'.format(f=format), "r")
+file_names = zipped_object.namelist()
+print('zipped file_names:', file_names)
+unzipped = {}
+for file_name in file_names:
+    print(file_name)
+    file_posted = zipped_object.read(file_name).decode()
+    print(type(file_posted))
+    unzipped[file_name] = file_posted
+
+print('unzipped file names:', unzipped.keys())
+parsed_dfs = parse_files(unzipped, headers, format)
+print(parsed_dfs.info())
+print(parsed_dfs.head())

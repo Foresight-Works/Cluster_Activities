@@ -1,6 +1,7 @@
 import sys
 import os
 import shutil
+from datetime import datetime
 from difflib import SequenceMatcher
 import re
 import json
@@ -12,40 +13,79 @@ pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.ma
 import nltk
 #nltk.download('stopwords')
 from nltk.corpus import stopwords
-
-from sklearn.cluster import SpectralClustering, AgglomerativeClustering
 from matplotlib import pyplot as plt
-from scipy.cluster.hierarchy import dendrogram
-
 from pathlib import Path
 from flask import Flask
 from flask import Response, jsonify, request, redirect, url_for, send_from_directory
 import socket
 from werkzeug.utils import secure_filename
-from sentence_transformers import SentenceTransformer, util
 from zipfile import ZipFile
 from configparser import ConfigParser
+from sentence_transformers import SentenceTransformer, util
+from scipy.cluster.hierarchy import dendrogram
+from sklearn import metrics
+from sklearn.cluster import SpectralClustering, AgglomerativeClustering
+from sklearn.metrics import davies_bouldin_score
 
+
+def config_vals(header, param):
+    vals = config.get(header, param)
+    return [i.lstrip().rstrip() for i in vals.split(',')]
+
+# Configuration
 config = ConfigParser()
 config.read(r'./config.ini')
-project = config.get('paths', 'project_name')
+customer = config.get('project', 'customer')
+project = config.get('project', 'name')
+extensions = config_vals('data', 'extensions')
+ids_col, names_col, task_type = config.get('columns', 'id'),\
+                                config.get('columns', 'name'), config.get('columns', 'type')
+duration_cols = config_vals('columns', 'duration')
+data_cols = [ids_col, names_col, task_type] + duration_cols
+model_name = config.get('model', 'name')
+# n_clusters_perc = int(config.get('model', 'n_clusters_perc'))
+eval_metrics = config_vals('model', 'eval_metrics')
+affinity = config.get('model', 'affinity')
+data_format = config.get('data', 'format')
+experiment = '{c}_{p}'.format(c=customer, p=project)
+data_dir = config.get('data', 'directory')
+db_name = config.get('results', 'database')
+table_name = config.get('results', 'table')
+
+# Directories
 working_dir = os.getcwd()
 modules_dir = os.path.join(working_dir, 'modules')
 if modules_dir not in sys.path:
     sys.path.append(modules_dir)
-data_dir = os.path.join(working_dir, 'data', project)
-data_path = os.path.join(data_dir, config.get('paths', 'data_file'))
-results_dir = os.path.join(working_dir, 'results', project)
-if project in os.listdir('results'):
-   shutil.rmtree(results_dir)
+data_dir = os.path.join(working_dir, 'data', data_dir)
+results_dir = os.path.join(working_dir, 'results', experiment)
+if experiment in os.listdir('results'):
+    shutil.rmtree(results_dir)
 os.mkdir(results_dir)
 with open(os.path.join(results_dir, 'tokens.txt'), 'w') as f: f.write(' ')
 
 # App modules
 from modules.utils import *
+from modules.tokenizers import *
+from modules.tokens_similarity import *
+from modules.parsers import *
+from modules.evaluate import *
 from modules.clustering import *
 from modules.cluster_names import *
-from modules.evaluate import *
+from modules.py_postgres import *
 
-
+# Tables
+db_name = 'cluster_activities'
+table_name = 'experiments'
+conn = psycopg2.connect(database="{db}".format(db=db_name), \
+                        user='rony', password='1234', host='localhost', port='5432')
+results_cols_types = {'files': 'varchar', 'project_name': 'varchar', 'customer': 'varchar', \
+                      'num_files': 'numeric', 'run_start': 'timestamp', 'run_end': 'timestamp',\
+                      'duration': 'numeric', 'tasks_count': 'numeric', 'language_model': 'varchar',\
+                      'clustering_method': 'varchar', 'clustering_params': 'varchar', 'n_clusters_perc': 'numeric',\
+                      'num_clusters': 'numeric', 'tasks_per_cluster_mean': 'numeric',\
+                      'tasks_per_cluster_median': 'numeric',\
+                      'wcss': 'numeric', 'bcss': 'numeric', 'ch_index': 'numeric', \
+                      'db_index': 'numeric', 'silhouette': 'numeric', 'duration_std': 'numeric'}
+results_columns, data_types = list(results_cols_types.keys()), list(results_cols_types.values())
 

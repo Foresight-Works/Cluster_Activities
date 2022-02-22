@@ -5,7 +5,7 @@ app = Flask(Flask.__name__)
 print('data_dir:', data_dir)
 app.config['UPLOAD_FOLDER'] = data_dir
 
-@app.route('/evaluation', methods=['POST'])
+@app.route('/clusters', methods=['POST'])
 def pipeline():
 
     # Data

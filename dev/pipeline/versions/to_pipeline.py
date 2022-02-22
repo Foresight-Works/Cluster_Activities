@@ -42,7 +42,7 @@ def parse_graphml_files(file_paths):
     return nodes_df
 
 
-@app.route('/analysis', methods=['POST'])
+@app.route('/clusters', methods=['POST'])
 def pipeline():
 
     # Data

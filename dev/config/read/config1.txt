@@ -1,0 +1,15 @@
+# Service
+local:True
+# Data
+ALLOWED_EXTENSIONS:graphml
+ids_col, names_col:ID, Label
+# Paths
+data_file:CCGTD1_IPS.zip
+project_name:CCGT
+tokens_file:tokens.txt
+# Model
+language_model:all-MiniLM-L6-v2
+model_name:AgglomerativeClustering
+model_params:{affinity:euclidean}
+n_clusters_perc:10
+eval_metrics:cluster_duration_std,cluster_ss

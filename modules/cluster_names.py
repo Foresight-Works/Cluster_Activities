@@ -70,7 +70,7 @@ def find_matches(names, distances_matrix):
         
         return cluster_key
 
-def build_clusters_response(data, clusters, distances_matrix):
+def build_clusters_response(data, clusters, distances_matrix, names_col, ids_col):
     response, validation_response = {}, {}
     for cluster in clusters:
         #print('cluster', cluster)
@@ -79,8 +79,7 @@ def build_clusters_response(data, clusters, distances_matrix):
         cluster_key = find_matches(cluster_names, distances_matrix)
         response[cluster_key] = cluster_names
         validation_response[cluster_key] = cluster_ids
-        #print(30*'='+'\n{ck}\n--------'.format(ck=cluster_key))
-        #for n in cluster_names: print(n)
+
     
     response = json.dumps(response, indent=4)
     validation_response = json.dumps(validation_response, indent=4)

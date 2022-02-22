@@ -4,33 +4,123 @@ import pandas as pd
 import pandas.io.sql as sqlio
 from sqlalchemy import create_engine
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-conn = psycopg2.connect("user=postgres password='1234'")
-conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
-cur = conn.cursor()
+'''
+user(str): The Postgres user name
+password(str): The Postgres user password  
+'''
 
-
-def create_db(db_name):
-    #a = cur.execute("SELECT FROM pg_database WHERE datname = {db}".format(db=db_name))
-    #print(a)
-
+def create_db(db_name, conn):
+    '''
+    Create database
+    :param db_name(str): The name of the database to connect using the engine
+    '''
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+    cur = conn.cursor()
     try:
-        cur.execute("create database {dn}".format(dn=db_name))
+        cur.execute("CREATE DATABASE {dn}".format(dn=db_name))
     except psycopg2.errors.DuplicateDatabase as e:
-        if "already exists" in str(e):
-            print(str(e))
-            decide = input('Drop {dn} (d)?'.format(dn=db_name))
-            if decide == 'd':
-                cur.execute("drop database {dn}".format(dn=db_name))
-            new_db = input('Create new database (database name)?').rstrip().lstrip()
-            if new_db:
-                cur.execute("create database {dn}".format(dn=new_db))
-    engine = create_engine('postgresql+psycopg2://postgres:1234@localhost/{db}'.format(db=db_name)) #:5432
-    return engine
+        print(e)
+        # if "already exists" in str(e):
+        #     print(str(e))
+        #     decide = input('Drop {dn} (d)?'.format(dn=db_name))
+        #     if decide == 'd':
+        #         cur.execute("drop database {dn}".format(dn=db_name))
+        #         cur.execute("create database {dn}".format(dn=db_name))
+    conn.commit()
+    cur.close()
+
+
+def create_table(table_name, cols, cols_types, conn):
+    '''
+    Create table
+    :param user(str): The Postgres user name
+    :param password(str): The Postgres user password
+    :param db_name(str): The name of the database to connect using the engine
+    :param table_name(str): The name of the table to create
+    :param cols(list): Table column names
+    :param cols_types: Column data types (postgres)
+    '''
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
+    cur = conn.cursor()
+    decide = input('Drop and create {tn} table?(y)'.format(tn=table_name))
+    if decide == 'y':
+        cur.execute("DROP TABLE IF EXISTS {tn}".format(tn=table_name))
+        statement_cols_types = ''
+        for index, col in enumerate(cols):
+            col = col.lower().replace(' ', '_').replace('%', 'perc')
+            type = cols_types[index]
+            col_type_str = '{c} {t},'.format(c=col, t=type)
+            statement_cols_types += col_type_str
+        statement_cols_types = statement_cols_types.rstrip(',')
+        statement = "CREATE TABLE IF NOT EXISTS {tn} ({ct});".format(tn=table_name, ct=statement_cols_types)
+        print('Create table statement:', statement)
+        cur.execute(statement)
+
+    conn.commit()
+    cur.close()
+
+def insert_into_table(table_name, cols, cols_vals, conn):
+    '''
+    Update table
+    :param db_name(str): The name of the database to connect using the engine
+    :param table_name(str): The name of the table to create
+    :param cols(list): Table column names
+    :param cols_vals(list): Column values
+    '''
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
+    cur = conn.cursor()
+    cols_str, vals_str = "(", "("
+    for index, col in enumerate(cols):
+        val = cols_vals[index]
+        cols_str += "'{c}',".format(c=col)
+        vals_str += "'{v}',".format(v=val)
+    cols_str = cols_str.rstrip(",")+")"
+    vals_str = vals_str.rstrip(",")+")"
+    print('cols str:', cols_str)
+    print('vals str:', vals_str)
+    statement = "INSERT INTO {tn} ".format(tn=table_name) + "VALUES " + vals_str
+    print('statement:', statement)
+    cur.execute(statement)
+    conn.commit()
+    cur.close()
+
+
+def update_table(db_name, table_name, cols, cols_vals, conn):
+    # TODO: Add condition WHERE
+    '''
+    Update table
+    :param db_name(str): The name of the database to connect using the engine
+    :param table_name(str): The name of the table to create
+    :param cols(list): Table column names
+    :param cols_vals(list): Column values
+    '''
+    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
+    cur = conn.cursor()
+    statement = 'UPDATE {tn} SET '.format(tn=table_name)
+    for index, col in enumerate(cols):
+        val = cols_vals[index]
+        set_val = "{c} = '{v}', ".format(c=col, v=val)
+        statement += set_val
+    statement = statement.rstrip(', ')
+    print('statement:', statement)
+    cur.execute(statement)
+    conn.commit()
+
+def create_db_engine(user, password, db_name):
+    '''
+    Create database engine
+    :param user(str): The Postgres user name
+    :param password(str): The Postgres user password
+    :param db_name(usr): The name of the database to connect using the engine
+    Return: engine such as 'postgresql+psycopg2://postgres:1234@localhost/database'
+    '''
+    return create_engine('postgresql+psycopg2://{u}:{p}@localhost/{db}'\
+                         .format(u=user, p=password, db=db_name)) #:5432
 
 def dfToTable(df, table_name):
     coltypes = df.dtypes
     coltypes = dict(zip(list(coltypes.index), list(coltypes.values)))
-    command_cols_types = '' #id serial PRIMARY KEY, num integer, data varchar
+    statement_cols_types = '' #id serial PRIMARY KEY, num integer, data varchar
     for col, type in coltypes.items():
         print(col)
         col = col.lower().replace(' ', '_').replace('%', 'perc')
@@ -46,24 +136,13 @@ def dfToTable(df, table_name):
         else:
             type_str = 'varchar'
         type_str = '{c} {t},'.format(c=col, t=type_str)
-        command_cols_types += type_str
-    command_cols_types = command_cols_types.rstrip(',')
-    command = "CREATE TABLE IF NOT EXISTS {tn} ({ct});".format(tn=table_name, ct=command_cols_types)
-    print('create table command:', command)
-    cur.execute(command)
-    conn.commit()
+        statement_cols_types += type_str
+    statement_cols_types = statement_cols_types.rstrip(',')
+    statement = "CREATE TABLE IF NOT EXISTS {tn} ({ct});".format(tn=table_name, ct=statement_cols_types)
+    print('create table statement:', statement)
+    #cur.execute(statement)
+    #conn.commit()
 
-
-
-#def create_table(table_name, columns_types):
-
-# try:
-#     cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
-# except:
-#     print("Can't create table")
-# conn.commit()# <--- makes sure the change is shown in the database
-# conn.close()
-# cur.close()
 
 
 # Connect to database

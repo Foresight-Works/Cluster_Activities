@@ -1,11 +1,11 @@
 import pandas as pd
-import time
-from difflib import SequenceMatcher
+import io
 from setup import *
-def allowed_file(filename):
+
+def allowed_file(filename, extensions):
     """ Tests if filetype is an allowed filetype """
     return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1] in extensions
 
 
 def parse_graphml_file(file_path):
@@ -26,6 +26,7 @@ def parse_graphml_file(file_path):
         node_df = pd.DataFrame([values], columns=keys)
         nodes_df = nodes_df.append(node_df)
     return nodes_df
+
 
 
 def parse_graphml_files(file_paths):
@@ -57,40 +58,6 @@ def parse_graphml_files(file_paths):
             nodes_df = nodes_df.append(node_df)
 
     print('{} all nodes'.format(len(nodes_df)))
-    return nodes_df
-
-def graphml_to_nodes(raw_files_data):
-    '''
-    Parse graphml files
-    raw_files_data(dictionary): Files raw data keyed by the files' names
-    '''
-    print('file names:', raw_files_data.keys())
-    files_nodes = []
-    for name, file_data in raw_files_data.items():
-        print('name:', name)
-        #file_data = open(file_path).read().split('</node>')
-        file_data = file_data.split('</node>')
-        file_nodes = [s for s in file_data if 'node id' in s]
-        file_nodes = [n.lstrip().rstrip() for n in file_nodes]
-        file_nodes = [n.replace('"', '') for n in file_nodes]
-        # Exclude file header
-        file_nodes = file_nodes[1:]
-        print('{} file_nodes'.format(len(file_nodes)))
-        files_nodes += file_nodes
-    print('{} files_nodes'.format(len(files_nodes)))
-    nodes_values = []
-    nodes_df = pd.DataFrame()
-    for index, node in enumerate(files_nodes):
-         node_rows = node.split('\n')
-         id = re.findall('=(.*?)>', node_rows[0])[0]
-         node_rows = node_rows[1:]
-         keys = ['ID'] + [re.findall('=(.*?)>', n)[0] for n in node_rows]
-         values = [id] + [re.findall('>(.*?)<', n)[0] for n in node_rows]
-         keys_velus = dict(zip(keys, values))
-         nodes_values.append(keys_velus)
-         node_df = pd.DataFrame([values], columns=list(keys))
-         nodes_df = nodes_df.append(node_df)
-
     return nodes_df
 
 

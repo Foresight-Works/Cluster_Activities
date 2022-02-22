@@ -35,6 +35,7 @@ def tokenize(data, unique=True, is_list=False,\
               punctuation_symbols=punctuation_marks, stopwords=set(stopwords.words('english'))):
 
     if is_list:
+        data = [t for t in data if type(t)==str]
         data = ' '.join(data)
         data = re.sub('\s{2,}', ' ', data)
 

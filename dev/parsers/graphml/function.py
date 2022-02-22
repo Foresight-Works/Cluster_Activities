@@ -4,13 +4,14 @@ pd.set_option("display.max_rows", None,\
               "display.max_columns", None, 'display.max_colwidth', 100)
 
 
-def parse_graphml_file(graphml_str, headers):
+def parse_graphml(graphml_str, headers):
     '''
     Parse a graphml file contents to a dataframe
     :param graphml_str (string): The file contents to parse
     :param headers (list): The columns to parse
     '''
-    nodes = [s for s in graphml_str if 'node id' in s]
+    nodes = graphml_str.split('</node>')
+    nodes = [s for s in nodes if 'node id' in s]
     nodes = [n.lstrip().rstrip() for n in nodes]
     nodes = [n.replace('"', '') for n in nodes]
     # Exclude file header
@@ -28,8 +29,8 @@ def parse_graphml_file(graphml_str, headers):
 
     return nodes_df[headers]
 
-graphml_str = open('CCGTD1_IPS.graphml').read().split('</node>')
+graphml_str = open('CCGTD1_IPS.graphml').read()
 headers = ['ID', 'Label', 'PlannedStart', 'PlannedEnd']
-nodes_df = parse_graphml_file(graphml_str, headers)
+nodes_df = parse_graphml(graphml_str, headers)
 print(nodes_df.head())
 print(nodes_df.info())

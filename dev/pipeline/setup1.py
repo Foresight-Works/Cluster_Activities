@@ -31,7 +31,7 @@ ids_col, names_col = ['ID', 'Label']
 
 # Paths
 working_dir = os.getcwd()
-modules_dir = os.path.join(working_dir, 'modules')
+modules_dir = os.path.join(working_dir, '../modules')
 if modules_dir not in sys.path:
     sys.path.append(modules_dir)
 data_dir = os.path.join(working_dir, 'data/CCGT_graphmls_zipped')
