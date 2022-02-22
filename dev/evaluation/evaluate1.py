@@ -15,17 +15,12 @@ def cluster_duration_std(cluster_df):
     return score
 
 def calculate_weightedSOS(vectors):
-    # print('vectors')
-    # print(vectors.shape)
-    # Squared euclidean distances matrix
     cluster_distances = squareform(pdist(vectors, 'sqeuclidean'))
-    # Cluster sum of squared distances: Dr
     Dr = np.sum(np.triu(cluster_distances))
-    # Weighted cluster sum of squared distances: weighted_Dr
     weighted_Dr = Dr/(2*len(vectors))
     return weighted_Dr
 
-def evaluate (clusters, projects, ids_embeddings = np.empty(1), metrics = ['duration_std', 'wcss']):
+def run_evaluation (clusters, projects, ids_embeddings = np.empty(1), metrics = ['duration_std', 'wcss']):
     clusters_scores = []
     for cluster_key, ids in clusters.items():
         #print(cluster_key, ids)
@@ -52,8 +47,8 @@ print('clusters')
 print(clusters)
 ids_embeddings = np.load('./data/ids_embeddings.npy', allow_pickle=True)[()]
 
-metrics=['duration_std', 'wcss']
-clusters_scores_df = evaluate(clusters, projects, ids_embeddings=ids_embeddings, metrics=metrics)
+metrics = ['duration_std', 'wcss']
+clusters_scores_df = run_evaluation(clusters, projects, ids_embeddings=ids_embeddings, metrics=metrics)
 print('clusters_scores')
 print(clusters_scores_df)
 

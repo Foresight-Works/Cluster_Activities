@@ -2,9 +2,7 @@ from setup import *
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
 duration = []
-process_start = time.time()
-run_start = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-print("start time =", run_start)
+
 
 # Response
 @app.route('/cluster_analysis/api/v0.1/clustering', methods=['POST'])
@@ -12,8 +10,7 @@ def pipeline():
 
     # Language model
     start = time.time()
-    language_model = config.get('language_model', 'name')
-    transformer_model = SentenceTransformer(language_model)
+    transformer_model = SentenceTransformer(config.get('language_model', 'name'))
     duration.append(['model_upload', round(time.time() - start, 2)])
     print('Language model loaded')
 
@@ -29,7 +26,6 @@ def pipeline():
     print('file_names:', file_names)
     files = {}
     if file_names:
-        # File name validation
         for file_name in file_names:
             if allowed_file(file_name, config.get('data', 'extensions')):
                 print(f'allowing file {file_name}')
@@ -39,22 +35,20 @@ def pipeline():
                 print(type(file_posted))
                 files[file_name] = file_posted
 
-        # Parse data files
         if files:
-            num_files = len(files)
-            print('parsing {n} files'.format(n=num_files))
             start = time.time()
             print('===parsing the data files===')
             projects = parse_files(files, data_cols, data_format)
-            print('{n} tasks'.format(n=len(projects)))
+            print('{n} total tasks'.format(n=len(projects)))
             projects = projects[projects[task_type] == 'TT_Task']
             projects = projects.replace("", float("NaN")).dropna()
-            tasks_count = len(projects)
-            print('{n} tdas'.format(n=tasks_count))
+            print('{n} tdas'.format(n=len(projects)))
             print(projects.info())
             projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
+
             names, ids = list(projects[names_col]), list(projects[ids_col])
             print('names sample:', names[:10])
+
             duration.append(['parse_data', round(time.time() - start, 2)])
 
             # Tokens similarity
@@ -62,7 +56,7 @@ def pipeline():
             start = time.time()
             tokens = tokenize(names, is_list=True, exclude_stopwords=True, \
                               exclude_numbers=True, exclude_digit_tokens=True)
-            with open(os.path.join(results_dir, 'tokens.txt'), 'w') as f:
+            with open(os.path.join(results_dir, tokens_file), 'w') as f:
                 for token in tokens: f.write('{t}\n'.format(t=token))
             tokens_similarity = run_similarity(tokens, 6)
             tokens_similarity.to_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
@@ -74,7 +68,7 @@ def pipeline():
             names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
             X = np.array(names_embeddings)
             ids_embeddings = dict(zip(ids, X))
-            #np.save(os.path.join(results_dir, 'ids_embeddings.npy'), ids_embeddings)
+            np.save(os.path.join(results_dir, 'ids_embeddings.npy'), ids_embeddings)
             duration.append(['encode_names', round(time.time() - start, 2)])
 
             # Cluster names
@@ -82,7 +76,6 @@ def pipeline():
             start = time.time()
             model_params = {}
             model_params['affinity'] = affinity
-            clustering_params_write = '_'.join(['{param}|{val}'.format(param=k, val=v) for k, v in model_params.items()])
             n_clusters = int(len(names) * n_clusters_perc / 100)
             model_params['n_clusters'] = n_clusters
             model_conf = model_conf_instance(model_name, model_params)
@@ -93,37 +86,15 @@ def pipeline():
             response, validation_response = build_clusters_response(projects, clusters, tokens_similarity, names_col, ids_col)
             duration.append(['cluster_names', round(time.time() - start, 2)])
 
-            # Evaluation
             clusters_dict = {}
             for cluster in clusters: clusters_dict[cluster] = list(projects[ids_col][projects['cluster'] == cluster])
             scores = evaluate_clusters(clusters_dict, projects, eval_metrics, ids_embeddings=ids_embeddings, scaled=True)
             scores.to_excel(os.path.join(results_dir, 'scores.xlsx'), index=False)
-            wcss = round(sum(scores['wcss']), 2)
-            bcss = calculate_bcss(clusters_dict, ids_embeddings)
-            # Calinski-Harabasz index
-            ch_index = (bcss/wcss) * ((tasks_count-n_clusters)/(tasks_count-1))
-
-            print('distances scores: wcss={w} | bcss={b} |ch_index={ch}'.format(w=wcss, b=bcss, ch=ch_index))
-            ave_std = round(sum(scores['cluster_duration_std'])/n_clusters, 2)
-            print('average clusters standard deviation:', ave_std)
-
-            process_duration = round(time.time() - process_start, 2)
-            run_end = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            print("end time =", run_end)
-
-            # Clusters stats
-            tasks_per_cluster = [len(v) for k, v in clusters_dict.items()]
-            print('tasks_per_cluster:', tasks_per_cluster)
-            tasks_per_cluster_mean = round(np.mean(tasks_per_cluster), 2)
-            tasks_per_cluster_median = round(np.median(tasks_per_cluster), 2)
+            wcss = sum (scores['cluster_ss'])
+            print('clustrering score(wcss):', wcss)
+            # write wcss to a database
 
             # Results
-            results_row = [file, project, customer, num_files, run_start, run_end, process_duration, tasks_count, \
-                           language_model, model_name, clustering_params_write, \
-                           n_clusters_perc, n_clusters, tasks_per_cluster_mean, tasks_per_cluster_median,\
-                           wcss, bcss, ch_index, ave_std]
-            insert_into_table(table_name, results_columns, results_row, conn)
-
             with open(os.path.join(results_dir, "{p}_{n}Clusters_validation_response.json".\
                     format(p=project, n=n_clusters)), "w") as outfile:
                 outfile.write(response)

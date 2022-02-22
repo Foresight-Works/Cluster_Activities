@@ -12,7 +12,7 @@ transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 data_dir = 'C:\\Users\\RonyArmon\\Projects_Code\\Cluster_Activities\\results'
 results_dir = os.path.join(data_dir, 'clusters')
-Agg_Clust_path = os.path.join(results_dir, 'AgglomerativeClustering_affinityEuclidean')
+Agg_Clust_path = os.path.join(results_dir, 'eval_metrics')
 clusters_files = os.listdir(Agg_Clust_path)
 clusters_files = [f for f in clusters_files if (('.xlsx' in f) & ('~$' not in f))]
 

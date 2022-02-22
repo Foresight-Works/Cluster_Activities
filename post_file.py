@@ -1,14 +1,12 @@
 # to add file metadata: https://stackoverflow.com/questions/22567306/how-to-upload-file-with-python-requests
 from setup import *
 import requests
-decision = input('post locally(y)?')
-if decision == 'y':
-    url = 'http://127.0.0.01:6002/cluster_analysis/api/v0.1/clustering'
+if config.get('service', 'local'):
+    url = config.get('service', 'local_url')
 else:
-    #Remote (routing by Nginx)
-    url = 'http://172.31.36.11/cluster_analysis/api/v0.1/clustering'
+    url = config.get('service', 'dev_url')
 
-print('Raw data path:', data_path)
+print('Data path:', data_path)
 files = {'file': open(data_path, 'rb')}
 r = requests.post(url, files=files)
 print(r.text)

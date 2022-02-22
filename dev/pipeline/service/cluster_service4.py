@@ -1,3 +1,5 @@
+import os
+
 from setup import *
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
@@ -6,25 +8,26 @@ process_start = time.time()
 run_start = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 print("start time =", run_start)
 
+# Language model
+start = time.time()
+language_model = config.get('language_model', 'name')
+transformer_model = SentenceTransformer(language_model)
+duration.append(['model_upload', round(time.time() - start, 2)])
+print('Language model loaded')
+
 # Response
 @app.route('/cluster_analysis/api/v0.1/clustering', methods=['POST'])
 def pipeline():
 
-    # Language model
-    start = time.time()
-    language_model = config.get('language_model', 'name')
-    transformer_model = SentenceTransformer(language_model)
-    duration.append(['model_upload', round(time.time() - start, 2)])
-    print('Language model loaded')
+    n_clusters_perc = float(request.values.get('n_clusters_perc', '{}'))
+    print('n_clusters_perc:', n_clusters_perc)
 
     # Data
     zipped_files = request.files.get('file', '')
-    zipped_files.save(data_path)
-    zipped_object = ZipFile(data_path, "r")
+    zipped_files.save('temp.zip')
+    zipped_object = ZipFile('temp.zip', "r")
+    if 'temp.zip' in os.listdir(): os.remove('temp.zip')
     file_names = zipped_object.namelist()
-    data_file = config.get('data', 'file')
-    if os.path.exists(data_file):
-        os.remove(data_file)
 
     print('file_names:', file_names)
     files = {}
@@ -41,6 +44,8 @@ def pipeline():
 
         # Parse data files
         if files:
+            file_names = '|'.join(list(files.keys())).rstrip('|').replace('.graphml', '')
+            print('file_names:', file_names)
             num_files = len(files)
             print('parsing {n} files'.format(n=num_files))
             start = time.time()
@@ -96,15 +101,27 @@ def pipeline():
             # Evaluation
             clusters_dict = {}
             for cluster in clusters: clusters_dict[cluster] = list(projects[ids_col][projects['cluster'] == cluster])
-            scores = evaluate_clusters(clusters_dict, projects, eval_metrics, ids_embeddings=ids_embeddings, scaled=True)
+            scores = evaluate_clusters(clusters_dict, projects, eval_metrics, ids_embeddings=ids_embeddings, scaled=False)
             scores.to_excel(os.path.join(results_dir, 'scores.xlsx'), index=False)
             wcss = round(sum(scores['wcss']), 2)
             bcss = calculate_bcss(clusters_dict, ids_embeddings)
+
             # Calinski-Harabasz index
-            ch_index = (bcss/wcss) * ((tasks_count-n_clusters)/(tasks_count-1))
+            ch_index = (bcss/wcss) * ((tasks_count-n_clusters)/(n_clusters-1))
+            ch_index = round(ch_index, 2)
+            ch_index_sklearn = metrics.calinski_harabasz_score(X, clusters_labels)
+            ch_index_sklearn = round(ch_index_sklearn, 2)
+
+            # Davies-Bouldin Index
+            db_index = davies_bouldin_score(X, clusters_labels)
+            db_index = round(db_index, 2)
+
+            # Silhouette Index
+            silhouette = metrics.silhouette_score(X, clusters_labels, metric='euclidean')
+            silhouette = round(silhouette, 2)
 
             print('distances scores: wcss={w} | bcss={b} |ch_index={ch}'.format(w=wcss, b=bcss, ch=ch_index))
-            ave_std = round(sum(scores['cluster_duration_std'])/n_clusters, 2)
+            ave_std = round(sum(scores['duration_std'])/n_clusters, 2)
             print('average clusters standard deviation:', ave_std)
 
             process_duration = round(time.time() - process_start, 2)
@@ -113,15 +130,17 @@ def pipeline():
 
             # Clusters stats
             tasks_per_cluster = [len(v) for k, v in clusters_dict.items()]
-            print('tasks_per_cluster:', tasks_per_cluster)
             tasks_per_cluster_mean = round(np.mean(tasks_per_cluster), 2)
             tasks_per_cluster_median = round(np.median(tasks_per_cluster), 2)
 
             # Results
-            results_row = [file, project, customer, num_files, run_start, run_end, process_duration, tasks_count, \
+            results_row = [file_names, project, customer, num_files, run_start, run_end, process_duration, tasks_count, \
                            language_model, model_name, clustering_params_write, \
                            n_clusters_perc, n_clusters, tasks_per_cluster_mean, tasks_per_cluster_median,\
-                           wcss, bcss, ch_index, ave_std]
+                           wcss, bcss, ch_index, ch_index_sklearn, db_index, silhouette, ave_std]
+            print('results columns count=', len(results_cols_types))
+            print('results values count=', len(results_row))
+
             insert_into_table(table_name, results_columns, results_row, conn)
 
             with open(os.path.join(results_dir, "{p}_{n}Clusters_validation_response.json".\
