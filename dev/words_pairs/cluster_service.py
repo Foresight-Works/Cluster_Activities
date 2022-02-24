@@ -1,5 +1,5 @@
 from setup import *
-from dev.words_pairs_prep.versions.calculate_similarity_performance import *
+from dev.words_pairs.versions.calculate_similarity_performance import *
 
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
@@ -76,8 +76,8 @@ def pipeline():
             # with open(os.path.join(results_dir, 'tokens.txt'), 'w') as f:
             #     for token in tokens: f.write('{t}\n'.format(t=token))
             # tokens_similarity = run_similarity(tokens, 6)
-            # tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs_prep.pkl'))
-            # duration.append(['words_pairs_prep', round((datetime.now() - start).total_seconds(), 2)])
+            # tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
+            # duration.append(['words_pairs', round((datetime.now() - start).total_seconds(), 2)])
 
             # # Semantic space (embeddings)
             vocab_embeddigs, not_in_vocabulary = filter_embeddings(tokens, tokens_embeddings)

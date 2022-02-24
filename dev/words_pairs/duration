@@ -1,5 +1,0 @@
-embeddings similarity, single executor
-100 tokens | 88 embedddings: 21.48 seconds
-400 tokens | 347 embeddings: 44.57 seconds
-800 tokens | 684 embeddings: 126.34 seconds, 2.11 minutes
-embeddings similarity, 4 executors

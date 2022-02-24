@@ -67,7 +67,7 @@ with open(os.path.join(results_dir, 'tokens.txt'), 'w') as f: f.write(' ')
 # App modules
 from modules.utils import *
 from modules.tokenizers import *
-#from modules.words_pairs_prep import *
+#from modules.words_pairs import *
 from modules.parsers import *
 from modules.evaluate import *
 from modules.clustering import *

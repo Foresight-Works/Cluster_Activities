@@ -6,6 +6,6 @@ conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
 print('Table values')
 sql = "SELECT * FROM {tn}".format(tn=table_name)
 dat = sqlio.read_sql_query(sql, conn)
-dat.to_excel('experiments2.xlsx', index=False)
+dat.to_excel('experiments4.xlsx', index=False)
 print(type(dat))
 print(dat)

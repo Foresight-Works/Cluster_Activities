@@ -49,7 +49,7 @@ def calc_similarity(token1, tokens=tokens):
     return token_scores
 
 tokens_similarity = run_similarity(tokens, 6)
-tokens_similarity.to_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
+tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
 print('distance similarity calculated')
 
 names_embeddings = transformer_model.encode(names, convert_to_tensor=True)

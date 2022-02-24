@@ -30,7 +30,7 @@ def pipeline():
         with open(os.path.join(results_dir, tokens_file), 'w') as f:
             for token in tokens: f.write('{t}\n'.format(t=token))
         tokens_similarity = run_similarity(tokens, 6)
-        tokens_similarity.to_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
+        tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
         #Todo integration: transformer_model before pipeline
         transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
         names_embeddings = transformer_model.encode(names, convert_to_tensor=True)

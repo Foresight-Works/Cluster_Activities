@@ -9,7 +9,7 @@ def find_nearest(array, value):
     return idx
 
 
-def match_tokens(token1, tokens2, distances_matrix):
+def match_tokens(token1, tokens2, distances_matrix, cutoff=0.8):
      #print('token1:', token1)
      distances = [distances_matrix.at[token1, token2] for token2 in tokens2]
      distances_df = pd.DataFrame(list(zip(tokens2, distances)), columns=['token2', 'distance'])\
@@ -18,7 +18,7 @@ def match_tokens(token1, tokens2, distances_matrix):
      most_similar, most_similar_score = list(distances_df['token2'])[0], list(distances_df['distance'])[0]
      #print('most_similar:', most_similar)
      #print('most_similar_score:', most_similar_score)
-     if most_similar_score < 0.8:
+     if most_similar_score < cutoff:
          most_similar = ''
      return most_similar
 
@@ -70,7 +70,7 @@ def find_matches(names, distances_matrix):
         
         return cluster_key
 
-def build_clusters_response(data, clusters, distances_matrix, names_col, ids_col):
+def build_response(data, clusters, distances_matrix, names_col, ids_col):
     response, validation_response = {}, {}
     for cluster in clusters:
         #print('cluster', cluster)

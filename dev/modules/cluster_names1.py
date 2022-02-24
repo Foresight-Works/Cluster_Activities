@@ -2,7 +2,7 @@ import pandas as pd
 
 from setup import *
 
-distances_matrix = pd.read_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
+distances_matrix = pd.read_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
 results = pd.read_excel('results.xlsx')
 clusters = list(results['cluster'].unique())
 cluster1 = clusters[0]

@@ -1,6 +1,6 @@
 import json
 from setup import *
-f = open('CCGT_878Clusters_validation_response.json', )
+f = open('data/CCGT_878Clusters_validation_response.json', )
 data = json.load(f)
 # print(data)
 score = 0

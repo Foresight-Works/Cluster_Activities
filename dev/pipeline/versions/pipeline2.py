@@ -20,7 +20,7 @@ print('{} unique tokens'.format(len(names)))
 with open(os.path.join(results_dir, tokens_file), 'w') as f:
     for token in tokens: f.write('{t}\n'.format(t=token))
 tokens_similarity = run_similarity(tokens, 6)
-tokens_similarity.to_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
+tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
 print('distance similarity calculated')
 
 names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
@@ -43,7 +43,7 @@ clusters = list(projects['cluster'].unique())
 # for cluster in clusters:
 #     #print('cluster', cluster)
 #     cluster_names = list(projects[names_col][projects['cluster'] == cluster])
-#     cluster_key = find_matches(cluster_names, tokens_similarity)
+#     cluster_key = find_matches(cluster_names, words_pairs)
 #     #print(30*'='+'\n{ck}\n--------'.format(ck=cluster_key))
 #     #for n in cluster_names: print(n)
 

@@ -85,3 +85,25 @@ def clusters_duration_std(clusters_dict, projects_df):
         scores.append([cluster_key, duration_std])
     scores = pd.DataFrame(scores, columns=['key', 'duration_std'])
     return scores
+
+def scale_df(df):
+    cols = df.columns
+    df_vals = np.array(df)
+    scaler = MinMaxScaler()
+    scaled_scores = scaler.fit_transform(df_vals)
+    return pd.DataFrame(scaled_scores, columns=cols)
+
+def vote(scores, metrics_optimize):
+    scores_cols = list(metrics_optimize.keys())
+    md_cols = scores.drop(scores_cols, axis=1)
+    scaled_scores = scale_df(scores)
+    scaled_scores = pd.concat([md_cols, scaled_scores], axis=1)
+    for metric, optimize in metrics_optimize.items():
+        optimize_for, optimize_weight = optimize
+        if optimize_for == 'min':
+            print('rescaling', metric)
+            scaled_scores[metric] = [(1-x) for x in scaled_scores[metric]]
+        scaled_scores[metric] = optimize_weight * scaled_scores[metric]
+    scaled_scores['sum'] = scaled_scores[scores_cols].sum(axis=1)
+    run_id = int(scaled_scores[['sum']].idxmax())
+    return run_id

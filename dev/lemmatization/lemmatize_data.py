@@ -2,7 +2,7 @@ from setup import *
 import stanza
 import spacy
 
-f = open('../../words_pairs/CCGT_878Clusters_validation_response.json', )
+f = open('../words_pairs/data/CCGT_878Clusters_validation_response.json', )
 data = json.load(f)
 names = []
 for cluster, cluster_names in data.items(): names += cluster_names

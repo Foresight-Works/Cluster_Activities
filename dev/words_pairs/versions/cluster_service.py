@@ -59,8 +59,8 @@ def pipeline():
             with open(os.path.join(results_dir, 'tokens.txt'), 'w') as f:
                 for token in tokens: f.write('{t}\n'.format(t=token))
             tokens_similarity = run_similarity(tokens, 6)
-            tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs_prep.pkl'))
-            duration.append(['words_pairs_prep', round((datetime.now() - start).total_seconds(), 2)])
+            tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
+            duration.append(['words_pairs', round((datetime.now() - start).total_seconds(), 2)])
             response = 'Calculation completed'
             print(response)
             return response

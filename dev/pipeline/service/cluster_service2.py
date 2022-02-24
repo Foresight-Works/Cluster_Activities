@@ -45,8 +45,8 @@ def pipeline():
             with open(os.path.join(results_dir, tokens_file), 'w') as f:
                 for token in tokens: f.write('{t}\n'.format(t=token))
             tokens_similarity = run_similarity(tokens, 6)
-            tokens_similarity.to_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
-            duration.append(['tokens_similarity', round(time.time() - start, 2)])
+            tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
+            duration.append(['words_pairs', round(time.time() - start, 2)])
 
             # Encode names
             print('Encode activity names')
