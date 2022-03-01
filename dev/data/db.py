@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-conn = psycopg2.connect("user=data password='1234'")
+conn = psycopg2.connect("user=response password='1234'")
 conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
 cur = conn.cursor()
 

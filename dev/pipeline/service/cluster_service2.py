@@ -1,4 +1,4 @@
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
 duration = []
@@ -74,7 +74,7 @@ def pipeline():
             with open(os.path.join(results_dir, "{p}_response.json".format(p=project_name)), "w") as outfile:
                 outfile.write(validation_response)
 
-            duration_df = pd.DataFrame(duration, columns=['process', 'duration'])
+            duration_df = pd.DataFrame(duration, columns=['process', 'processes'])
             duration_df.to_excel(os.path.join(results_dir, 'duration_{n}_nodes.xlsx'.format(n=len(projects))), index=False)
             print('Calculation completed')
             return response

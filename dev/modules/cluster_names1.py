@@ -1,13 +1,11 @@
-import pandas as pd
-
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 
 distances_matrix = pd.read_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
 results = pd.read_excel('results.xlsx')
 clusters = list(results['cluster'].unique())
 cluster1 = clusters[0]
 cluster1_names = list(results[names_col][results['cluster'] == cluster1])
-from modules.tokens_similarity import *
+from dev.modules.tokens_similarity2 import *
 
 def find_nearest(array, value):
     array = np.asarray(array)

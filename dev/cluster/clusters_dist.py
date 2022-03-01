@@ -31,7 +31,7 @@ transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
 end = time.time()
 duration_secs = round(end - start, 2)
 duration_mins = round(duration_secs / 60, 2)
-print('load model duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
+print('load model processes: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
 durations.append(['load_model', duration_secs])
 
 start = time.time()
@@ -40,7 +40,7 @@ X = np.array(names_embeddings)
 end = time.time()
 duration_secs = round(end - start, 2)
 duration_mins = round(duration_secs / 60, 2)
-print('encoding duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
+print('encoding processes: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
 durations.append(['data_encoding', duration_secs])
 
 def run_get_clusters(n_clusters):
@@ -66,7 +66,7 @@ def controller():
     end = time.time()
     duration_secs = round(end - start, 2)
     duration_mins = round(duration_secs / 60, 2)
-    print('clustering duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
+    print('clustering processes: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
     durations.append(['clustering', duration_secs])
 
     durations_df = pd.DataFrame(durations, columns=['action', 'durations(secs)'])
@@ -77,7 +77,7 @@ def controller():
     gen_end = time.time()
     duration_secs = round(gen_end - gen_start, 2)
     duration_mins = round(duration_secs / 60, 2)
-    print('all process duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
+    print('all process processes: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
     durations.append(['load_model', duration_secs])
 
 

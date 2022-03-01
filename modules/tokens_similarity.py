@@ -37,6 +37,6 @@ def run_similarity(tokens, num_executors):
     end = time.time()
     duration_secs = round(end - start, 2)
     duration_mins = round(duration_secs / 60, 2)
-    print('similarity calculation duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
+    print('similarity calculation processes: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
 
     return results_df

@@ -1,7 +1,6 @@
 # to add file metadata: https://stackoverflow.com/questions/22567306/how-to-upload-file-with-python-requests
-import os
 import requests
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 
 user = 'rnd'
 password = 'Rnd@2143'

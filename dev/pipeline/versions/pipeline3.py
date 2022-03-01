@@ -6,7 +6,7 @@ from modules.cluster_names import *
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
 #durations = []
-# todo: update upload or pipeline to allow more then one project in the data path
+# todo: update upload or pipeline to allow more then one project in the response path
 
 # Response
 @app.route('/clusters', methods=['POST'])
@@ -22,7 +22,7 @@ def pipeline():
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         file_path = Path(app.config['UPLOAD_FOLDER']) / filename
         print('file_path:', file_path)
-        print('data uploaded')
+        print('response uploaded')
         projects = parse_graphml_file(file_path)
         names = list(projects[names_col])
         tokens = tokenize(names, is_list=True, exclude_stopwords=True, \

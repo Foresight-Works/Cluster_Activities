@@ -42,7 +42,7 @@ def pipeline():
         duration.append(['files_upload', round(time.time() - start, 2)])
 
         if save_paths:
-            status = 'data uploaded'
+            status = 'response uploaded'
             print('save_paths:')
             for p in save_paths: print(p)
 
@@ -85,7 +85,7 @@ def pipeline():
             with open(os.path.join(results_dir, "{p}_response.json".format(p=project_name)), "w") as outfile:
                 outfile.write(validation_response)
 
-            duration_df = pd.DataFrame(duration, columns=['process', 'duration'])
+            duration_df = pd.DataFrame(duration, columns=['process', 'processes'])
             duration_df.to_excel(os.path.join(results_dir, 'duration_{n}_nodes.xlsx'.format(n=len(projects))), index=False)
             return response
 

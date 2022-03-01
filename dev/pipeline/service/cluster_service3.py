@@ -1,4 +1,4 @@
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
 duration = []
@@ -19,7 +19,7 @@ def pipeline():
     zipped_files.save(data_path)
     zipped_object = ZipFile(data_path, "r")
     file_names = zipped_object.namelist()
-    data_file = config.get('data', 'file')
+    data_file = config.get('response', 'file')
     if os.path.exists(data_file):
         os.remove(data_file)
 
@@ -27,7 +27,7 @@ def pipeline():
     files = {}
     if file_names:
         for file_name in file_names:
-            if allowed_file(file_name, config.get('data', 'extensions')):
+            if allowed_file(file_name, config.get('response', 'extensions')):
                 print(f'allowing file {file_name}')
                 print('===={f}===='.format(f=file_name))
                 file_posted = zipped_object.read(file_name).decode(encoding='utf-8-sig')
@@ -37,7 +37,7 @@ def pipeline():
 
         if files:
             start = time.time()
-            print('===parsing the data files===')
+            print('===parsing the response files===')
             projects = parse_files(files, data_cols, data_format)
             print('{n} total tasks'.format(n=len(projects)))
             projects = projects[projects[task_type] == 'TT_Task']
@@ -101,7 +101,7 @@ def pipeline():
             with open(os.path.join(results_dir, "{p}_response.json".format(p=project)), "w") as outfile:
                 outfile.write(validation_response)
 
-            duration_df = pd.DataFrame(duration, columns=['process', 'duration'])
+            duration_df = pd.DataFrame(duration, columns=['process', 'processes'])
             duration_df.to_excel(os.path.join(results_dir, 'duration_{n}_nodes.xlsx'.format(n=len(projects))), index=False)
             print('Calculation completed')
             return response

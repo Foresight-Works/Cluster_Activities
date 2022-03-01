@@ -1,6 +1,4 @@
-import pandas as pd
-
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 app = Flask(Flask.__name__)
 print('data_dir:', data_dir)
 app.config['UPLOAD_FOLDER'] = data_dir
@@ -21,7 +19,7 @@ def parse_graphml_files(file_paths):
         print('file_path:', file_path)
         file_name = re.findall('(\w+)\.graphml', file_path.replace(' ', '_'))[0]
         raw_data = open(file_path).read().split('</node>')
-        #print('raw data:', raw_data)
+        #print('raw response:', raw_data)
         nodes = [s for s in raw_data if 'node id' in s]
         nodes = [n.lstrip().rstrip() for n in nodes]
         nodes = [n.replace('"', '') for n in nodes]
@@ -63,7 +61,7 @@ def pipeline():
         # print('secure file.filename:', filename)
 
     if save_paths:
-        status = 'data uploaded'
+        status = 'response uploaded'
         print('save_paths:')
         for p in save_paths: print(p)
     else:

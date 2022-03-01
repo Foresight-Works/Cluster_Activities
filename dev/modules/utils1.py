@@ -1,6 +1,5 @@
-import pandas as pd
 import io
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 
 def allowed_file(filename, extensions):
     """ Tests if filetype is an allowed filetype """
@@ -40,7 +39,7 @@ def parse_graphml_files(file_paths):
         print('file_path:', file_path)
         file_name = re.findall('(\w+)\.graphml', file_path.replace(' ', '_'))[0]
         file_data = open(file_path).read().split('</node>')
-        #print('raw data:', file_data)
+        #print('raw response:', file_data)
         nodes = [s for s in file_data if 'node id' in s]
         nodes = [n.lstrip().rstrip() for n in nodes]
         nodes = [n.replace('"', '') for n in nodes]
@@ -63,7 +62,7 @@ def parse_graphml_files(file_paths):
 def graphmls_df(raw_files_data):
     '''
     Parse graphml files and join the parsed products to a dataframe
-    raw_files_data(dictionary): Files raw data keyed by the files' names
+    raw_files_data(dictionary): Files raw response keyed by the files' names
     '''
     print('file names:', raw_files_data.keys())
     files_nodes = []
@@ -118,7 +117,7 @@ def parse_csv(csv_string, headers):
 
 def csvs_df(raw_files_data):
     '''
-    Concat the data in csv files to a joined dataframe
+    Concat the response in csv files to a joined dataframe
     raw_files_data(dictionary):
     '''
     print('file names:', raw_files_data.keys())

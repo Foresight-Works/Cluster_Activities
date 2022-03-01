@@ -1,7 +1,6 @@
 # to add file metadata: https://stackoverflow.com/questions/22567306/how-to-upload-file-with-python-requests
-import os
 import requests
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 url = 'http://127.0.0.01:6001/analysis'
 print('data_files_paths')
 print(data_files_paths)

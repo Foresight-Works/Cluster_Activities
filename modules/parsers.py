@@ -52,7 +52,7 @@ def parse_csv(csv_string, headers):
 def parse_files(raw_files, headers, format):
     '''
     Parse graphml files and join the parsed products to a dataframe
-    raw_files(dictionary): Files raw data keyed by the files' names
+    raw_files(dictionary): Files raw response keyed by the files' names
     '''
     parsed_dfs = pd.DataFrame()
     for name, file_data in raw_files.items():

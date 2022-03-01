@@ -1,5 +1,4 @@
-from setup import *
-from modules.tokens_similarity import *
+from tokens_similarity import *
 from modules.tokenizers import *
 
 def find_nearest(array, value):
@@ -7,7 +6,6 @@ def find_nearest(array, value):
     diff = np.abs(array - value)
     idx = (diff).argmin()
     return idx
-
 
 def match_tokens(token1, tokens2, distances_matrix, cutoff=0.8):
      #print('token1:', token1)
@@ -70,18 +68,25 @@ def find_matches(names, distances_matrix):
         
         return cluster_key
 
-def build_response(data, clusters, distances_matrix, names_col, ids_col):
-    response, validation_response = {}, {}
-    for cluster in clusters:
-        #print('cluster', cluster)
+def build_result(data, clusters, names_col, ids_col):
+    clustering_result, clusters_namesIDs = {}, {}
+    for cluster_key, cluster in enumerate(clusters):
+        cluster_key_name = str(cluster_key+1)
         cluster_names = list(data[names_col][data['cluster'] == cluster])
-        cluster_ids = list(data[ids_col][data['cluster'] == cluster])
+        names_ids = list(data[ids_col][data['cluster'] == cluster])
+        clustering_result[cluster_key_name] = cluster_names
+        clusters_namesIDs[cluster_key_name] = names_ids
+    #clustering_result = json.dumps(clustering_result, indent=4)
+    return clustering_result, clusters_namesIDs
+
+
+def build_response(clustering_result, clusters_namesIDs, distances_matrix):
+    response, validation_response = {}, {}
+    for cluster_key, cluster_names in clustering_result:
         cluster_key = find_matches(cluster_names, distances_matrix)
+        cluster_ids = clusters_namesIDs[cluster_key]
         response[cluster_key] = cluster_names
         validation_response[cluster_key] = cluster_ids
-
-    
     response = json.dumps(response, indent=4)
     validation_response = json.dumps(validation_response, indent=4)
     return response, validation_response
-    

@@ -4,7 +4,7 @@ import pandas as pd
 import pandas.io.sql as sqlio
 
 # Create Database
-# con = psycopg2.connect("user=data password='1234'")
+# con = psycopg2.connect("user=response password='1234'")
 # con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
 # cursor = con.cursor()
 # db_name = "try_db"
@@ -12,7 +12,7 @@ import pandas.io.sql as sqlio
 
 # # Create table
 # try:
-#     cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
+#     cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, response varchar);")
 # except:
 #     print("Can't create table")
 # conn.commit()# <--- makes sure the change is shown in the database
@@ -22,15 +22,15 @@ import pandas.io.sql as sqlio
 
 # Connect to database
 try:
-    conn = psycopg2.connect(database="try_db", user="data", password="1234", host="localhost", port="5432")
+    conn = psycopg2.connect(database="try_db", user="response", password="1234", host="localhost", port="5432")
 except:
     print("Unable to connect to the database")
 cur = conn.cursor()
 
 # Insert into table
-conn = psycopg2.connect(database="try_db", user="data", password="1234", host="localhost", port="5432")
+conn = psycopg2.connect(database="try_db", user="response", password="1234", host="localhost", port="5432")
 cur = conn.cursor()
-cur.execute('INSERT INTO {tn} (id, num, data) VALUES ({c1}, {c2}, {c3})'
+cur.execute('INSERT INTO {tn} (id, num, response) VALUES ({c1}, {c2}, {c3})'
             .format(tn='test', c1=7, c2=5, c3=6))
 conn.commit()
 sql = 'SELECT * FROM {tn}'.format(tn='test')

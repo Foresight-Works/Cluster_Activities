@@ -12,7 +12,7 @@ for index, token in enumerate(tokens):
 end = time.time()
 duration_secs = round(end - start, 2)
 duration_mins = round(duration_secs/60, 2)
-print('run duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
+print('run processes: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
 
 results_path = 'results/CCGT_D1_oov_candidates.txt'
 with open(results_path, 'w') as f:

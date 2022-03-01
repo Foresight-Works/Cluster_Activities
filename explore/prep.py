@@ -13,12 +13,12 @@ working_dir = '../' # os.getcwd()
 modules_dir = os.path.join(working_dir, 'modules')
 if modules_dir not in sys.path:
     sys.path.append(modules_dir)
-data_dir = os.path.join(working_dir, 'data/csvs')
+data_dir = os.path.join(working_dir, 'response/csvs')
 results_dir = os.path.join(working_dir, 'results')
 from utils import *
 from clustering_methods import *
 
-# Read data and extract activities
+# Read response and extract activities
 start_end_cols = ['Actual Start', 'Actual Completed', 'Current Planned Start', 'Current Planned Completed']
 files = os.listdir(data_dir)
 dfs = {}

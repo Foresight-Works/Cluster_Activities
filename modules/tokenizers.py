@@ -1,4 +1,6 @@
 from setup import *
+from nltk.corpus import stopwords
+
 punctuation_marks="=|\+|_|\.|:|\/|\*|\'|,|?"
 
 def isfloat(value):

@@ -1,4 +1,4 @@
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 app = Flask(Flask.__name__)
 print('data_dir:', data_dir)
 app.config['UPLOAD_FOLDER'] = data_dir
@@ -44,7 +44,7 @@ def pipeline():
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         file_path = Path(app.config['UPLOAD_FOLDER']) / filename
         print('file_path:', file_path)
-        status = 'data uploaded'
+        status = 'response uploaded'
 
         raw_data = open(file_path).read().split('</node>')
         nodes = [s for s in raw_data if 'node id' in s]

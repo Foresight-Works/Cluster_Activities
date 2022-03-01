@@ -1,4 +1,4 @@
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
@@ -35,7 +35,7 @@ def run_similarity(tokens, num_executors):
     end = time.time()
     duration_secs = round(end - start, 2)
     duration_mins = round(duration_secs / 60, 2)
-    print('run duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
+    print('run processes: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
     print('\nresults:')
     print(results_df)
     print(results_df.columns)

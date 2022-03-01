@@ -21,7 +21,7 @@ with open(results_path, 'w') as f:
 print('{n} token with more than one character identified in names'.format(n=len(names_tokens)))
 end = time.time()
 duration = round(end - start, 2)
-print('run duration:', duration)
+print('run processes:', duration)
 
 
 

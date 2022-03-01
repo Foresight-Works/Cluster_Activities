@@ -1,7 +1,7 @@
 import pandas as pd
 pd.set_option('display.max_columns', None)
 import os
-files_dir = '/data/823A As-built Programme'
+files_dir = '/response/823A As-built Programme'
 files = os.listdir(files_dir)
 print('files:', files)
 dfs = {}

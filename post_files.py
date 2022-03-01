@@ -1,4 +1,3 @@
-# to add file metadata: https://stackoverflow.com/questions/22567306/how-to-upload-file-with-python-requests
 from setup import *
 import requests
 
@@ -22,5 +21,5 @@ for zip_file in zipped_files:
         files = {'file': open(data_path, 'rb')}
         r = requests.post(url, files=files, data=data)
         print(r.text)
-        # To read the data parameters in app use:
+        # To read the response parameters in app use:
         # experiment_id = request.values.get('experiment_id', '{}')

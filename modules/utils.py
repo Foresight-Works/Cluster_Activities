@@ -1,6 +1,16 @@
 import pandas as pd
-import io
-from setup import *
+import time
+
+def write_duration(process, start):
+    '''
+    Print process processes. Place the function following the last line for the process measured
+    :param process(str): The name of the process measured
+    :param start_time (time.time(): The start time for the process
+    '''
+    duration_secs = round(time.time() - start, 2)
+    duration_mins = round(duration_secs / 60, 2)
+    print('{p} took {ds} seconds, {dm} minutes'
+          .format(p=process, ds=duration_secs, dm=duration_mins))
 
 def allowed_file(filename, extensions):
     """ Tests if filetype is an allowed filetype """
@@ -40,7 +50,7 @@ def parse_graphml_files(file_paths):
         print('file_path:', file_path)
         file_name = re.findall('(\w+)\.graphml', file_path.replace(' ', '_'))[0]
         file_data = open(file_path).read().split('</node>')
-        #print('raw data:', file_data)
+        #print('raw response:', file_data)
         nodes = [s for s in file_data if 'node id' in s]
         nodes = [n.lstrip().rstrip() for n in nodes]
         nodes = [n.replace('"', '') for n in nodes]
@@ -71,7 +81,6 @@ def df_info(df):
         uniques = len(df[col].unique())
         perc_uniques = round(100 * uniques / rows_count, 2)
         results.append([col, coverage, uniques, perc_uniques])
-
     coverage_df = pd.DataFrame(results, columns=['column', 'coverage', 'uniques', '%uniques'])
     coverage_df['type'] = list(df.dtypes.values)
     coverage_df = coverage_df[coverage_df['coverage'] > 0].sort_values(by=['coverage'], ascending=False)

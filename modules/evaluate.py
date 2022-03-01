@@ -22,8 +22,8 @@ def infer_dt_format(dt):
 
 def cluster_duration_std(cluster_df):
     '''
-    Calculate the standard deviation for the planned duration values of cluster names
-    :param cluster_df: A data frame containing the cluster task names along with their planned start and end dates
+    Calculate the standard deviation for the planned processes values of cluster names
+    :param cluster_df: A response frame containing the cluster task names along with their planned start and end dates
     '''
     cluster_df.replace("", float("NaN"), inplace=True)
     cluster_df.dropna(subset=['PlannedStart', 'PlannedEnd'], inplace=True)
@@ -38,7 +38,7 @@ def cluster_duration_std(cluster_df):
         return ch_index
 
 
-def calinski_harabasz_ch_index_sklearn(clusters_dict, ids_embeddings=np.empty(1)):
+def ch_index_sklearn(clusters_dict, ids_embeddings=np.empty(1)):
     '''
     Calculate within and between sum of squares per cluster and for all clusters
     '''
@@ -74,9 +74,9 @@ def calinski_harabasz_ch_index_sklearn(clusters_dict, ids_embeddings=np.empty(1)
 def clusters_duration_std(clusters_dict, projects_df):
 
     '''
-    Calculate the standard deviation of tasks duration in each cluster
+    Calculate the standard deviation of tasks processes in each cluster
     :param clusters_dict (dict): Cluster activities ids (lists) keyed by cluster id
-    :param projects_df: The input data with cluster ids, used to capture activity durations
+    :param projects_df: The input response with cluster ids, used to capture activity durations
     '''
     scores = []
     for cluster_key, cluster_ids in clusters_dict.items():

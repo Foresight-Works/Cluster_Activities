@@ -9,7 +9,7 @@ cur = conn.cursor()
 
 # Create table
 try:
-     cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
+     cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, response varchar);")
 except:
      print("Can't create table")
 conn.commit()

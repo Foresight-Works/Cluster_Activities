@@ -1,8 +1,8 @@
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 import stanza
 import spacy
 
-f = open('../words_pairs/data/CCGT_878Clusters_validation_response.json', )
+f = open('../../words_pairs/response/CCGT_878Clusters_validation_response.json', )
 data = json.load(f)
 names = []
 for cluster, cluster_names in data.items(): names += cluster_names
@@ -81,4 +81,4 @@ if __name__ == '__main__':
     end = time.time()
     duration_secs = round(end - start, 2)
     duration_mins = round(duration_secs / 60, 2)
-    print('run duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
+    print('run processes: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))

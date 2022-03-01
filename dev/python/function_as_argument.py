@@ -47,7 +47,7 @@ def run(action, data, num_executors):
         for result in map(mul_div, data, action_list):
             results.append(result)
     print('results:', results[1:200])
-    print('duration = {s} seconds'.format(s=time.time()-start))
+    print('processes = {s} seconds'.format(s=time.time()-start))
 #result=list(map(Multiply,lst1,lst2,lst3))
 num_executors = 4
 action = 'div'

@@ -1,4 +1,4 @@
-from setup import *
+from dev.pipeline.service.cluster_service5.setup import *
 
 transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
 gen_start = time.time()

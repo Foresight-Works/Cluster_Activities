@@ -53,4 +53,4 @@ if __name__ == '__main__':
 
     end = time.time()
     duration = end - start
-    print('calculation duration:', duration)
+    print('calculation processes:', duration)

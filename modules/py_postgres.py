@@ -38,7 +38,7 @@ def create_table(table_name, cols, cols_types, conn):
     :param db_name(str): The name of the database to connect using the engine
     :param table_name(str): The name of the table to create
     :param cols(list): Table column names
-    :param cols_types: Column data types (postgres)
+    :param cols_types: Column response types (postgres)
     '''
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
     cur = conn.cursor()
@@ -120,7 +120,7 @@ def create_db_engine(user, password, db_name):
 def dfToTable(df, table_name):
     coltypes = df.dtypes
     coltypes = dict(zip(list(coltypes.index), list(coltypes.values)))
-    statement_cols_types = '' #id serial PRIMARY KEY, num integer, data varchar
+    statement_cols_types = '' #id serial PRIMARY KEY, num integer, response varchar
     for col, type in coltypes.items():
         print(col)
         col = col.lower().replace(' ', '_').replace('%', 'perc')
@@ -147,15 +147,15 @@ def dfToTable(df, table_name):
 
 # Connect to database
 # try:
-#     conn = psycopg2.connect(database="try_db", user="data", password="1234", host="localhost", port="5432")
+#     conn = psycopg2.connect(database="try_db", user="response", password="1234", host="localhost", port="5432")
 # except:
 #     print("Unable to connect to the database")
 # cur = conn.cursor()
 #
 # # Insert into table
-# conn = psycopg2.connect(database="try_db", user="data", password="1234", host="localhost", port="5432")
+# conn = psycopg2.connect(database="try_db", user="response", password="1234", host="localhost", port="5432")
 # cur = conn.cursor()
-# cur.execute('INSERT INTO {tn} (id, num, data) VALUES ({c1}, {c2}, {c3})'
+# cur.execute('INSERT INTO {tn} (id, num, response) VALUES ({c1}, {c2}, {c3})'
 #             .format(tn='test', c1=7, c2=5, c3=6))
 # conn.commit()
 # sql = 'SELECT * FROM {tn}'.format(tn='test')

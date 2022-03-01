@@ -71,6 +71,6 @@ if __name__ == '__main__':
     end = time.time()
     duration_secs = round(end - start, 2)
     duration_mins = round(duration_secs / 60, 2)
-    print('run duration: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
+    print('run processes: {ds} seconds, {dm} minutes'.format(ds=duration_secs, dm=duration_mins))
     print('Lemmatization encountered {n} errors'.format(n=len(names_errors)))
     for k, v in names_errors.items(): print(k, v)

@@ -9,7 +9,7 @@ gen_start = time.time()
 durations = []
 checked = []
 
-# todo: update upload or pipeline to allow more then one project in the data path
+# todo: update upload or pipeline to allow more then one project in the response path
 projects = parse_graphml_file(data_path)
 ids = list(projects[ids_col])
 names = list(projects[names_col])

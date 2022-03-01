@@ -15,11 +15,11 @@ create_db(db_name)
 # Experiments table
 table_name = 'experiments'
 columns_types = {'file_name': 'varchar', 'project_name': 'varchar', 'customer': 'varchar',\
-                 'run_start': 'timestamp', 'run_end': 'timestamp', 'duration': 'numeric',\
+                 'run_start': 'timestamp', 'run_end': 'timestamp', 'processes': 'numeric',\
                  'tasks_count': 'numeric', 'n_clusters_perc': 'numeric',\
                  'num_clusters': 'numeric', 'tasks_per_cluster_mean': 'numeric',\
                  'tasks_per_cluster_median': 'numeric', 'wcss_score': 'numeric', 'duration_std_score': 'numeric'}
-columns = ['file_name', 'project_name', 'customer', 'run_start', 'run_end', 'duration', 'tasks_count',\
+columns = ['file_name', 'project_name', 'customer', 'run_start', 'run_end', 'processes', 'tasks_count',\
         'n_clusters_perc', 'num_clusters', 'tasks_per_cluster_mean', 'tasks_per_cluster_median',\
         'wcss_score', 'duration_std_score']
 data_types = ['varchar', 'varchar', 'varchar', 'timestamp', 'timestamp',\
@@ -47,7 +47,7 @@ cur.close()
     # print(df)
 
 # data_files = ['CCGT D1.csv', 'CCGT D2.csv', 'DUKE S2X1CC_2013_10_27.csv', 'DUKE WAYNE COUNTY_2012-01-29.csv']
-# data_path = '../../data/raw_data/'
+# data_path = '../../response/raw_data/'
 # projects_df = pd.DataFrame()
 # for file in data_files:
 #     project_df = pd.read_csv(os.path.join(data_path, '{f}'.format(f=file)))
