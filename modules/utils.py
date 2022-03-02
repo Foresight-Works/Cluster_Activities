@@ -1,6 +1,18 @@
 import pandas as pd
 import time
 
+def build_result(data, clusters, names_col, ids_col):
+    clustering_result, clusters_namesIDs = {}, {}
+    for cluster_key, cluster in enumerate(clusters):
+        cluster_key_name = str(cluster_key+1)
+        cluster_names = list(data[names_col][data['cluster'] == cluster])
+        names_ids = list(data[ids_col][data['cluster'] == cluster])
+        clustering_result[cluster_key_name] = cluster_names
+        clusters_namesIDs[cluster_key_name] = names_ids
+    return clustering_result, clusters_namesIDs
+
+
+
 def write_duration(process, start):
     '''
     Print process processes. Place the function following the last line for the process measured

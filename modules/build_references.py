@@ -31,30 +31,25 @@ def run_string_similarity_ratio(tokens_pairs, num_executors):
     else:
         for token_pair, score in map(string_similarity_ratio, tokens_pairs):
             tokens_scores[token_pair] = score
-
-    print('{n} tokens_scores prior to reversing'.format(n=len(tokens_pairs)))
-    reversed_pairs_scores = {}
-    for token_pair, score in tokens_scores.items():
-        reversed_pair = (token_pair[1], token_pair[0])
-        reversed_pairs_scores [reversed_pair] = score
-    tokens_scores = {**tokens_scores, **reversed_pairs_scores}
-    print('{n} tokens_scores after reversing'.format(n=len(tokens_scores)))
-    #for token_pair, score in tokens_scores.items():
-    #    print(token_pair, score)
     return tokens_scores
 
-def scoresToMatrix(token_pairs_scores):
+def scoresToMatrix(token_pairs_scores, fillna_value):
     token_pairs = list(token_pairs_scores.keys())
     #print('token_pairs sample:', token_pairs[:2])
     tokens = []
     for tokens_pair in token_pairs: tokens += list(tokens_pair)
     unique_tokens = list(set(tokens))
     matrix = pd.DataFrame(index=unique_tokens, columns=unique_tokens)
+    reversed_pairs_scores = {}
+    for token_pair, score in token_pairs_scores.items():
+        reversed_pair = (token_pair[1], token_pair[0])
+        reversed_pairs_scores[reversed_pair] = score
+    token_pairs_scores = {**token_pairs_scores, **reversed_pairs_scores}
     for token_pair, score in token_pairs_scores.items():
         #print(token_pair, score)
         token1, token2 = token_pair
         matrix.at[token1, token2] = score
-    matrix = matrix.fillna(0)
+    matrix = matrix.fillna(fillna_value)
     return (matrix)
 
 def reference_dictionaries(clustering_result, references_dir):

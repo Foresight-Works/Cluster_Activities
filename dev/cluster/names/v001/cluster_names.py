@@ -69,7 +69,6 @@ def find_matches(names, distances_matrix):
         return cluster_key
 
 
-
 def build_response(clustering_result, clusters_namesIDs, distances_matrix):
     response, validation_response = {}, {}
     for cluster_key, cluster_names in clustering_result:

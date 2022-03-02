@@ -19,7 +19,8 @@ def create_db(db_name, conn):
     try:
         cur.execute("CREATE DATABASE {dn}".format(dn=db_name))
     except psycopg2.errors.DuplicateDatabase as e:
-        print(e)
+        pass
+        #print(e)
         # if "already exists" in str(e):
         #     print(str(e))
         #     decide = input('Drop {dn} (d)?'.format(dn=db_name))
@@ -42,7 +43,8 @@ def create_table(table_name, cols, cols_types, conn):
     '''
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
     cur = conn.cursor()
-    decide = input('Drop and create {tn} table?(y)'.format(tn=table_name))
+    # decide = input('Drop and create {tn} table?(y)'.format(tn=table_name))
+    decide = 'y'
     if decide == 'y':
         cur.execute("DROP TABLE IF EXISTS {tn}".format(tn=table_name))
         statement_cols_types = ''
@@ -53,7 +55,7 @@ def create_table(table_name, cols, cols_types, conn):
             statement_cols_types += col_type_str
         statement_cols_types = statement_cols_types.rstrip(',')
         statement = "CREATE TABLE IF NOT EXISTS {tn} ({ct});".format(tn=table_name, ct=statement_cols_types)
-        print('Create table statement:', statement)
+        #print('Create table statement:', statement)
         cur.execute(statement)
 
     conn.commit()

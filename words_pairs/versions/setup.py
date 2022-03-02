@@ -1,31 +1,10 @@
 import sys
 import os
 import shutil
-from datetime import datetime
-from difflib import SequenceMatcher
-import re
-import json
-import time
-from concurrent.futures import ProcessPoolExecutor
-import numpy as np
 import pandas as pd
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.max_colwidth', 100)
-import nltk
 #nltk.download('stopwords')
-from nltk.corpus import stopwords
-from matplotlib import pyplot as plt
-from pathlib import Path
-from flask import Flask
-from flask import Response, jsonify, request, redirect, url_for, send_from_directory
-import socket
-from werkzeug.utils import secure_filename
-from zipfile import ZipFile
 from configparser import ConfigParser
-from sentence_transformers import SentenceTransformer, util
-from scipy.cluster.hierarchy import dendrogram
-from sklearn import metrics
-from sklearn.cluster import SpectralClustering, AgglomerativeClustering
-from sklearn.metrics import davies_bouldin_score
 
 
 def config_vals(header, param):
@@ -65,13 +44,8 @@ os.mkdir(results_dir)
 with open(os.path.join(results_dir, 'tokens.txt'), 'w') as f: f.write(' ')
 
 # App modules
-from modules.utils import *
 from modules.tokenizers import *
 #from modules.words_pairs import *
-from modules.parsers import *
-from modules.evaluate import *
-from modules.clustering import *
-from modules.cluster_names import *
 from modules.py_postgres import *
 
 # Tables

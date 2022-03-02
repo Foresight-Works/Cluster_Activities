@@ -55,6 +55,7 @@ table_name = config.get('results', 'table')
 local_service = config.get('service', 'local')
 num_executors = int(config.get('run', 'num_executors'))
 min_cluster_size = int(config.get('model', 'min_cluster_size'))
+response_type = config.get('model', 'response')
 
 # Paths and Directories
 working_dir = os.getcwd()
@@ -72,14 +73,13 @@ matrices_dir = os.path.join(results_dir, 'matrices')
 if 'matrices' not in os.listdir(results_dir):
     os.mkdir(matrices_dir)
 runs_dir = os.path.join(results_dir, 'runs')
-print(runs_dir)
+#print(runs_dir)
 if 'runs' not in os.listdir(results_dir):
     os.mkdir(runs_dir)
 
 # App odules
 from modules.utils import *
 from modules.clustering import *
-from modules.cluster_names import *
 from modules.py_postgres import *
 from modules.parsers import *
 from modules.tokenizers import *
@@ -95,7 +95,7 @@ conn = psycopg2.connect(database="{db}".format(db=db_name), \
 metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max', 1), 'ch_index': ('max', 1),\
 'db_index':('min', 1), 'silhouette':('max', 1), 'words_pairs': ('max', 1)}
 metrics_cols = {col:'numeric' for col, v in metrics_optimize.items()}
-print('metrics_cols:', metrics_cols)
+#print('metrics_cols:', metrics_cols)
 results_cols_types = {'run_id': 'varchar', 'file_name': 'varchar', 'project_name': 'varchar', 'customer': 'varchar', \
                       'num_files': 'numeric', 'run_start': 'timestamp', 'run_end': 'timestamp', 'duration':'numeric',\
                       'tasks_count': 'numeric', 'language_model': 'varchar', 'clustering_method': 'varchar', 'clustering_params': 'varchar',\
@@ -103,8 +103,8 @@ results_cols_types = {'run_id': 'varchar', 'file_name': 'varchar', 'project_name
                       'tasks_per_cluster_mean': 'numeric', 'tasks_per_cluster_median': 'numeric',\
                       'min_tasks_per_cluster': 'numeric', 'max_tasks_per_cluster': 'numeric'}
 results_cols_types = {**results_cols_types, **metrics_cols}
-print('results_cols_types:', results_cols_types)
-print('{n} result table columns'.format(n=len(results_cols_types)))
+#print('results_cols_types:', results_cols_types)
+#print('{n} result table columns'.format(n=len(results_cols_types)))
 metrics_cols = list(metrics_cols.keys())
 results_columns, data_types = list(results_cols_types.keys()), list(results_cols_types.values())
 

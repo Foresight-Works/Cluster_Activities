@@ -1,8 +1,5 @@
-import os
-
-from modules.utils import *
 from modules.clustering import *
-from modules.cluster_names import *
+from dev.cluster.names.v001.cluster_names import *
 
 transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
 gen_start = time.time()

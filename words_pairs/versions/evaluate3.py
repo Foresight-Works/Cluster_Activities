@@ -69,7 +69,7 @@ for file in matrices_files:
     distance_matrices[file.split('.')[0]] = df
 print('distance_matrices loaded')
 
-# Reference dictionaries: Tokens pairs - Similarity scores (token_pairs_scores)
+# Reference dictionaries: Tokens pairs - Similarity scores (distances)
 start1 = time.time()
 token_pairs_scores = {}
 for token_pair in token_pairs:

@@ -11,11 +11,11 @@ app.config['UPLOAD_FOLDER'] = data_dir
 duration = []
 
 # Language models
+print('Loading language model')
 start = datetime.now()
 sentences_model = config.get('language_models', 'sentences')
 transformer_model = SentenceTransformer(sentences_model)
 duration.append(['model_upload', round((datetime.now() - start).total_seconds(), 2)])
-print('Language model loaded')
 
 # Response
 @app.route('/cluster_analysis/api/v0.1/clustering', methods=['POST'])
@@ -100,6 +100,7 @@ def pipeline():
                 projects['cluster'] = clusters_labels
                 clusters = list(projects['cluster'].unique())
                 clustering_result, clusters_namesIDs = build_result(projects, clusters, names_col, ids_col)
+                np.save(os.path.join(run_dir, 'clusters_namesIDs.npy'), clusters_namesIDs)
                 clustering_results[run_id] = clustering_result
                 duration.append(['cluster_names', round((datetime.now() - start).total_seconds(), 2)])
 
@@ -189,8 +190,15 @@ def pipeline():
             #duration_df = pd.DataFrame(processes, columns=['process', 'processes'])
             #duration_df.to_excel(os.path.join(results_dir, 'duration_{n}_nodes.xlsx'.format(n=len(projects))), index=False)
             print('Calculation completed')
+            subprocess.call('python clusters_names_dist.py', shell=True)
+
+            # Name clusters and build results
+            subprocess.call('python build_response.py', shell=True)
+            if response_type == 'names': dict_file_name = 'named_clusters.npy'
+            else: dict_file_name = 'named_clusters_ids.npy'
+            response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
+            response = json.dumps(response_dict, indent=4)
             write_duration('pipeline', pipeline_start)
-            response = 'temp response'
             return response
         else:
             return "Record not found", 400

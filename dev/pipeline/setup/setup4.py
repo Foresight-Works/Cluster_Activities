@@ -1,30 +1,9 @@
 import sys
 import os
-from datetime import datetime
-import shutil
-import subprocess
-import re
-import json
-import time
-from concurrent.futures import ProcessPoolExecutor
-import numpy as np
 import pandas as pd
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.max_colwidth', 100)
-import Levenshtein
-import nltk
 #nltk.download('stopwords')
-from nltk.corpus import stopwords
-from sklearn.cluster import SpectralClustering, AgglomerativeClustering
-from matplotlib import pyplot as plt
-from scipy.cluster.hierarchy import dendrogram
 
-from pathlib import Path
-from flask import Flask
-from flask import Response, jsonify, request, redirect, url_for, send_from_directory
-import socket
-from werkzeug.utils import secure_filename
-from sentence_transformers import SentenceTransformer, util
-from zipfile import ZipFile
 from configparser import ConfigParser
 def config_vals(header, param):
     vals = config.get(header, param)
@@ -61,13 +40,7 @@ if experiment not in results_dir:
 tokens_path = os.path.join(results_dir, 'tokens.txt')
 
 # App odules
-from modules.utils import *
-from modules.clustering import *
-from modules.cluster_names import *
-from modules.py_postgres import *
-from modules.parsers import *
 from modules.tokenizers import *
-from modules.utils import *
 
 # Tables
 db_name = 'cluster_activities'

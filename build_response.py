@@ -115,9 +115,9 @@ def key_clusters(clustering_result, num_executors):
         activities_ids = clusters_namesIDs[cluster_id]
         named_clusters_ids[cluster_key] = activities_ids
     executor.shutdown()
-    return named_clusters_ids, named_clusters
+    return named_clusters, named_clusters_ids
 
-num_executors = 8
+num_executors = int(config.get('run', 'num_executors'))
 named_clusters, named_clusters_ids = key_clusters(clustering_result, num_executors)
 np.save(os.path.join(results_dir, 'named_clusters.npy'), named_clusters)
-np.save(os.path.join(results_dir, 'named_clusters_ids.npy'), named_clusters)
+np.save(os.path.join(results_dir, 'named_clusters_ids.npy'), named_clusters_ids)
