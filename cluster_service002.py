@@ -154,6 +154,7 @@ def pipeline():
                 median_tpc = round(np.median(tasks_per_cluster), 2)
                 min_tpc, max_tpc = np.min(tasks_per_cluster), np.max(tasks_per_cluster)
                 min_max_tpc = max_tpc-min_tpc
+
                 # Results
                 results_row = [run_id, file_names, project, customer,\
                                num_files, run_start, run_end, run_duration,\
@@ -190,7 +191,6 @@ def pipeline():
             #duration_df = pd.DataFrame(processes, columns=['process', 'processes'])
             #duration_df.to_excel(os.path.join(results_dir, 'duration_{n}_nodes.xlsx'.format(n=len(projects))), index=False)
             print('Calculation completed')
-            subprocess.call('python clusters_names_dist.py', shell=True)
 
             # Name clusters and build results
             subprocess.call('python build_response.py', shell=True)

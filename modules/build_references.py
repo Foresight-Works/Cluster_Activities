@@ -79,8 +79,9 @@ def reference_dictionaries(clustering_result, references_dir):
     names_pairs, clusters_names_pairs = (), {}
     for cluster, clusters_names in clustering_result.items():
         clusters_name_pairs = tuple(combinations(clusters_names, 2))
-        names_pairs += clusters_name_pairs
-        clusters_names_pairs[cluster] = clusters_name_pairs
+        if clusters_name_pairs:
+            names_pairs += clusters_name_pairs
+            clusters_names_pairs[cluster] = clusters_name_pairs
     np.save(os.path.join(references_dir, 'clusters_names_pairs.npy'), clusters_names_pairs)
     print('{n} names pairs'.format(n=len(names_pairs)))
     print('example:', names_pairs[:2])
