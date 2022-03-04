@@ -88,15 +88,18 @@ def pipeline():
 
             # Number of cluster per run
             n_clusters_posted = int(request.values.get('num_clusters', '1'))
+            print('n_clusters_posted:', n_clusters_posted)
             if n_clusters_posted > 1:
                 n_clusters_runs = [n_clusters_posted]
             else:
                 n_clusters_runs = [int(len(names) * n_clusters_perc/100) for n_clusters_perc in n_clusters_percs]
                 n_clusters_runs = [n for n in n_clusters_runs if n>1]
-            print('n_clusters per runs:', n_clusters_runs)
-            if n_clusters_posted > tasks_count / 2:
-                return 'The number of clusters posted ({nc}) is in the range of the tasks count ({tc}).\n\ \
-                           Re-run the application with a smaller number of clusters.' \
+            print('n_clusters runs:', n_clusters_runs)
+            print('(tasks_count / 2):', (tasks_count / 2))
+            if n_clusters_posted > (tasks_count / 2):
+                print('n_clusters_posted > (tasks_count / 2)')
+                return 'The number of clusters posted ({nc}) is in the range of the tasks count ({tc}).\n \
+                           Re-run the application with a smaller number of clusters.'\
                     .format(nc=n_clusters_posted, tc=tasks_count)
             else:
                 for run_id, n_clusters in enumerate(n_clusters_runs):
