@@ -9,5 +9,5 @@ else:
 print('url:', url)
 print('Raw data path:', data_path)
 files = {'file': open(data_path, 'rb')}
-r = requests.post(url, files=files)
+r = requests.post(url, files=files, data={'experiment_id': 1})
 print(r.text)

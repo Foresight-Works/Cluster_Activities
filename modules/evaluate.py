@@ -20,6 +20,7 @@ def infer_dt_format(dt):
             break
     return dt_format
 
+
 def cluster_duration_std(cluster_df):
     '''
     Calculate the standard deviation for the planned processes values of cluster names

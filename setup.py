@@ -46,13 +46,13 @@ ids_col, names_col, task_type = config.get('columns', 'id'),\
 duration_cols = config_vals('columns', 'duration')
 data_cols = [ids_col, names_col, task_type] + duration_cols
 model_name = config.get('model', 'name')
-n_clusters_percs = config_vals('model', 'n_clusters_perc')
+n_clusters_percs = [float(n) for n in config_vals('model', 'n_clusters_perc')]
 affinity = config.get('model', 'affinity')
 data_format = config.get('data', 'format')
 experiment = file.replace('.zip', '')
 db_name = config.get('results', 'database')
 table_name = config.get('results', 'table')
-local_service = bool(config.get('service', 'local'))
+local_service = config.get('service', 'local')
 num_executors = int(config.get('run', 'num_executors'))
 min_cluster_size = int(config.get('model', 'min_cluster_size'))
 response_type = config.get('model', 'response')
@@ -77,7 +77,7 @@ runs_dir = os.path.join(results_dir, 'runs')
 if 'runs' not in os.listdir(results_dir):
     os.mkdir(runs_dir)
 
-# App odules
+# App modules
 from modules.utils import *
 from modules.clustering import *
 from modules.py_postgres import *
@@ -99,7 +99,7 @@ metrics_cols = {col:'numeric' for col, v in metrics_optimize.items()}
 results_cols_types = {'run_id': 'varchar', 'file_name': 'varchar', 'project_name': 'varchar', 'customer': 'varchar', \
                       'num_files': 'numeric', 'run_start': 'timestamp', 'run_end': 'timestamp', 'duration':'numeric',\
                       'tasks_count': 'numeric', 'language_model': 'varchar', 'clustering_method': 'varchar', 'clustering_params': 'varchar',\
-                      'n_clusters_perc': 'numeric', 'num_clusters': 'numeric', 'mean_duration_std':'numeric',\
+                      'num_clusters': 'numeric', 'mean_duration_std':'numeric',\
                       'tasks_per_cluster_mean': 'numeric', 'tasks_per_cluster_median': 'numeric',\
                       'min_tasks_per_cluster': 'numeric', 'max_tasks_per_cluster': 'numeric'}
 results_cols_types = {**results_cols_types, **metrics_cols}
