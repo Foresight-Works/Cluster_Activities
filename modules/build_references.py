@@ -1,4 +1,6 @@
 from setup import *
+from modules.tokenizers import *
+from modules.utils import *
 
 def filter_embeddings(vocab_tokens, embeddings):
     '''
@@ -118,4 +120,3 @@ def reference_dictionaries(clustering_result, references_dir):
     np.save(os.path.join(references_dir, 'tokens_pairs_scores.npy'), tokens_pairs_scores)
     write_duration('scoring names pairs by matrices', start=start1)
     write_duration('References preparation', start=start)
-

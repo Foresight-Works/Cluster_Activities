@@ -94,10 +94,8 @@ def scale_df(df):
     scaled_scores = scaler.fit_transform(df_vals)
     return pd.DataFrame(scaled_scores, columns=cols)
 
-def vote(scores, metrics_optimize):
-    scores_cols = list(metrics_optimize.keys())
-    md_cols = scores.drop(scores_cols, axis=1)
-    scaled_scores = scale_df(scores)
+def vote(scaled_scores, scores_cols, metrics_optimize):
+    md_cols = scaled_scores.drop(scores_cols, axis=1)
     scaled_scores = pd.concat([md_cols, scaled_scores], axis=1)
     for metric, optimize in metrics_optimize.items():
         optimize_for, optimize_weight = optimize

@@ -1,5 +1,5 @@
 from dev.pipeline.service.cluster_service5.setup import *
-f = open('../../words_pairs/response/CCGT_878Clusters_validation_response.json', )
+f = open('../words_pairs/response/CCGT_878Clusters_validation_response.json', )
 data = json.load(f)
 # print(response)
 score = 0
@@ -14,6 +14,6 @@ for name in names:
 tokens = list(set(tokens))
 print('{n1} names | {n2} tokens'.format(n1=len(names), n2=len(tokens)))
 
-with open('../../words_pairs/results/tokens.txt', 'w') as f:
+with open('../words_pairs/results/tokens.txt', 'w') as f:
     for t in tokens:
         f.write('{t}\n'.format(t=t))

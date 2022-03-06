@@ -63,5 +63,4 @@ distance_matrices.append(scaled_matrix)
 for index, matrix in enumerate(distance_matrices):
     path = os.path.join(matrices_dir, 'matrix_{i}.pkl'.format(i=index))
     matrix.to_pickle(path)
-
 write_duration('distances matrices calculation', start)

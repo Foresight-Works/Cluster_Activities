@@ -46,7 +46,7 @@ data_path = os.path.join(data_dir, file)
 
 # App modules
 from dev.cluster.names.v001.cluster_names import *
-from modules.py_postgres import *
+from dev.data.py_postgres import *
 
 # Tables
 db_name = 'cluster_activities'

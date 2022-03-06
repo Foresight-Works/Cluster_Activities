@@ -11,13 +11,17 @@ if 'clustering_result.npy' in os.listdir(results_dir):
     clustering_result = np.load(os.path.join(results_dir, 'clustering_result.npy'), allow_pickle=True)[()]
     #print('clustering_result example:', list(names_tokens.items())[:1])
 best_score_run_id = str(list(clustering_result.keys())[0])
-#print('best_score_run_id:', best_score_run_id)
 clustering_result = list(clustering_result.values())[0]
-run_dir = os.path.join(results_dir, 'runs', best_score_run_id)
+# Read experiment id
+experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn).astype(int)
+experiment_id = int(max(experiment_ids.values)[0])
+print('experiment_id:', experiment_id)
+experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
+experiment_dir = os.path.join(results_dir, experiment_dir_name)
+print('experiment_dir:', experiment_dir)
+run_dir = os.path.join(experiment_dir, 'runs', best_score_run_id)
 references_dir = os.path.join(run_dir, 'references')
-#print('references_dir:', references_dir)
-# example :/home/rony/Projects_Code/Cluster_Activities/results/CLP_CCGT/runs/0/references
-#print('references dir:', references_dir)
+
 if 'names_tokens.npy' in os.listdir(references_dir):
     names_tokens = np.load(os.path.join(references_dir, 'names_tokens.npy'), allow_pickle=True)[()]
 if 'tokens_pairs_scores.npy' in os.listdir(references_dir):
@@ -115,6 +119,7 @@ def key_clusters(clustering_result, num_executors):
         activities_ids = clusters_namesIDs[cluster_id]
         named_clusters_ids[cluster_key] = activities_ids
     executor.shutdown()
+    named_clusters = {best_score_run_id: named_clusters}
     return named_clusters, named_clusters_ids
 
 num_executors = int(config.get('run', 'num_executors'))

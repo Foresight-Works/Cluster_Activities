@@ -3,6 +3,7 @@ import os
 import itertools
 from itertools import combinations
 from datetime import datetime
+import sqlite3
 import shutil
 import subprocess
 import re
@@ -64,48 +65,40 @@ if modules_dir not in sys.path:
     sys.path.append(modules_dir)
 data_dir = os.path.join(working_dir, 'data', 'experiments')
 data_path = os.path.join(data_dir, file)
-results = os.path.join(working_dir, 'results')
-results_dir = os.path.join(results, experiment)
-if experiment not in os.listdir(results):
-    os.mkdir(results_dir)
+results_dir = os.path.join(working_dir, 'results')
 tokens_path = os.path.join(results_dir, 'tokens.txt')
 matrices_dir = os.path.join(results_dir, 'matrices')
 if 'matrices' not in os.listdir(results_dir):
     os.mkdir(matrices_dir)
-runs_dir = os.path.join(results_dir, 'runs')
-#print(runs_dir)
-if 'runs' not in os.listdir(results_dir):
-    os.mkdir(runs_dir)
 
 # App modules
-from modules.utils import *
-from modules.clustering import *
-from modules.py_postgres import *
-from modules.parsers import *
-from modules.tokenizers import *
-from modules.utils import *
-from modules.evaluate import *
 from modules.build_references import *
+from modules.utils import *
+from modules.parsers import *
+from modules.clustering import *
+from modules.db_tables import *
+from modules.evaluate import *
+from modules.tokenizers import *
 
 # Tables
-db_name = 'cluster_activities'
-table_name = 'experiments'
-conn = psycopg2.connect(database="{db}".format(db=db_name), \
-                        user='rony', password='1234', host='localhost', port='5432')
+conn = sqlite3.connect('./results/CAdb', check_same_thread=False)
+c = conn.cursor()
 metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max', 1), 'ch_index': ('max', 1),\
 'db_index':('min', 1), 'silhouette':('max', 1), 'words_pairs': ('max', 1)}
-metrics_cols = {col:'numeric' for col, v in metrics_optimize.items()}
+metrics_cols = {col:'TEXT' for col, v in metrics_optimize.items()}
 #print('metrics_cols:', metrics_cols)
-results_cols_types = {'run_id': 'varchar', 'file_name': 'varchar', 'project_name': 'varchar', 'customer': 'varchar', \
-                      'num_files': 'numeric', 'run_start': 'timestamp', 'run_end': 'timestamp', 'duration':'numeric',\
-                      'tasks_count': 'numeric', 'language_model': 'varchar', 'clustering_method': 'varchar', 'clustering_params': 'varchar',\
-                      'num_clusters': 'numeric', 'mean_duration_std':'numeric',\
-                      'tasks_per_cluster_mean': 'numeric', 'tasks_per_cluster_median': 'numeric',\
-                      'min_tasks_per_cluster': 'numeric', 'max_tasks_per_cluster': 'numeric'}
+results_cols_types = {'experiment_id': 'TEXT', 'run_id': 'TEXT', 'file_name': 'TEXT', 'project_name': 'TEXT', 'customer': 'TEXT', \
+                      'num_files': 'TEXT', 'run_start': 'TEXT', 'run_end': 'TEXT', 'duration':'TEXT',\
+                      'tasks_count': 'TEXT', 'language_model': 'TEXT', 'clustering_method': 'TEXT', 'clustering_params': 'TEXT',\
+                      'num_clusters': 'TEXT', 'mean_duration_std':'TEXT',\
+                      'tasks_per_cluster_mean': 'TEXT', 'tasks_per_cluster_median': 'TEXT',\
+                      'min_tasks_per_cluster': 'TEXT', 'max_tasks_per_cluster': 'TEXT'}
 results_cols_types = {**results_cols_types, **metrics_cols}
 #print('results_cols_types:', results_cols_types)
 #print('{n} result table columns'.format(n=len(results_cols_types)))
 metrics_cols = list(metrics_cols.keys())
+print('metrics columns:', metrics_cols)
 results_columns, data_types = list(results_cols_types.keys()), list(results_cols_types.values())
-
+create_table_statement = build_create_table_statement(table_name, results_columns, data_types)
+c.execute(create_table_statement)
 

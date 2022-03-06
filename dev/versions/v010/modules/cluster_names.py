@@ -1,5 +1,4 @@
-from setup import *
-from modules.tokens_similarity import *
+from dev.modules.post.tokens_similarity3 import *
 from modules.tokenizers import *
 
 def find_nearest(array, value):

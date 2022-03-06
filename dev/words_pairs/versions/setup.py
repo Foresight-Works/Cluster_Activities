@@ -46,7 +46,7 @@ with open(os.path.join(results_dir, 'tokens.txt'), 'w') as f: f.write(' ')
 # App modules
 from modules.tokenizers import *
 #from modules.words_pairs import *
-from modules.py_postgres import *
+from dev.data.py_postgres import *
 
 # Tables
 db_name = 'cluster_activities'

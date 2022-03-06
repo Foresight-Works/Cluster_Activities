@@ -2,10 +2,6 @@ import os
 
 from setup import *
 
-# # Database tables
-# create_db(db_name, conn)
-# create_table(table_name, results_columns, data_types, conn)
-
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
 duration = []
@@ -20,8 +16,19 @@ duration.append(['model_upload', round((datetime.now() - start).total_seconds(),
 # Response
 @app.route('/cluster_analysis/api/v0.1/clustering', methods=['POST'])
 def pipeline():
-    experiment_id = request.values.get('experiment_id', '{}')
+    # Experiment set up
+    experiment_id = request.values.get('experiment_id', ' ')
     print('experiment_id:', experiment_id)
+    experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
+    min_cluster_size = int(request.values.get('min_cluster_size', ' '))
+    print('min_cluster_size:', min_cluster_size)
+
+    experiment_dir = os.path.join(results_dir, experiment_dir_name)
+    if experiment_dir_name not in os.listdir(results_dir):
+        os.mkdir(experiment_dir)
+    runs_dir = os.path.join(experiment_dir, 'runs')
+    if 'runs' not in os.listdir(experiment_dir):
+        os.mkdir(runs_dir)
     for metric, optimize in metrics_optimize.items():
         posted_value = request.values.get(metric, '')
         metrics_optimize[metric] = (metrics_optimize[metric][0], int(posted_value))
@@ -150,7 +157,6 @@ def pipeline():
                     print(std_scores.head())
                     print(std_scores.info())
                     scores = pd.merge(scores, std_scores, on='key')
-                    scores.to_excel(os.path.join(results_dir, 'scores.xlsx'), index=False)
                     ave_std = round(sum(scores['duration_std'])/n_clusters, 2)
                     print('average clusters standard deviation:', ave_std)
 
@@ -165,9 +171,12 @@ def pipeline():
 
                     run_end = datetime.now()
                     run_duration = round((run_end - run_start).total_seconds(), 2)
+                    #run_start = "'{t}'".format(t=run_start.strftime("%d/%m/%Y %H:%M:%S"))
+                    #run_end = "'{t}'".format(t=run_end.strftime("%d/%m/%Y %H:%M:%S"))
                     run_start = run_start.strftime("%d/%m/%Y %H:%M:%S")
                     run_end = run_end.strftime("%d/%m/%Y %H:%M:%S")
-                    print("end time =", run_end)
+
+                    print("end time =", run_end, type(run_end))
 
                     # Clusters stats
                     tasks_per_cluster = [len(v) for k, v in clusters_dict.items()]
@@ -177,50 +186,53 @@ def pipeline():
                     min_max_tpc = max_tpc-min_tpc
 
                     # Results
-                    results_row = [run_id, file_names, project, customer,\
+                    results_row = [experiment_id, run_id, file_names, project, customer,\
                                    num_files, run_start, run_end, run_duration,\
                                    tasks_count, sentences_model, model_name, clustering_params_write, \
                                    n_clusters, ave_std,\
                                    mean_tpc, median_tpc, min_tpc, max_tpc,\
                                    min_max_tpc, wcss, bcss, ch_index, db_index, silhouette, words_pairs_score]
+                    results_row = [str(i) for i in results_row]
                     print('results columns count=', len(results_cols_types))
                     print('results values count=', len(results_row))
 
                     # Keep the clustering results if the smallest cluster is larger than the minimal cluster size
+                    min_tpc = int(min_tpc)
                     if min_tpc >= min_cluster_size:
                         results_rows.append(results_row)
-                    insert_into_table(table_name, results_columns, results_row, conn)
+                    statement = insert_into_table_statement(table_name, results_columns, results_row)
+                    print('insert into statement:', statement)
+                    c.execute(statement)
+                    conn.commit()
 
-                    clusters_file = '{tc}Tasks_{nc}Clusters.json'.format(tc=tasks_count, nc=n_clusters)
-                    #with open(os.path.join(results_dir, clusters_file), "w") as outfile:
-                    #    outfile.write(validation_response)
+                scores = pd.DataFrame(results_rows, columns=results_columns)
+                print('scores')
+                print(scores)
+                # Vote on results
+                if len(scores) == 0:
+                    print('len(scores) == 0')
+                    return 'No clustering result produced the desired minimal clusters level'
+                else:
+                    scaled_scores = scale_df(scores[metrics_cols])
+                    scaled_scores.to_excel(os.path.join(experiment_dir, 'scaled_scores.xlsx'), index=False)
+                    print('scaled_scores')
+                    print(scaled_scores)
+                    best_score_run_id = vote(scaled_scores, metrics_cols, metrics_optimize)
+                    print('best_score_run_id:', best_score_run_id)
+                    clustering_result = clustering_results[best_score_run_id]
+                    clustering_result = {best_score_run_id: clustering_result}
+                    np.save(os.path.join(results_dir, 'clustering_result.npy'), clustering_result)
+                    print('Calculation completed')
 
-                metrics_df = pd.DataFrame(results_rows, columns=results_columns)
-                print('metrics_df')
-                print(metrics_df)
-                metrics_df = metrics_df[['run_id']+metrics_cols]
-                print('metrics_df')
-                print(metrics_df)
-                # Select response by voting
-                best_score_run_id = vote(metrics_df, metrics_optimize)
-                print('best_score_run_id:', best_score_run_id)
-                clustering_result = clustering_results[best_score_run_id]
-                clustering_result = {best_score_run_id: clustering_result}
-                np.save(os.path.join(results_dir, 'clustering_result.npy'), clustering_result)
-                # with open(os.path.join(results_dir, "response.json"), "w") as outfile:
-                #      outfile.write(response)
-                #duration_df = pd.DataFrame(processes, columns=['process', 'processes'])
-                #duration_df.to_excel(os.path.join(results_dir, 'duration_{n}_nodes.xlsx'.format(n=len(projects))), index=False)
-                print('Calculation completed')
-
-                # Name clusters and build results
-                subprocess.call('python build_response.py', shell=True)
-                if response_type == 'names': dict_file_name = 'named_clusters.npy'
-                else: dict_file_name = 'named_clusters_ids.npy'
-                response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
-                response = json.dumps(response_dict, indent=4)
-                write_duration('pipeline', pipeline_start)
-                return response
+                    # Name clusters and build results
+                    subprocess.call('python build_response.py', shell=True)
+                    if response_type == 'names':
+                        dict_file_name = 'named_clusters.npy'
+                    else: dict_file_name = 'named_clusters_ids.npy'
+                    response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
+                    response = json.dumps(response_dict, indent=4)
+                    write_duration('pipeline', pipeline_start)
+                    return response
         else:
             return "Record not found", 400
     else:

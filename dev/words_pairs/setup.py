@@ -1,37 +1,12 @@
 import sys
 import os
-import time
-import json
-import itertools
-from itertools import combinations
-from difflib import SequenceMatcher
-from concurrent.futures import ProcessPoolExecutor
 import cProfile
 pr = cProfile.Profile()
-import numpy as np
 import pandas as pd
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.max_colwidth', 100)
-import re
-import nltk
 #nltk.download('stopwords')
-import gensim.downloader as api
 
-from nltk.corpus import stopwords
-from matplotlib import pyplot as plt
-from pathlib import Path
-from flask import Flask
-from flask import Response, jsonify, request, redirect, url_for, send_from_directory
-import socket
-from werkzeug.utils import secure_filename
-from zipfile import ZipFile
 from configparser import ConfigParser
-from sentence_transformers import SentenceTransformer, util
-from scipy.spatial.distance import pdist
-from scipy.cluster.hierarchy import dendrogram
-from sklearn import metrics
-from sklearn.cluster import SpectralClustering, AgglomerativeClustering
-from sklearn.metrics import davies_bouldin_score
-from sklearn.metrics.pairwise import cosine_similarity
 
 
 def config_vals(header, param):
@@ -76,8 +51,7 @@ tokens_path = os.path.join(results_dir, 'tokens.txt')
 from modules.tokenizers import *
 #from modules.clustering import *
 #from modules.cluster_names import *
-from modules.py_postgres import *
-from modules.utils import *
+from dev.data.py_postgres import *
 
 # Tables
 db_name = 'cluster_activities'

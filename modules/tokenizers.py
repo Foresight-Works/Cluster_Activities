@@ -25,7 +25,7 @@ def isint(value):
 
 def split_tokens (tokens, splitter):
     tokens_splitter= [t for t in tokens if splitter in t]
-    tokens= [t for t in tokens if splitter not in t]
+    tokens = [t for t in tokens if splitter not in t]
     for t in tokens_splitter: tokens += t.split(splitter)
     return tokens
 
@@ -45,19 +45,19 @@ def tokenize(data, unique=True, is_list=False,\
         pattern= '\(.+?\)|\w*\d{1,}\.*\d{1,}\w*|\w+'
         data= re.sub(data, '', pattern)
 
-    tokens= nltk.word_tokenize(data)
-    tokens= [t.lower() for t in tokens]
-    if split_backslah: tokens= split_tokens (tokens, '/')
-    if split_hyphen: tokens= split_tokens(tokens, '-')
+    tokens = nltk.word_tokenize(data)
+    tokens = [t.lower() for t in tokens]
+    if split_backslah: tokens = split_tokens (tokens, '/')
+    if split_hyphen: tokens = split_tokens(tokens, '-')
     if split_plus: tokens = split_tokens(tokens, '+')
 
-    if exclude_stopwords: tokens= [t for t in tokens if t not in stopwords]
-    if clean_punctuation: tokens= [re.sub(punctuation_symbols, '', t) for t in tokens]
-    if exclude_chars: tokens= [t for t in tokens if len(t) > 1]
+    if exclude_stopwords: tokens = [t for t in tokens if t not in stopwords]
+    if clean_punctuation: tokens = [re.sub(punctuation_symbols, '', t) for t in tokens]
+    if exclude_chars:tokens = [t for t in tokens if len(t) > 1]
     if exclude_numbers:
         tokens = [t for t in tokens if (not(isint(t)))]
         tokens = [t for t in tokens if (not(isfloat(t)))]
-    if exclude_digit_tokens: tokens = [t for t in tokens if not re.findall('\d', t)]
+    if exclude_digit_tokens:tokens = [t for t in tokens if not re.findall('\d', t)]
 
     if unique: tokens = list(set(tokens))
 
