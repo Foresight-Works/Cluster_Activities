@@ -110,6 +110,7 @@ def pipeline():
                     .format(nc=n_clusters_posted, tc=tasks_count)
             else:
                 for run_id, n_clusters in enumerate(n_clusters_runs):
+                    run_id += 1
                     run_dir = os.path.join(runs_dir, str(run_id))
                     print('run_dir:', run_dir)
                     if str(run_id) not in os.listdir(runs_dir):
@@ -217,10 +218,12 @@ def pipeline():
                     scaled_scores.to_excel(os.path.join(experiment_dir, 'scaled_scores.xlsx'), index=False)
                     print('scaled_scores')
                     print(scaled_scores)
-                    best_score_run_id = vote(scaled_scores, metrics_cols, metrics_optimize)
-                    print('best_score_run_id:', best_score_run_id)
-                    clustering_result = clustering_results[best_score_run_id]
-                    clustering_result = {best_score_run_id: clustering_result}
+                    # If the user did not specify a desired run to provide as a response, deliver the run with the highest score
+                    response_run_id = vote(scaled_scores, metrics_cols, metrics_optimize)
+                    # Check point: Selected_run_id in run ids
+                    print('response_run_id:', response_run_id)
+                    clustering_result = clustering_results[response_run_id]
+                    clustering_result = {response_run_id: clustering_result}
                     np.save(os.path.join(results_dir, 'clustering_result.npy'), clustering_result)
                     print('Calculation completed')
 

@@ -10,7 +10,7 @@ clustering_result, names_tokens, tokens_pairs_scores, clusters_names_pairs = {},
 if 'clustering_result.npy' in os.listdir(results_dir):
     clustering_result = np.load(os.path.join(results_dir, 'clustering_result.npy'), allow_pickle=True)[()]
     #print('clustering_result example:', list(names_tokens.items())[:1])
-best_score_run_id = str(list(clustering_result.keys())[0])
+response_run_id = str(list(clustering_result.keys())[0])
 clustering_result = list(clustering_result.values())[0]
 # Read experiment id
 experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn).astype(int)
@@ -19,7 +19,7 @@ print('experiment_id:', experiment_id)
 experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
 experiment_dir = os.path.join(results_dir, experiment_dir_name)
 print('experiment_dir:', experiment_dir)
-run_dir = os.path.join(experiment_dir, 'runs', best_score_run_id)
+run_dir = os.path.join(experiment_dir, 'runs', response_run_id)
 references_dir = os.path.join(run_dir, 'references')
 
 if 'names_tokens.npy' in os.listdir(references_dir):
@@ -119,7 +119,7 @@ def key_clusters(clustering_result, num_executors):
         activities_ids = clusters_namesIDs[cluster_id]
         named_clusters_ids[cluster_key] = activities_ids
     executor.shutdown()
-    named_clusters = {best_score_run_id: named_clusters}
+    named_clusters = {response_run_id: named_clusters}
     return named_clusters, named_clusters_ids
 
 num_executors = int(config.get('run', 'num_executors'))
