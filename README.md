@@ -1,16 +1,28 @@
 # Cluster_Activities
-Search project plans for activities which are similar to the activity query, and analyze these activities for their planned and actual durations
 
-**Project Names**  
-Atif: Focus on the combined cycle gas turbines CCGT D1, D2 (CLT), DUKE 1, and DUKE 2 (Duke Energy).
-*DGDA DG*: Diriyah Gate Development Authority - Diriyah Gate 2 is the 2nd part of the project  
-*Sime Darby*: Name of the company that owned the projects in that file  
-This file only has unique ID codes for projects rather than any project names but they are distinct and grouped  
-*CCGT*: Combined Cycle Gas Turbine - a type of energy project  
-*D1/D2*: Internal names of the projects owned by CLP  
-*Duke*: Duke Energy, a company that builds energy projects such as CCGTs  
+Group program activities by name and WBS charecteristics.  
+*Data*: Zipped file produced from program files(.xer) converted to graphml.  
+The data is posted as an http request.   
+*Result*: Activity clusters keyed by a cluster name derived from the name of cluster members.  
+## Process and Method 
+Versions 1,2  
+To be documented  
+## Research UI  
+The research UI is formed in a Jupyter notebook allowing the user to load the data and define the characteristics of the run.  
+**Run configuration**  
+1. The file(s) to analyse
+2. Granularity level, number of clusters (optional)  
+3. Minimum number of tasks in cluster (Default=4)
+4. Evaluation metrics weights (Default=1)   
 
-DB based Set-up  
-1. Build project database (CA)  
-script: dev/postgres/dp.py
-2. CA.names: The raw data from the csv (check headers compatibility between csvs)
+## Results 
+*Database*: CAdb (Squlite DB)  
+*Table*: experiments, indexed by experiment_id (PK) and run ids      
+*UI*: The valuation scores table is returned to the UI   
+*Clustering file*: response.npy, enabling clusters query by cluster names.  
+
+
+
+
+
+
