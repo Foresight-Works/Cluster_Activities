@@ -9,5 +9,9 @@ else:
 print('url:', url)
 print('Raw data path:', data_path)
 files = {'file': open(data_path, 'rb')}
-r = requests.post(url, files=files)
+experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn).astype(int)
+if len(experiment_ids) == 0: experiment_id = 1
+else: experiment_id = int(max(experiment_ids.values)[0]) + 1
+print('experiment_id:', experiment_id)
+r = requests.post(url, files=files, data={'experiment_id': 1})
 print(r.text)

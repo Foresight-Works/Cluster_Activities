@@ -1,9 +1,9 @@
 import sqlite3
 import pandas as pd
 from setup import *
-conn = sqlite3.connect('CAdb')
+conn = sqlite3.connect('./results/CAdb')
 c = conn.cursor()
-# c.execute("Drop table if exists experiments ")
+c.execute("Drop table if exists experiments ")
 c.execute("SELECT name FROM sqlite_master WHERE type='table';")
 print(c.fetchall())
 

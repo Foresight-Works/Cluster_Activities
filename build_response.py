@@ -28,6 +28,11 @@ if 'tokens_pairs_scores.npy' in os.listdir(references_dir):
     tokens_pairs_scores = np.load(os.path.join(references_dir, 'tokens_pairs_scores.npy'), allow_pickle=True)[()]
 if 'clusters_names_pairs.npy' in os.listdir(references_dir):
     clusters_names_pairs = np.load(os.path.join(references_dir, 'clusters_names_pairs.npy'), allow_pickle=True)[()]
+    # print('len clusters_names_pairs=', len(clusters_names_pairs))
+    # clusters_names_pairs = {k:v for k, v in clusters_names_pairs.items() if len(v)>0}
+    # print('len clusters_names_pairs=', len(clusters_names_pairs))
+
+
 if 'clusters_namesIDs.npy' in os.listdir(run_dir):
     clusters_namesIDs = np.load(os.path.join(run_dir, 'clusters_namesIDs.npy'), allow_pickle=True)[()]
 
@@ -113,6 +118,7 @@ def get_cluster_key(cluster_id, cutoff=0.8):
 def key_clusters(clustering_result, num_executors):
     executor = ProcessPoolExecutor(num_executors)
     cluster_ids = list(clustering_result.keys())
+    print('{n} cluster_ids:'.format(n=len(cluster_ids)), cluster_ids)
     named_clusters, named_clusters_ids = {}, {}
     for cluster_id, cluster_key in executor.map(get_cluster_key, cluster_ids):
         named_clusters[cluster_key] = clustering_result[cluster_id]

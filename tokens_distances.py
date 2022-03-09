@@ -18,7 +18,7 @@ write_duration('edit distances calculation', start1)
 
 # Embedding vectors
 start1 = time.time()
-#print('load embeddings')
+print('load embeddings')
 language_model_name = config.get('language_models', 'tokens')
 tokens_embeddings = api.load("{m}".format(m=language_model_name))
 vocab_embeddings, not_in_vocabulary = filter_embeddings(tokens, tokens_embeddings)

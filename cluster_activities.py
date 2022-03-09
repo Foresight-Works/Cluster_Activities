@@ -18,11 +18,16 @@ def pipeline():
     #     min_cluster_size = int(posted_min_cluster_size)
     print('min_cluster_size:', min_cluster_size)
 
-    # Language models
+    ## Language models
     print('Loading language model')
     start = datetime.now()
     sentences_model = config.get('language_models', 'sentences')
-    transformer_model = SentenceTransformer(sentences_model)
+    if sentences_model in os.listdir(models_dir):
+        transformer_model = SentenceTransformer(os.listdir(models_dir, sentences_model))
+    else:
+        transformer_model = SentenceTransformer(sentences_model)
+        transformer_model.save(models_dir)
+
     duration.append(['model_upload', round((datetime.now() - start).total_seconds(), 2)])
     print('min_cluster_size:', min_cluster_size)
 
