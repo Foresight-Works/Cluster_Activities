@@ -42,7 +42,6 @@ def run_service():
                 print(f'allowing file {file_name}')
                 print('===={f}===='.format(f=file_name))
                 file_posted = zipped_object.read(file_name).decode(encoding='utf-8-sig')
-                #data_str = open('SIME_DARBY_TASKS.csv', encoding='utf-8-sig').read()
                 print(type(file_posted))
                 files[file_name] = file_posted
 

@@ -42,7 +42,9 @@ extensions = config_vals('data', 'extensions')
 ids_col, names_col, task_type = config.get('columns', 'id'),\
                                 config.get('columns', 'name'), config.get('columns', 'type')
 duration_cols = config_vals('columns', 'duration')
-data_cols = [ids_col, names_col, task_type] + duration_cols
+headers = [ids_col, names_col, task_type] + duration_cols
+headers = ['ID', 'TaskType', 'Label', 'PlannedStart', 'PlannedEnd', 'ActualStart', 'ActualEnd', 'Float', 'Status']
+
 model_name = config.get('model', 'name')
 n_clusters_percs = [float(n) for n in config_vals('model', 'n_clusters_perc')]
 affinity = config.get('model', 'affinity')

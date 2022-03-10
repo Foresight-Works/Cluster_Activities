@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import jpype
 import mpxj
-dir = '/home/rony/Projects_Code/Cluster_Activities/data/MTR_Tunnels/xers'
+dir = '/data/MTR_Tunnels/xers'
 files = os.listdir(dir)
 file = files[0]
 print('Data:', file)
