@@ -1,32 +1,16 @@
 from setup import *
 import pika
 
-def run_pipeline(experiment_id, experiment_dir, runs_dir, files, results_columns, metrics_cols,metrics_optimize, conn):
+def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str, results_columns, metrics_cols,metrics_optimize, conn):
     pipeline_start = time.time()
     duration = []
-    file_names = '|'.join(list(files.keys())).rstrip('|').replace('.graphml', '')
-    print('file_names:', file_names)
-    num_files = len(files)
-    print('parsing {n} files'.format(n=num_files))
-    start = datetime.now()
-    print('===parsing the response files===')
-    projects = parse_files(files)
-    print('projects')
-    print(projects.head())
-    print(projects.info())
     print('{n} tasks'.format(n=len(projects)))
     print('task_type:', task_type)
     print(projects[task_type].unique())
     print(projects[task_type].value_counts())
-    projects = projects[projects[task_type] == 'TT_Task']
-    projects = projects.replace("", float("NaN")).dropna()
-    tasks_count = len(projects)
-    print('{n} tdas'.format(n=tasks_count))
-    print(projects.info())
     projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
     names, ids = list(projects[names_col]), list(projects[ids_col])
     print('names sample:', names[:10])
-    duration.append(['parse_data', round((datetime.now() - start).total_seconds(), 2)])
 
     names = list(projects[names_col])
     tokens = tokenize(names, is_list=True, exclude_stopwords=True, \
@@ -70,6 +54,7 @@ def run_pipeline(experiment_id, experiment_dir, runs_dir, files, results_columns
         n_clusters_runs = [int(len(names) * n_clusters_perc/100) for n_clusters_perc in n_clusters_percs]
         n_clusters_runs = [n for n in n_clusters_runs if n>1]
     print('n_clusters runs:', n_clusters_runs)
+    tasks_count = X.shape[0]
     print('(tasks_count / 2):', (tasks_count / 2))
     if n_clusters_posted > (tasks_count / 2):
         print('n_clusters_posted > (tasks_count / 2)')
@@ -154,7 +139,7 @@ def run_pipeline(experiment_id, experiment_dir, runs_dir, files, results_columns
             min_max_tpc = max_tpc-min_tpc
 
             # Results
-            results_row = [experiment_id, run_id, file_names, \
+            results_row = [experiment_id, run_id, file_names_str, \
                            num_files, run_start, run_end, run_duration,\
                            tasks_count, sentences_model, model_name, clustering_params_write, \
                            n_clusters, ave_std,\
@@ -192,7 +177,6 @@ def run_pipeline(experiment_id, experiment_dir, runs_dir, files, results_columns
             clustering_result = clustering_results[response_run_id]
             print('len clustering_result=', len(clustering_result))
             clustering_result = {k: v for k, v in clustering_result.items() if len(v)>1}
-            # for k,v in clustering_result.items(): print(k,v)
             print('len clustering_result=', len(clustering_result))
             clustering_result = {response_run_id: clustering_result}
             np.save(os.path.join(results_dir, 'clustering_result.npy'), clustering_result)

@@ -5,7 +5,7 @@ import pandas as pd
 pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.max_colwidth', 100)
 from setup import *
 
-def parse_graphml(graphml_str):
+def parse_graphml(graphml_str, headers):
     '''
     Parse a graphml file contents to a dataframe
     :param graphml_str (string): The file contents to parse
@@ -48,33 +48,34 @@ def parse_csv(csv_string):
 
     return pd.DataFrame(rows, columns=headers)
 
-
 def xer_nodes(xer_file_path):
-	print('xer_file_path:', xer_file_path)
 	file = os.path.basename(xer_file_path)
 	graphml_file = file.replace('.xer', '.graphml')
 	import jpype
 	import mpxj
 	jpype.startJVM()
 	from net.sf.mpxj.reader import UniversalProjectReader
+	from net.sf.mpxj import ActivityStatus
+	from net.sf.mpxj import ActivityType
+
 	project = UniversalProjectReader().read(xer_file_path)
 	tasks = project.getTasks()
-	tasks_features = {}
+	task_features = {}
 	for task in tasks:
 		task_features, task_lines = {}, []
 		task_features["id"] = task.getID()
-		task_features["TaskType"] = task.getActivityType()
+		task_features["TaskType"] = str(task.getActivityType()).replace('TASK_DEPENDENT', 'TT_TASK')
 		task_features["Label"] = task.getName()
 		task_features["PlannedStart"] = task.getPlannedStart()
-		task_features["PlannedEnd"] = task.getPlannedFinish()  # ?task.getPlannedFinish
+		task_features["PlannedEnd"] = task.getPlannedFinish()
 		task_features["ActualStart"] = task.getActualStart()
 		task_features["ActualEnd"] = task.getActualFinish()
 		if task.getFreeSlack():
 			task_features["Float"] = task.getFreeSlack().getDuration()
 		else:
 			task_features["Float"] = None
+
 		task_features["Status"] = task.getActivityStatus()
-		print('task features:', list(task_features.keys()))
 		for feature, object in task_features.items():
 			try:
 				if object:
@@ -88,31 +89,10 @@ def xer_nodes(xer_file_path):
 			else:
 				line = '<data key="{f}">{o}</data>'.format(f=feature, o=object_str)
 			task_lines.append(line)
-		print('task lines')
 		task_lines = '</node>'+'\n'+'\n'.join(task_lines)+'\n'
-		print(task_lines)
 		with open(graphml_file, 'a') as f: f.write(task_lines)
 
 
 	return graphml_file
 	jpype.shutdownJVM()
 
-
-def parse_files(raw_files):
-    '''
-    Parse graphml files and join the parsed products to a dataframe
-    raw_files(dictionary): Files raw response keyed by the files' names
-    '''
-    parsed_dfs = pd.DataFrame()
-    for name, file_data in raw_files.items():
-        name = os.path.basename(name)
-        format = name.split('.')[1]
-        if format == 'graphml': parsed_df = parse_graphml(file_data)
-        elif format == 'xer':
-            print('xer format')
-            xer_file_path = os.path.join(data_dir, name)
-            parsed_df = xer_nodes(xer_file_path)
-        elif format == 'csv': parsed_df = parse_csv(file_data)
-        print('file: {n}, {r} tasks'.format(n=name, r=len(parsed_df)))
-        parsed_dfs = parsed_dfs.append(parsed_df)
-    return parsed_dfs

@@ -9,9 +9,10 @@ def infer_dt_format(dt):
     '''
     Infer the format of dt string to use as parameter in pd.to_datetime
     '''
+    dt_format = "%a %b %d %H:%M:%S %Z %Y"
     seps = ['/', '-']
-    for sep in seps:
-        if sep in dt:
+    if any(sep in dt for sep in seps):
+        for sep in seps:
             parts = dt.split(sep)
             if len(parts[0]) == 4: #2023-04-19
                 dt_format = "%Y{}%m{}%d".format(sep, sep)
@@ -20,7 +21,7 @@ def infer_dt_format(dt):
             break
     return dt_format
 
-
+from datetime import datetime
 def cluster_duration_std(cluster_df):
     '''
     Calculate the standard deviation for the planned processes values of cluster names
@@ -31,12 +32,14 @@ def cluster_duration_std(cluster_df):
     if len(cluster_df) > 0:
         planned_start_sample = cluster_df['PlannedStart'].values[0]
         planned_end_sample = cluster_df['PlannedEnd'].values[0]
+        print('planned_start_sample:', planned_start_sample)
+        print('planned_end_sample:', planned_end_sample)
         start_dt_format, end_dt_format = infer_dt_format(planned_start_sample), infer_dt_format(planned_end_sample)
-        cluster_df['PlannedStart'] = pd.to_datetime(cluster_df['PlannedStart'], format=start_dt_format)
-        cluster_df['PlannedEnd'] = pd.to_datetime(cluster_df['PlannedEnd'], format=end_dt_format)
+        cluster_df[['PlannedStart', 'PlannedEnd']] = cluster_df[['PlannedStart', 'PlannedEnd']].astype(str)
+        cluster_df['PlannedStart'] = [datetime.strptime(date_string, start_dt_format) for date_string in list(cluster_df['PlannedStart'])]
+        cluster_df['PlannedEnd'] = [datetime.strptime(date_string, start_dt_format) for date_string in list(cluster_df['PlannedEnd'])]
         PlannedDuration = (cluster_df['PlannedEnd'] - cluster_df['PlannedStart']).dt.days.astype(int)
-        ch_index = round(np.std(np.array(PlannedDuration)))
-        return ch_index
+        return round(np.std(np.array(PlannedDuration)))
 
 
 def ch_index_sklearn(clusters_dict, ids_embeddings=np.empty(1)):

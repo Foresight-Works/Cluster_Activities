@@ -24,12 +24,17 @@ from scipy.cluster.hierarchy import dendrogram
 from sklearn.metrics import davies_bouldin_score
 from sklearn.metrics import silhouette_score
 from pathlib import Path
+import requests
 from flask import Flask
 from flask import Response, jsonify, request, redirect, url_for, send_from_directory
 import socket
 from werkzeug.utils import secure_filename
 from sentence_transformers import SentenceTransformer, util
 from zipfile import ZipFile
+import pika
+import ast
+import threading
+
 from configparser import ConfigParser
 def config_vals(header, param):
     vals = config.get(header, param)
@@ -44,7 +49,6 @@ ids_col, names_col, task_type = config.get('columns', 'id'),\
 duration_cols = config_vals('columns', 'duration')
 headers = [ids_col, names_col, task_type] + duration_cols
 headers = ['ID', 'TaskType', 'Label', 'PlannedStart', 'PlannedEnd', 'ActualStart', 'ActualEnd', 'Float', 'Status']
-
 model_name = config.get('model', 'name')
 n_clusters_percs = [float(n) for n in config_vals('model', 'n_clusters_perc')]
 affinity = config.get('model', 'affinity')
@@ -52,10 +56,16 @@ data_format = config.get('data', 'format')
 db_name = config.get('results', 'database')
 table_name = config.get('results', 'table')
 local_service = config.get('service', 'local')
+if local_service == 'True':
+    url = 'http://127.0.0.01:6002/cluster_analysis/api/v0.1/clustering'
+else:
+    url = 'http://172.31.36.11/cluster_analysis/api/v0.1/clustering'
 num_executors = int(config.get('run', 'num_executors'))
 min_cluster_size = int(config.get('model', 'min_cluster_size'))
 print('min_cluster_size:', min_cluster_size)
 response_type = config.get('model', 'response')
+QUEUE_NAME = 'kc.ca.queue'
+EXCHANGE = 'kc.ca.exchange'
 
 # Paths and Directories
 working_dir = os.getcwd()
