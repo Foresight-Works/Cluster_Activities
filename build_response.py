@@ -28,11 +28,6 @@ if 'tokens_pairs_scores.npy' in os.listdir(references_dir):
     tokens_pairs_scores = np.load(os.path.join(references_dir, 'tokens_pairs_scores.npy'), allow_pickle=True)[()]
 if 'clusters_names_pairs.npy' in os.listdir(references_dir):
     clusters_names_pairs = np.load(os.path.join(references_dir, 'clusters_names_pairs.npy'), allow_pickle=True)[()]
-    # print('len clusters_names_pairs=', len(clusters_names_pairs))
-    # clusters_names_pairs = {k:v for k, v in clusters_names_pairs.items() if len(v)>0}
-    # print('len clusters_names_pairs=', len(clusters_names_pairs))
-
-
 if 'clusters_namesIDs.npy' in os.listdir(run_dir):
     clusters_namesIDs = np.load(os.path.join(run_dir, 'clusters_namesIDs.npy'), allow_pickle=True)[()]
 
@@ -121,8 +116,9 @@ def key_clusters(clustering_result, num_executors):
     print('{n} cluster_ids:'.format(n=len(cluster_ids)), cluster_ids)
     named_clusters, named_clusters_ids = {}, {}
     for cluster_id, cluster_key in executor.map(get_cluster_key, cluster_ids):
-        named_clusters[cluster_key] = clustering_result[cluster_id]
         activities_ids = clusters_namesIDs[cluster_id]
+        named_clusters[cluster_key] = list(zip(activities_ids, clustering_result[cluster_id]))
+        named_clusters[cluster_key] = [tuple(i) for i in named_clusters[cluster_key]]
         named_clusters_ids[cluster_key] = activities_ids
     executor.shutdown()
     named_clusters = {response_run_id: named_clusters}

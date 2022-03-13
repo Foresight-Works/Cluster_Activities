@@ -4,6 +4,7 @@ import pandas as pd
 from scipy.spatial.distance import pdist, squareform
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 def infer_dt_format(dt):
     '''
@@ -21,25 +22,38 @@ def infer_dt_format(dt):
             break
     return dt_format
 
-from datetime import datetime
-def cluster_duration_std(cluster_df):
+def activities_duration(project_df, calculate):
     '''
-    Calculate the standard deviation for the planned processes values of cluster names
-    :param cluster_df: A response frame containing the cluster task names along with their planned start and end dates
+    Calculate the planned and actual duration for program activities
+    :param project_df (DataFrame): Planned/Actual Start/End times for each activity
+    :param calculate(str; planned, actual): The type of duration to calculate
     '''
-    cluster_df.replace("", float("NaN"), inplace=True)
-    cluster_df.dropna(subset=['PlannedStart', 'PlannedEnd'], inplace=True)
-    if len(cluster_df) > 0:
-        planned_start_sample = cluster_df['PlannedStart'].values[0]
-        planned_end_sample = cluster_df['PlannedEnd'].values[0]
-        print('planned_start_sample:', planned_start_sample)
-        print('planned_end_sample:', planned_end_sample)
-        start_dt_format, end_dt_format = infer_dt_format(planned_start_sample), infer_dt_format(planned_end_sample)
-        cluster_df[['PlannedStart', 'PlannedEnd']] = cluster_df[['PlannedStart', 'PlannedEnd']].astype(str)
-        cluster_df['PlannedStart'] = [datetime.strptime(date_string, start_dt_format) for date_string in list(cluster_df['PlannedStart'])]
-        cluster_df['PlannedEnd'] = [datetime.strptime(date_string, start_dt_format) for date_string in list(cluster_df['PlannedEnd'])]
-        PlannedDuration = (cluster_df['PlannedEnd'] - cluster_df['PlannedStart']).dt.days.astype(int)
-        return round(np.std(np.array(PlannedDuration)))
+    if calculate == 'planned':
+        headers = ['PlannedStart', 'PlannedEnd']
+    else: headers = ['ActualStart', 'ActualEnd']
+    project_df = project_df[['ID'] + headers].dropna().astype(str)
+    for header in headers:
+        header_sample = project_df[header].values[0]
+        dt_format = infer_dt_format(header_sample)
+        project_df[header] = [datetime.strptime(date_string, dt_format) for date_string in list(project_df[header])]
+    project_df['Duration'] = (project_df[headers[1]] - project_df[headers[0]]).dt.days.astype(int)
+    return dict(zip(list(project_df['ID']), list(project_df['Duration'])))
+
+
+def clusters_duration_std(clusters_dict, id_planned_duration):
+
+    '''
+    Calculate the standard deviation of tasks processes in each cluster
+    :param clusters_dict (dict): Cluster activities ids (lists) keyed by cluster id
+    :param id_planned_duration: The planned duration for projects' activities indexed by activity ID
+    '''
+    scores = []
+    for cluster_key, cluster_ids in clusters_dict.items():
+        duration_values = [id_planned_duration[id] for id in cluster_ids]
+        duration_std = np.std(np.array(duration_values))
+        scores.append([cluster_key, duration_std])
+    scores = pd.DataFrame(scores, columns=['key', 'duration_std'])
+    return scores
 
 
 def ch_index_sklearn(clusters_dict, ids_embeddings=np.empty(1)):
@@ -73,22 +87,6 @@ def ch_index_sklearn(clusters_dict, ids_embeddings=np.empty(1)):
 
     BSS, WSS, ch_index = round(BSS, 2), round(WSS, 2), round(ch_index, 2)
     return BSS, WSS, ch_index, scores
-
-
-def clusters_duration_std(clusters_dict, projects_df):
-
-    '''
-    Calculate the standard deviation of tasks processes in each cluster
-    :param clusters_dict (dict): Cluster activities ids (lists) keyed by cluster id
-    :param projects_df: The input response with cluster ids, used to capture activity durations
-    '''
-    scores = []
-    for cluster_key, cluster_ids in clusters_dict.items():
-        cluster_df = projects_df[projects_df['ID'].isin(cluster_ids)]
-        duration_std = cluster_duration_std(cluster_df)
-        scores.append([cluster_key, duration_std])
-    scores = pd.DataFrame(scores, columns=['key', 'duration_std'])
-    return scores
 
 def scale_df(df):
     cols = df.columns

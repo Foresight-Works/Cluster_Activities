@@ -38,6 +38,7 @@ def scoreCluster(cluster):
     return cluster, names_pair_score
 
 def scoreClusters(clusters, num_executors):
+    print('{n} clusters'.format(n=len(clusters)))
     executor = ProcessPoolExecutor(num_executors)
     clusters_scores = {}
     for cluster, cluster_score in executor.map(scoreCluster, clusters):

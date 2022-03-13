@@ -6,8 +6,11 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
     duration = []
     print('{n} tasks'.format(n=len(projects)))
     print('task_type:', task_type)
-    print(projects[task_type].unique())
-    print(projects[task_type].value_counts())
+
+    # Calculate Planned and Actual Duration
+    id_planned_duration = activities_duration(projects, 'planned')
+    id_actual_duration = activities_duration(projects, 'actual')
+
     projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
     names, ids = list(projects[names_col]), list(projects[ids_col])
     print('names sample:', names[:10])
@@ -23,7 +26,6 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
 
     # Encode names
     print('Encode activity names')
-    start = datetime.now()
 
     # Sentences transformer
     print('Loading language model')
@@ -106,7 +108,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             silhouette = round(silhouette, 2)
 
             # Duration STD
-            std_scores = clusters_duration_std(clusters_dict, projects)
+            std_scores = clusters_duration_std(clusters_dict, id_planned_duration)
             print('std_scores')
             print(std_scores.head())
             print(std_scores.info())
@@ -187,18 +189,30 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             if response_type == 'names':
                 dict_file_name = 'named_clusters.npy'
             else: dict_file_name = 'named_clusters_ids.npy'
-            response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
-            message = json.dumps(response_dict, indent=4)
-            write_duration('pipeline', pipeline_start)
-            # Publisher queue
+
+            ## Publish results ##
             credentials = pika.PlainCredentials('rnd', 'Rnd@2143')
             parameters = pika.ConnectionParameters('172.31.34.107', 5672, '/', credentials)
             connection = pika.BlockingConnection(parameters)
-            EXCHANGE = 'kc.ca.exchange'
-            QUEUE_NAME = 'kc.ca.queue'
             channel = connection.channel()
+            response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
+
+            # Integration results
+            message = json.dumps(response_dict, indent=4)
+            EXCHANGE, QUEUE_NAME = 'kc.ca.exchange', 'kc.ca.queue'
             channel.exchange_declare(exchange=EXCHANGE, durable=True, exchange_type='direct')
             channel.queue_declare(queue=QUEUE_NAME)
             channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
             print("Sent %r:%r" % (QUEUE_NAME, message))
-            print('message sent')
+            print('Integration result published')
+
+            # Integration results
+            response_dict['planned_duration_vals'], response_dict['actual_duration_vals']\
+                = id_planned_duration, id_actual_duration
+            message = json.dumps(response_dict, indent=4)
+            EXCHANGE, QUEUE_NAME = 'kc.ca_research.exchange', 'kc.ca_research.queue'
+            channel.exchange_declare(exchange=EXCHANGE, durable=True, exchange_type='direct')
+            channel.queue_declare(queue=QUEUE_NAME)
+            channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
+            print("Sent %r:%r" % (QUEUE_NAME, message))
+            print('Research result published')
