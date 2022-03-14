@@ -53,22 +53,20 @@ def run_service():
                     with open('tmp_xer.xer', 'w') as f:
                         for line in xer_lines: f.write('{l}\n'.format(l=line))
                     graphml_file = xer_nodes('tmp_xer.xer')
+                    if 'tmp_xer.xer' in os.listdir(): os.remove('tmp_xer.xer')
                     graphml_str = open(graphml_file).read()
                     parsed_df = parse_graphml(graphml_str, headers)
 
                 elif format == 'csv':
                     parsed_df = parse_csv(file_posted)
                 print('file: {n}, {r} tasks'.format(n=file_name, r=len(parsed_df)))
-                projects = projects.append(parsed_df)
+                projects = pd.concat([projects, parsed_df])
 
         # Projects TDAs
-        projects.to_excel('pre_filter.xlsx', index=False)
         print(projects[task_type].head())
         print('task type values:', projects[task_type].unique())
         print(projects[task_type].value_counts())
         projects = projects[projects[task_type].isin(['TT_TASK', 'TT_Task'])]
-        projects.to_excel('filtered.xlsx', index=False)
-        #projects = projects.replace("", float("NaN")).dropna()
         tasks_count = len(projects)
         print('{n} tdas'.format(n=tasks_count))
         print('projects')
