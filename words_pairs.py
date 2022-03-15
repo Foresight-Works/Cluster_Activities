@@ -1,6 +1,5 @@
 from setup import *
 references_dir = sys.argv[1]
-#references_dir = '/home/rony/Projects_Code/Cluster_Activities/results/CCGTD1_IPS/runs/0/references'
 print('references_dir:', references_dir)
 print(os.listdir(references_dir))
 print('running words pairs')
