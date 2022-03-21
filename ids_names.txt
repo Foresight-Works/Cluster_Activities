@@ -1,6 +1,5 @@
-SCWtaBA8 BA8 - (1st) BD Consent to Temp works for SCW &amp; Culvert Modification (Resubmit incl wall, excav.&amp; anchor)(Wet){5b1(r)}
-DPT10045 DPT /Zone A (Southern Section) - BD Consent for Commencement of Excavation &amp; ELS
-SFA_BA58b BA5 - Consent for Temporary works for Shaft A, Pump Station, Diversion Culvert (Excav &amp; ELS) {4b4-4}
-GENSUB9A Aluminum - BD Approval
-POW_BA58_1 BA8 - Consent for Excav &amp; ELS Plan for Power Island Area (Open Cut)(Phase 3){7c2i}
-SFF-BA58a BA5 - Resub.of (Type II) Amendment  for Zone A Sheet Pile Alternative {4b1-alt A-1} [APPROVED AS TYPE I]
+CCOM2650 Commissioning test
+CCOM2880 Final check for readiness
+CCOM5080 PAB System commissioning
+CCOM4070 ready for operation, pending operational licence
+10HSJ120 Precommissioning

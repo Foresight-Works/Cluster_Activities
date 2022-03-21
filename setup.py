@@ -72,8 +72,6 @@ data_dir = os.path.join(working_dir, 'data', 'experiments')
 results_dir = os.path.join(working_dir, 'results')
 tokens_path = os.path.join(results_dir, 'tokens.txt')
 matrices_dir = os.path.join(working_dir, 'matrices')
-if 'matrices' not in os.listdir(results_dir):
-    os.mkdir(matrices_dir)
 models_dir = os.path.join(working_dir, 'models')
 
 # App modules
