@@ -1,27 +1,33 @@
 from setup import *
+
+# Reference directory path
+print('Building response')
+experiment_id, best_run_id, file_names_str = sys.argv[1], sys.argv[2], sys.argv[3]
+
+print('experiment_id:', experiment_id)
+print('best_run_id:', best_run_id)
+print('file_names_str:', file_names_str)
+experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
+experiment_dir = os.path.join(results_dir, experiment_dir_name)
+run_dir = os.path.join(experiment_dir, 'runs', best_run_id)
+references_dir = os.path.join(run_dir, 'references')
+print('reference dictionaries directory:', references_dir)
+
+# Tokens distance matrices
 distance_matrices = []
 matrices = os.listdir(matrices_dir)
 for matrix in matrices:
     path = os.path.join(matrices_dir, matrix)
     distance_matrices.append(pd.read_pickle(path))
 
-# Read reference dictionaries
-clustering_result, names_tokens, tokens_pairs_scores, clusters_names_pairs = {}, {}, {}, {}
+# Experiment result (to build as response)
+clustering_result = {}
 if 'clustering_result.npy' in os.listdir(results_dir):
-    clustering_result = np.load(os.path.join(results_dir, 'clustering_result.npy'), allow_pickle=True)[()]
-    #print('clustering_result example:', list(names_tokens.items())[:1])
-response_run_id = str(list(clustering_result.keys())[0])
-clustering_result = list(clustering_result.values())[0]
-# Read experiment id
-experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn).astype(int)
-experiment_id = int(max(experiment_ids.values)[0])
-print('experiment_id:', experiment_id)
-experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
-experiment_dir = os.path.join(results_dir, experiment_dir_name)
-print('experiment_dir:', experiment_dir)
-run_dir = os.path.join(experiment_dir, 'runs', response_run_id)
-references_dir = os.path.join(run_dir, 'references')
+    clustering_result = np.load(os.path.join(references_dir, 'clustering_result.npy'), allow_pickle=True)[()]
+    print('clustering_result example:', list(clustering_result.items())[:1])
 
+# Reference dictionaries
+names_tokens, tokens_pairs_scores, clusters_names_pairs = {}, {}, {}
 if 'names_tokens.npy' in os.listdir(references_dir):
     names_tokens = np.load(os.path.join(references_dir, 'names_tokens.npy'), allow_pickle=True)[()]
 if 'tokens_pairs_scores.npy' in os.listdir(references_dir):
@@ -121,7 +127,8 @@ def key_clusters(clustering_result, num_executors):
         named_clusters[cluster_key] = [tuple(i) for i in named_clusters[cluster_key]]
         named_clusters_ids[cluster_key] = activities_ids
     executor.shutdown()
-    named_clusters = {response_run_id: named_clusters}
+    # Todo integration: replace file_names_str by the identifier(s) defined for the response
+    named_clusters = {file_names_str: named_clusters}
     return named_clusters, named_clusters_ids
 
 num_executors = int(config.get('run', 'num_executors'))

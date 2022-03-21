@@ -5,15 +5,16 @@ from setup import *
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
 
-
-# Response
+# Prepare data and run pipeline
 @app.route('/cluster_analysis/api/v0.1/clustering', methods=['POST'])
 def run_service():
     # Experiment set up
     experiment_id = request.values.get('experiment_id', ' ')
-    print('experiment_id:', experiment_id)
+    print('experiment_id posted:', experiment_id)
     experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
-    min_cluster_size = int(request.values.get('min_cluster_size', ' '))
+    min_cluster_size = request.values.get('min_cluster_size', ' ')
+    if min_cluster_size == ' ': min_cluster_size = 0
+    else: min_cluster_size = int(min_cluster_size)
     print('min_cluster_size:', min_cluster_size)
 
     experiment_dir = os.path.join(results_dir, experiment_dir_name)
@@ -23,7 +24,9 @@ def run_service():
     if 'runs' not in os.listdir(experiment_dir):
         os.mkdir(runs_dir)
     for metric, optimize in metrics_optimize.items():
-        posted_value = request.values.get(metric, '')
+        posted_value = request.values.get(metric, ' ')
+        if posted_value == ' ': posted_value = 1
+        else: posted_value = int(posted_value)
         metrics_optimize[metric] = (metrics_optimize[metric][0], int(posted_value))
     print('metrics optimized:', metrics_optimize)
 
@@ -43,13 +46,24 @@ def run_service():
             if allowed_file(file_name, config.get('data', 'extensions')):
                 print(f'allowing file {file_name}')
                 print('===={f}===='.format(f=file_name))
-                file_posted = zipped_object.read(file_name).decode(encoding='utf-8-sig')
+                encodings = ['utf-8-sig', 'latin-1', 'ISO-8859-1', 'Windows-1252']
+                encoded, index = False, 0
+                while encoded == False:
+                    encoding = encodings[index]
+                    print('encoding using', encoding)
+                    try:
+                        file_posted = zipped_object.read(file_name).decode(encoding=encoding)
+                        encoded = True
+                    except UnicodeDecodeError as e:
+                        print(e)
+                        index += 1
                 format = file_name.split('.')[1]
                 if format == 'graphml':
                     parsed_df = parse_graphml(file_posted, headers)
                 elif format == 'xer':
                     print('xer format')
                     xer_lines = file_posted.split('\n')
+                    print('xer_lines sample:', xer_lines[:10])
                     with open('tmp_xer.xer', 'w') as f:
                         for line in xer_lines: f.write('{l}\n'.format(l=line))
                     graphml_file = xer_nodes('tmp_xer.xer')
@@ -73,8 +87,10 @@ def run_service():
         print(projects.head())
         print(projects.info())
         if len(projects) > 0:
-            run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str, results_columns, metrics_cols, metrics_optimize, conn)
-            return 'Activity names are being clustered'
+            run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str,\
+                         runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params, min_cluster_size)
+            return 'Activity names clustered'
+
         else:
             return "The file does not contain time dependent activities", 400
     else:

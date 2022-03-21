@@ -1,6 +1,5 @@
 from setup import *
 references_dir = sys.argv[1]
-print('references_dir:', references_dir)
 print(os.listdir(references_dir))
 print('running words pairs')
 # Read reference dictionaries
@@ -41,7 +40,7 @@ def scoreClusters(clusters, num_executors):
     executor = ProcessPoolExecutor(num_executors)
     clusters_scores = {}
     for cluster, cluster_score in executor.map(scoreCluster, clusters):
-        print('cluster and score:', cluster, cluster_score)
+        #print('cluster and score:', cluster, cluster_score)
         clusters_scores[cluster] = cluster_score
     executor.shutdown()
     return round(sum(list(clusters_scores.values())))

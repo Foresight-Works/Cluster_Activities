@@ -6,12 +6,13 @@ def build_result(data, clusters, names_col, ids_col):
     for cluster_key, cluster in enumerate(clusters):
         cluster_key_name = str(cluster_key+1)
         cluster_names = list(data[names_col][data['cluster'] == cluster])
-        names_ids = list(data[ids_col][data['cluster'] == cluster])
-        clustering_result[cluster_key_name] = cluster_names
-        clusters_namesIDs[cluster_key_name] = names_ids
+
+        # Filter clustering_result of orphans and empty clusters
+        if len(cluster_names) > 1:
+            names_ids = list(data[ids_col][data['cluster'] == cluster])
+            clustering_result[cluster_key_name] = cluster_names
+            clusters_namesIDs[cluster_key_name] = names_ids
     return clustering_result, clusters_namesIDs
-
-
 
 def write_duration(process, start):
     '''

@@ -34,6 +34,7 @@ from zipfile import ZipFile
 import pika
 import ast
 import threading
+import mysql.connector as mysql
 
 from configparser import ConfigParser
 def config_vals(header, param):
@@ -53,8 +54,6 @@ model_name = config.get('model', 'name')
 n_clusters_percs = [float(n) for n in config_vals('model', 'n_clusters_perc')]
 affinity = config.get('model', 'affinity')
 data_format = config.get('data', 'format')
-db_name = config.get('results', 'database')
-table_name = config.get('results', 'table')
 local_service = config.get('service', 'local')
 if local_service == 'True':
     url = 'http://127.0.0.01:6002/cluster_analysis/api/v0.1/clustering'
@@ -62,10 +61,7 @@ else:
     url = 'http://172.31.36.11/cluster_analysis/api/v0.1/clustering'
 num_executors = int(config.get('run', 'num_executors'))
 min_cluster_size = int(config.get('model', 'min_cluster_size'))
-print('min_cluster_size:', min_cluster_size)
 response_type = config.get('model', 'response')
-QUEUE_NAME = 'kc.ca.queue'
-EXCHANGE = 'kc.ca.exchange'
 
 # Paths and Directories
 working_dir = os.getcwd()
@@ -75,7 +71,7 @@ if modules_dir not in sys.path:
 data_dir = os.path.join(working_dir, 'data', 'experiments')
 results_dir = os.path.join(working_dir, 'results')
 tokens_path = os.path.join(results_dir, 'tokens.txt')
-matrices_dir = os.path.join(results_dir, 'matrices')
+matrices_dir = os.path.join(working_dir, 'matrices')
 if 'matrices' not in os.listdir(results_dir):
     os.mkdir(matrices_dir)
 models_dir = os.path.join(working_dir, 'models')
@@ -91,25 +87,20 @@ from modules.tokenizers import *
 from modules.pipeline import *
 
 # Tables
-conn = sqlite3.connect('./results/CAdb', check_same_thread=False)
-c = conn.cursor()
 metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max', 1), 'ch_index': ('max', 1),\
 'db_index':('min', 1), 'silhouette':('max', 1), 'words_pairs': ('max', 1)}
-metrics_cols = {col:'TEXT' for col, v in metrics_optimize.items()}
+metrics_cols = {col: 'TEXT' for col, v in metrics_optimize.items()}
 #print('metrics_cols:', metrics_cols)
-results_cols_types = {'experiment_id': 'TEXT', 'run_id': 'TEXT', 'file_name': 'TEXT',\
+cols_types = {'experiment_id': 'TEXT', 'run_id': 'TEXT', 'file_name': 'TEXT',\
                       'num_files': 'TEXT', 'run_start': 'TEXT', 'run_end': 'TEXT', 'duration':'TEXT',\
                       'tasks_count': 'TEXT', 'language_model': 'TEXT', 'clustering_method': 'TEXT', 'clustering_params': 'TEXT',\
                       'num_clusters': 'TEXT', 'mean_duration_std':'TEXT',\
                       'tasks_per_cluster_mean': 'TEXT', 'tasks_per_cluster_median': 'TEXT',\
                       'min_tasks_per_cluster': 'TEXT', 'max_tasks_per_cluster': 'TEXT'}
-results_cols_types = {**results_cols_types, **metrics_cols}
-#print('results_cols_types:', results_cols_types)
-#print('{n} result table columns'.format(n=len(results_cols_types)))
+cols_types = {**cols_types, **metrics_cols}
+runs_cols, runs_types = list(cols_types.keys()), list(cols_types.values())
+results_cols_types = {**cols_types, **metrics_cols, 'Result': 'JSON'}
+results_cols, results_types = list(results_cols_types.keys()), list(results_cols_types.values())
 metrics_cols = list(metrics_cols.keys())
-print('metrics columns:', metrics_cols)
-results_columns, data_types = list(results_cols_types.keys()), list(results_cols_types.values())
-create_table_statement = build_create_table_statement(table_name, results_columns, data_types)
-c.execute(create_table_statement)
-
-
+db_name = 'CAdb'
+conn_params = {'host': 'localhost', 'user': 'rony', 'password': 'exp8546$fs', 'database': db_name}

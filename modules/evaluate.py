@@ -31,12 +31,16 @@ def activities_duration(project_df, calculate):
     if calculate == 'planned':
         headers = ['PlannedStart', 'PlannedEnd']
     else: headers = ['ActualStart', 'ActualEnd']
-    project_df = project_df[['ID'] + headers].dropna().astype(str)
+    print('Calculating {c} duration'.format(c=calculate))
+    print('{n} tasks'.format(n=len(project_df)))
+    project_df = project_df[['ID'] + headers].replace('', np.nan).dropna().astype(str)
+    print('{n} tasks have {c} start/end data'.format(n=len(project_df), c=calculate))
     for header in headers:
         header_sample = project_df[header].values[0]
         dt_format = infer_dt_format(header_sample)
         project_df[header] = [datetime.strptime(date_string, dt_format) for date_string in list(project_df[header])]
     project_df['Duration'] = (project_df[headers[1]] - project_df[headers[0]]).dt.days.astype(int)
+    print('{n} tasks in results'.format(n=len(project_df)))
     return dict(zip(list(project_df['ID']), list(project_df['Duration'])))
 
 
@@ -101,7 +105,6 @@ def vote(scaled_scores, scores_cols, metrics_optimize):
     for metric, optimize in metrics_optimize.items():
         optimize_for, optimize_weight = optimize
         if optimize_for == 'min':
-            print('rescaling', metric)
             scaled_scores[metric] = [(1-x) for x in scaled_scores[metric]]
         scaled_scores[metric] = optimize_weight * scaled_scores[metric]
     scaled_scores['sum'] = scaled_scores[scores_cols].sum(axis=1)
