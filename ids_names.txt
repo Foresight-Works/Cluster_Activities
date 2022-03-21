@@ -1,5 +1,5 @@
-CCOM2650 Commissioning test
-CCOM2880 Final check for readiness
-CCOM5080 PAB System commissioning
-CCOM4070 ready for operation, pending operational licence
-10HSJ120 Precommissioning
+00STG20 Install Containers
+10GM-02-100 Install Equipment/Skids/Pumps
+10SGJ-02-10 Install Skid+Auxiliaries
+00GM-02-10 Install Equipment/Skids/Pumps
+00PUN11 Install Containers - Skid

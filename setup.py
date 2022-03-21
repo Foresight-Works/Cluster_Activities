@@ -65,11 +65,6 @@ metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max
 db_name = 'CAdb'
 location_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password':'exp8546$fs', 'database': db_name},\
                       'Remote': {'host': '172.31.36.11', 'user':'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
-conn_params = location_db_params[service_location]
-print('conn_params:', conn_params)
-location_url = {'Local': 'http://127.0.0.01:6002/cluster_analysis/api/v0.1/clustering',\
-                'Remote': 'http://172.31.36.11/cluster_analysis/api/v0.1/clustering'}
-url = location_url[service_location]
 
 num_executors = int(config.get('run', 'num_executors'))
 min_cluster_size = int(config.get('model', 'min_cluster_size'))
@@ -112,5 +107,3 @@ runs_cols, runs_types = list(cols_types.keys()), list(cols_types.values())
 results_cols_types = {**cols_types, **metrics_cols, 'Result': 'JSON'}
 results_cols, results_types = list(results_cols_types.keys()), list(results_cols_types.values())
 metrics_cols = list(metrics_cols.keys())
-db_name = 'CAdb'
-conn_params = {'host': 'localhost', 'user': 'rony', 'password': 'exp8546$fs', 'database': db_name}
