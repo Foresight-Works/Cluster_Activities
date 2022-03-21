@@ -189,6 +189,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             ## Name clusters and build results
             subprocess.call('python build_response.py {eid} {rid} {fn}'.\
                             format(eid=experiment_id, rid=best_run_id, fn=file_names_str), shell=True)
+            print('response_type:', response_type)
             if response_type == 'names':
                 dict_file_name = 'named_clusters.npy'
             else: dict_file_name = 'named_clusters_ids.npy'
@@ -208,13 +209,13 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             runs_df = pd.read_sql_query("SELECT * FROM {db}.runs".format(eid=experiment_id, db=db_name), conn)
             print(runs_df)
 
+            print('clustering_result:', clustering_result)
             result_row_query = "SELECT * FROM {db}.runs WHERE experiment_id={eid} AND run_id={rid}"\
                                    .format(db=db_name, eid=experiment_id, rid=best_run_id)
             cur.execute(result_row_query)
             results_row = [i for i in cur.fetchall()[0]]
             print('results_row:', results_row)
             results_row.append(clustering_result)
-            print(len(results_cols), len(results_row))
             statement = insert_into_table_statement('{db}.results'.format(db=db_name), results_cols, results_row)
             print('insert into statement:', statement)
             cur.execute(statement)

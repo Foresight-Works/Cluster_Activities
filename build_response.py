@@ -22,7 +22,7 @@ for matrix in matrices:
 
 # Experiment result (to build as response)
 clustering_result = {}
-if 'clustering_result.npy' in os.listdir(results_dir):
+if 'clustering_result.npy' in os.listdir(references_dir):
     clustering_result = np.load(os.path.join(references_dir, 'clustering_result.npy'), allow_pickle=True)[()]
     print('clustering_result example:', list(clustering_result.items())[:1])
 

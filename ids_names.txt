@@ -1,5 +1,12 @@
-00STG20 Install Containers
-10GM-02-100 Install Equipment/Skids/Pumps
-10SGJ-02-10 Install Skid+Auxiliaries
-00GM-02-10 Install Equipment/Skids/Pumps
-00PUN11 Install Containers - Skid
+10CP-AA20 Grounding Supports
+00EK09 Erection of Blending Station
+SI1UMC2I109 DETAIL DESIGN / CHECKER STEEL MISC. PLATFORM UMC
+SI1C--4-27 ST I&amp;C TRANSPORT TO SITE FIELD INSTRUMENTATION
+SI-BZK3-86 (BOP) FINAL CHECK BEFORE SHIPMENT MV CABLES BZK
+LIFTDN10 Lifts - Review engineer's drawings and prepare design (AD TBC)
+SI1UBF2-45 PREPARATION BASIC BUILDING DWGS UBF/UBE
+00BAW-01-20 Install Accessories/Supports
+SI1MAV4-25 TRANSPORT LUBE OIL MODUL MAV
+10BZL-03-40 Install Cabling
+ECS20.1050 Installation of Cable Support Structure for HRSG
+Sub-GTST-130 Bid Technical Evaluation/Review Process
