@@ -86,6 +86,7 @@ def run_service():
         print('projects')
         print(projects.head())
         print(projects.info())
+        print('conn_params:', conn_params)
         if len(projects) > 0:
             run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str,\
                          runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params, min_cluster_size)
