@@ -6,6 +6,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
                  runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params, min_cluster_size):
     conn = mysql.connect(**conn_params)
     cur = conn.cursor()
+    cur.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 
     print('experiment_id sent to pipeline=', experiment_id)
     print('** Runs table, Start **')
