@@ -237,6 +237,5 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
         print('Integration result published')
         write_duration('Pipeline', pipeline_start)
 
-
         conn.commit()
         conn.close()
