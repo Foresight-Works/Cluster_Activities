@@ -3,7 +3,8 @@ import sys
 from setup import *
 
 def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str,\
-                 runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params, min_cluster_size):
+                 runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
+                 min_cluster_size, n_clusters_posted):
     conn = mysql.connect(**conn_params)
     cur = conn.cursor()
     cur.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
@@ -60,7 +61,6 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
     runs_rows = []
 
     # Number of cluster per run
-    n_clusters_posted = int(request.values.get('num_clusters', '1'))
     print('n_clusters_posted:', n_clusters_posted)
     if n_clusters_posted > 1:
         n_clusters_runs = [n_clusters_posted]
@@ -194,6 +194,11 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
                 dict_file_name = 'named_clusters.npy'
             else: dict_file_name = 'named_clusters_ids.npy'
             response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
+
+            ## message id
+            message_id = 'experiment_{eid}'.format(eid=experiment_id)
+            #response_dict.setdefault('message_id', message_id)
+            ###
             message = json.dumps(response_dict)
 
             # Write best clustering result
@@ -225,17 +230,21 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             print(results_df)
 
         ## Publish results
+        QUEUE_NAME = 'experiment_{id}'.format(id=experiment_id)
         EXCHANGE = 'kc.ca.exchange'
-        QUEUE_NAME = 'kc.ca.queue'
         credentials = pika.PlainCredentials('rnd', 'Rnd@2143')
         parameters = pika.ConnectionParameters('172.31.34.107', 5672, '/', credentials)
         connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
         channel.exchange_declare(exchange=EXCHANGE, durable=True, exchange_type='direct')
         channel.queue_declare(queue=QUEUE_NAME)
+        #message_id = 'experiment_{id}'.format(id=experiment_id)
+        #channel.basic_publish(exchange='', routing_key=QUEUE_NAME,\
+        #                      body=message, properties=pika.BasicProperties(message_id=message_id))
         channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
+        print('message')
+        print(message)
         print('Integration result published')
         write_duration('Pipeline', pipeline_start)
-
         conn.commit()
         conn.close()

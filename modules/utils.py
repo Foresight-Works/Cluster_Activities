@@ -1,5 +1,8 @@
 import pandas as pd
 import time
+import json
+import threading
+import pika
 
 def build_result(data, clusters, names_col, ids_col):
     clustering_result, clusters_namesIDs = {}, {}

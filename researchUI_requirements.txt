@@ -1,3 +1,0 @@
-mysql.connector
-ipywidgets==7.6.0
-nltk
