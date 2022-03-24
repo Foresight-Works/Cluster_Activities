@@ -1,4 +1,0 @@
-EV009002 Event 009 - 2 nos Pre-drill abortive
-EV008011 Event 008 - Declaration of unplanted area
-EV017510 Event 017(I) - Advanced Precautionary Grouting
-EV011110 Event 011A - Formal test report issued for submission in 7 calendar days

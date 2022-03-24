@@ -19,7 +19,12 @@ def run_service():
     service_location = request.values.get('service_location', ' ')
     conn_params = location_db_params[service_location]
     print('conn_params:', conn_params)
+    conn = mysql.connect(**conn_params)
+    cur = conn.cursor()
+    cur.execute("INSERT INTO experiments (experiment_id) VALUES ({id})".format(id=experiment_id))
+    conn.commit()
 
+    n_clusters_posted = int(request.values.get('num_clusters', '1'))
     experiment_dir = os.path.join(results_dir, experiment_dir_name)
     if experiment_dir_name not in os.listdir(results_dir):
         os.mkdir(experiment_dir)
@@ -90,10 +95,14 @@ def run_service():
         print(projects.head())
         print(projects.info())
         if len(projects) > 0:
-            run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str, \
+            run_pipeline_args = (projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str, \
                          runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
-                         min_cluster_size)
-            return 'Activity names are being clustered'
+                         min_cluster_size, n_clusters_posted)
+            pipeline = threading.Thread(target=run_pipeline, args=run_pipeline_args)
+            pipeline.start()
+            pipeline.join(0)
+            return 'Running clustering pipeline'
+
         else:
             return "The file does not contain time dependent activities", 400
     else:
