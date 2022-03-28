@@ -83,7 +83,8 @@ standard_dirs = ['results', 'models', 'matrices']
 for dir in standard_dirs:
     if dir not in os.listdir('.'):
         os.mkdir(dir)
-
+if 'tmp' not in os.listdir():
+    os.mkdir('tmp')
 
 # App modules
 from modules.build_references import *

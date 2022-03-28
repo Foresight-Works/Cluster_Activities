@@ -244,3 +244,5 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
         write_duration('Pipeline', pipeline_start)
         conn.commit()
         conn.close()
+        if 'tmp' in os.listdir():
+            shutil.rmtree('tmp')
