@@ -68,7 +68,6 @@ location_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password':'
 
 num_executors = int(config.get('run', 'num_executors'))
 min_cluster_size = int(config.get('model', 'min_cluster_size'))
-response_type = config.get('model', 'response')
 
 # Paths and Directories
 working_dir = os.getcwd()

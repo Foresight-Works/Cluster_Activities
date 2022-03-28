@@ -2,7 +2,7 @@ import sys
 
 from setup import *
 
-def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str,\
+def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str,\
                  runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
                  min_cluster_size, n_clusters_posted):
     conn = mysql.connect(**conn_params)
@@ -33,7 +33,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
         for token in tokens: f.write('{t}\n'.format(t=token))
 
     # Token distance matrices
-    subprocess.call('python tokens_distances.py', shell=True)
+    subprocess.call('python subprocesses/tokens_distances.py', shell=True)
 
     # Encode names
     print('Encode activity names')
@@ -127,7 +127,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             # Run Reference Dictionaries
             print('run references directory:', references_dir)
             reference_dictionaries(clustering_result, references_dir)
-            subprocess.call('python words_pairs.py {path}'.format(path=references_dir), shell=True)
+            subprocess.call('python subprocesses/words_pairs.py {path}'.format(path=references_dir), shell=True)
             words_pairs_score = open(os.path.join(results_dir, 'words_pairs_score.txt')).read().split('\n')[0]
             print('words_pairs_score:', words_pairs_score)
 
@@ -186,10 +186,9 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             write_duration('Clusters calculation', pipeline_start)
 
             ## Name clusters and build results
-            subprocess.call('python build_response.py {eid} {rid} {fn}'.\
+            subprocess.call('python subprocesses/build_response.py {eid} {rid} {fn}'.\
                             format(eid=experiment_id, rid=best_run_id, fn=file_names_str), shell=True)
-            print('response_type:', response_type)
-            if response_type == 'names':
+            if client == 'ui':
                 dict_file_name = 'named_clusters.npy'
             else: dict_file_name = 'named_clusters_ids.npy'
             response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
