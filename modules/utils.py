@@ -30,6 +30,7 @@ def write_duration(process, start):
 
 def allowed_file(filename, extensions):
     """ Tests if filetype is an allowed filetype """
+
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in extensions
 

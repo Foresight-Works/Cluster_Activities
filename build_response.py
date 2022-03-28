@@ -6,7 +6,7 @@ experiment_id, best_run_id, file_names_str = sys.argv[1], sys.argv[2], sys.argv[
 
 print('experiment_id:', experiment_id)
 print('best_run_id:', best_run_id)
-print('file_names_str:', file_names_str)
+print('file_names_str in build response:', file_names_str)
 experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
 experiment_dir = os.path.join(results_dir, experiment_dir_name)
 run_dir = os.path.join(experiment_dir, 'runs', best_run_id)

@@ -10,11 +10,6 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
     cur.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 
     print('experiment_id sent to pipeline=', experiment_id)
-    print('** Runs table, Start **')
-    db_name = 'CAdb'
-    runs_df = pd.read_sql_query("SELECT * FROM {db}.runs".format(db=db_name), conn)
-    print(runs_df)
-
     pipeline_start = time.time()
     duration = []
     print('{n} tasks'.format(n=len(projects)))
@@ -23,6 +18,9 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
     # Calculate Planned and Actual Duration
     id_planned_duration = activities_duration(projects, 'planned')
     id_actual_duration = activities_duration(projects, 'actual')
+
+    print('id_planned_duration:', id_planned_duration)
+    print('id_actual_duration:', id_actual_duration)
 
     projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
     names, ids = list(projects[names_col]), list(projects[ids_col])
@@ -148,6 +146,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
 
             ## Results
             best = '0' # To be changed to 1 for the best run following scoring and voting
+            print('file_names_str written:', file_names_str)
             runs_row = [experiment_id, run_id, file_names_str, \
                            num_files, run_start, run_end, run_duration,\
                            tasks_count, sentences_model, model_name, clustering_params_write, \
@@ -210,9 +209,9 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
                 clustering_result = json.dumps(response_dict)
                 clustering_result = clustering_result.replace("'", "''")
 
-            print('** Runs table **')
-            runs_df = pd.read_sql_query("SELECT * FROM {db}.runs".format(eid=experiment_id, db=db_name), conn)
-            print(runs_df)
+            # print('** Runs table **')
+            # runs_df = pd.read_sql_query("SELECT * FROM {db}.runs".format(eid=experiment_id, db=db_name), conn)
+            # print(runs_df)
 
             print('clustering_result:', clustering_result)
             result_row_query = "SELECT * FROM {db}.runs WHERE experiment_id={eid} AND run_id={rid}"\
@@ -242,8 +241,6 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
         #channel.basic_publish(exchange='', routing_key=QUEUE_NAME,\
         #                      body=message, properties=pika.BasicProperties(message_id=message_id))
         channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
-        print('message')
-        print(message)
         print('Integration result published')
         write_duration('Pipeline', pipeline_start)
         conn.commit()

@@ -53,7 +53,8 @@ def xer_nodes(xer_file_path):
 	graphml_file = file.replace('.xer', '.graphml')
 	import jpype
 	import mpxj
-	jpype.startJVM()
+	if not jpype.isJVMStarted():
+		jpype.startJVM()
 	from net.sf.mpxj.reader import UniversalProjectReader
 	from net.sf.mpxj import ActivityStatus
 	from net.sf.mpxj import ActivityType

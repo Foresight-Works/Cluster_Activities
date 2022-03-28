@@ -48,9 +48,12 @@ def run_service():
     projects = pd.DataFrame()
     if file_names:
         num_files = len(file_names)
-        file_names_str = '|'.join(file_names).rstrip('|').replace('.graphml', '')
+        # File names to pass to the results table (temp. proxy for experiment name)
+        file_names_str = [f.split('.')[0].replace('tmp/', '') for f in file_names]
+        file_names_str = r'*'.join(file_names_str).rstrip(r'*')
         # File name validation
         for file_name in file_names:
+            print('file_name:', file_name)
             if allowed_file(file_name, config.get('data', 'extensions')):
                 print(f'allowing file {file_name}')
                 print('===={f}===='.format(f=file_name))
@@ -85,16 +88,20 @@ def run_service():
                 projects = pd.concat([projects, parsed_df])
 
         # Projects TDAs
-        print(projects[task_type].head())
+        print('Projects')
+        print(projects.head())
+        print(projects.info())
         print('task type values:', projects[task_type].unique())
         print(projects[task_type].value_counts())
         projects = projects[projects[task_type].isin(['TT_TASK', 'TT_Task'])]
+        projects.to_excel('projects1.xlsx', index=False)
         tasks_count = len(projects)
         print('{n} tdas'.format(n=tasks_count))
         print('projects')
         print(projects.head())
         print(projects.info())
         if len(projects) > 0:
+            print('file_names_str to pipeline:', file_names_str)
             run_pipeline_args = (projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str, \
                          runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
                          min_cluster_size, n_clusters_posted)
