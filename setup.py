@@ -79,6 +79,11 @@ results_dir = os.path.join(working_dir, 'results')
 tokens_path = os.path.join(results_dir, 'tokens.txt')
 matrices_dir = os.path.join(working_dir, 'matrices')
 models_dir = os.path.join(working_dir, 'models')
+standard_dirs = ['results', 'models', 'matrices']
+for dir in standard_dirs:
+    if dir not in os.listdir('.'):
+        os.mkdir(dir)
+
 
 # App modules
 from modules.build_references import *
