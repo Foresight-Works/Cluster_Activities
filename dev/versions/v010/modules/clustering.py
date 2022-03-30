@@ -7,8 +7,8 @@ def similar(a, b):
 
 
 def cluster_names(name, names, checked, lower_sim, upper_sim):
-    '''Calculate name similarity for input name compared to all names
-    from a list of names and cluster names that are more similar than the
+    '''Calculate name similarity for input name compared to all cluster_key
+    from a list of cluster_key and cluster cluster_key that are more similar than the
     specified threshold.
     '''
     cluster = [name]
@@ -21,15 +21,15 @@ def cluster_names(name, names, checked, lower_sim, upper_sim):
 
 
 def cluster_names_df(name, names, lower_sim, upper_sim):
-    '''Calculate name similarity for input name compared to all names
-    from a list of names and cluster names that are more similar than the
+    '''Calculate name similarity for input name compared to all cluster_key
+    from a list of cluster_key and cluster cluster_key that are more similar than the
     specified threshold.
 
     test:
     name = 'aaaa'
     namel = [name]
-    names = ['eeaa', 'aaaa', 'aaab', 'aaac']
-    cluster_names (name, names, 0.5 ,0.95)
+    cluster_key = ['eeaa', 'aaaa', 'aaab', 'aaac']
+    cluster_names (name, cluster_key, 0.5 ,0.95)
 
     '''
     namel = [name]

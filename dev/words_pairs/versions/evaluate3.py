@@ -26,7 +26,7 @@ print('{n1} clusters | {n2} unique clusters'.format(n1=len(clusters), n2=len(uni
 names = []
 for n in cluster_names: names += n
 names = list(set(names))
-print('{n} unique names'.format(n=len(names)))
+print('{n} unique cluster_key'.format(n=len(names)))
 names_tokens = {}
 
 # Reference dictionary: Tokens per Name (names_tokens)
@@ -34,7 +34,7 @@ for name in names:
     tokens = tokenize(name, unique=True, exclude_stopwords=True, \
                        exclude_numbers=True, exclude_digit_tokens=True)
     names_tokens[name] = tokens
-print('{n} names tokens:'.format(n=len(names_tokens)))
+print('{n} cluster_key tokens:'.format(n=len(names_tokens)))
 print('examples:', list(names_tokens.items())[:2])
 
 # Reference list: Names pairs (names_pairs)
@@ -44,7 +44,7 @@ for cluster, cluster_names in data.items():
     clusters_name_pairs = tuple(combinations(cluster_names, 2))
     names_pairs += clusters_name_pairs
     clusters_names_pairs[cluster] = clusters_name_pairs
-print('{n} names pairs'.format(n=len(names_pairs)))
+print('{n} cluster_key pairs'.format(n=len(names_pairs)))
 print('example:', names_pairs[:2])
 print('{n} clusters_names_pairs'.format(n=len(clusters_names_pairs)))
 print('example:', list(clusters_names_pairs.items())[:2])
@@ -79,7 +79,7 @@ for token_pair in token_pairs:
     token_pairs_scores[token_pair] = sum(scores)
 print('{n} token pairs scores'.format(n=len(token_pairs_scores)))
 print('examples:', list(token_pairs_scores.items())[:2])
-write_duration('scoring names pairs by matrices', start=start1)
+write_duration('scoring cluster_key pairs by matrices', start=start1)
 write_duration('References preparation', start=start)
 
 def countClusterTokens(cluster):

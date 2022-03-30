@@ -60,7 +60,7 @@ def pipeline():
             print(projects.info())
             projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
             names, ids = list(projects[names_col]), list(projects[ids_col])
-            print('names sample:', names[:10])
+            print('cluster_key sample:', names[:10])
             duration.append(['parse_data', round((datetime.now() - start).total_seconds(), 2)])
 
             # Tokens similarity
@@ -74,8 +74,8 @@ def pipeline():
             tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
             duration.append(['words_pairs', round((datetime.now() - start).total_seconds(), 2)])
 
-            # Encode names
-            print('Encode activity names')
+            # Encode cluster_key
+            print('Encode activity cluster_key')
             start = datetime.now()
             names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
             X = np.array(names_embeddings)

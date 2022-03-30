@@ -62,9 +62,9 @@ def parse_graphml_files(file_paths):
 def graphml_to_nodes(raw_files_data):
     '''
     Parse graphml files
-    raw_files_data(dictionary): Files raw data keyed by the files' names
+    raw_files_data(dictionary): Files raw data keyed by the files' cluster_key
     '''
-    print('file names:', raw_files_data.keys())
+    print('file cluster_key:', raw_files_data.keys())
     files_nodes = []
     for name, file_data in raw_files_data.items():
         print('name:', name)

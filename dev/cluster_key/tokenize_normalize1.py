@@ -42,7 +42,7 @@ for matrix in matrices:
     path = os.path.join(matrices_dir, matrix)
     distance_matrices.append(pd.read_pickle(path))
 
-punctuation_marks="=|\+|_|\.|:|\/|\*|\'|,|\?"
+punctuation_marks="=|\+|_|\.|:|\/|\*|\'|,|?"
 def split_tokens (tokens, splitter):
     tokens_splitter= [t for t in tokens if splitter in t]
     tokens = [t for t in tokens if splitter not in t]
@@ -69,32 +69,28 @@ def isint(value):
         return False
 
 # Todo: Identify and normalize entity names as <name>
-def normalize_entities(name, punctuation_symbols=punctuation_marks):
+def normalize_entities(name):
     '''
     Identify names in tokens by the presence of symbols
     '''
-    print('normalize f')
-    print('punctuation_symbols:', punctuation_symbols)
-    print('name:', name)
     tokens = name.split(' ')
     for token in tokens:
+        #print(token)
         if re.findall('\d', token):
+            #print('found digit:', re.findall('\d', token))
             if re.findall('[A-Za-z]', token):
+                #print('digit token contains characters:', re.findall('[A-Za-z]', token))
                 name = name.replace(token, '<name>')
             else:
-                name = name.replace(token, '<number')
-        elif re.findall(punctuation_symbols, token):
-            name = name.replace(token, '<name>')
-    name = name.replace('<name> <name>', '<name>').replace('<number> <number>', '<number>')
+                name = name.replace(token, '<number>')
     print('normalized name:', name)
-
     return name
 
-def tokenize(data, unique=False, is_list=False, exclude_stopwords=False, exclude_chars=True,\
-              split_backslah=False, split_hyphen=False, split_plus=True,\
+def tokenize(data, unique=True, is_list=False, exclude_stopwords=False, exclude_chars=True,\
+              split_backslah=True, split_hyphen=True, split_plus=True,\
               clean_punctuation=False, exclude_numbers=False, exclude_digit_tokens=False, \
               punctuation_symbols=punctuation_marks, stopwords=set(stopwords.words('english')),\
-             normalized_entities=True):
+             normalized_entities=False):
 
     if is_list:
         data = [t for t in data if type(t)==str]
@@ -106,8 +102,9 @@ def tokenize(data, unique=False, is_list=False, exclude_stopwords=False, exclude
         pattern = '\<.+?\>|\w*\d{1,}\.*\d{1,}\w*|\w+'
         tokenizer = nltk.RegexpTokenizer(pattern)
         tokens = tokenizer.tokenize(data)
-    else:
-        tokens = nltk.word_tokenize(data)
+
+    else: tokens = nltk.word_tokenize(data)
+    print('Tokenizer tokens:', tokens)
     tokens = [t.lower() for t in tokens]
     if split_backslah: tokens = split_tokens (tokens, '/')
     if split_hyphen: tokens = split_tokens(tokens, '-')
@@ -136,10 +133,9 @@ def tokens_count(tokens):
 def get_key(cluster_names, cutoff=0.8):
     names_tokens = {}
     for name in cluster_names:
-        tokens = tokenize(name, unique=True, exclude_stopwords=False, \
-                           exclude_numbers=True, exclude_digit_tokens=True)
+        tokens = tokenize(name, unique=True, exclude_stopwords=False, normalized_entities=True,\
+                           exclude_numbers=True, exclude_digit_tokens=False)
         names_tokens[name] = tokens
-    #print('names_tokens:', names_tokens)
     cluster_names_pairs = tuple(combinations(cluster_names, 2))
     pairs_matches = []
     for name_pair in cluster_names_pairs:
@@ -214,8 +210,8 @@ def get_tokens_locations(parts):
     tokens_locations = defaultdict(list)
     for part in parts:
         #print('part:', part)
-        tokens = tokenize(part, unique=True, exclude_stopwords=False, \
-                          exclude_numbers=True, exclude_digit_tokens=True)
+        tokens = tokenize(part, unique=True, exclude_stopwords=False, normalized_entities=True,\
+                          exclude_numbers=True, exclude_digit_tokens=False)
         tokens_indices = [tokens.index(t) for t in tokens]
         #print('tokens:', tokens)
         #print('tokens indices:', tokens_indices)
@@ -254,7 +250,7 @@ def get_key_parts(names):
             names_parts[index].append(name_split[index])
     names_parts = dict(names_parts)
 
-    #print('generating key by parts')
+    print('generating key by parts')
     key_parts = ['']
     for index, names_part in names_parts.items():
         #print('names_part:', names_part)
@@ -262,8 +258,8 @@ def get_key_parts(names):
             # Get key by the name part
             parts_key = get_key(names_part, cutoff=0.8)
             #print('parts_key:', parts_key)
-            part_key_tokens = tokenize(parts_key, unique=True, exclude_stopwords=False, \
-                                       exclude_numbers=True, exclude_digit_tokens=True)
+            part_key_tokens = tokenize(parts_key, unique=True, exclude_stopwords=False, normalized_entities=True,\
+                                       exclude_numbers=True, exclude_digit_tokens=False)
             #print('part_key_tokens:', part_key_tokens)
             # Re-order the key words by their typical order in the name parts
             tokens_typical_locations = get_tokens_locations(names_part)
@@ -285,9 +281,12 @@ for key, names in clusters.items():
         print('=================')
         print(name)
         print(len(name)*'-')
-        tokens = tokenize(name, normalized_entities=False)
+        tokens = tokenize(name, unique=True, exclude_stopwords=False, normalized_entities=False, \
+                          exclude_numbers=True, exclude_digit_tokens=False)
         print('tokens           :', tokens)
-        tokens = tokenize(name, normalized_entities=True)
+        tokens = tokenize(name, unique=True, exclude_stopwords=False, normalized_entities=True, \
+                          exclude_numbers=False, exclude_digit_tokens=False)
         print('normalized tokens:', tokens)
+
 
 

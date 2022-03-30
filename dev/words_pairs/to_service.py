@@ -12,7 +12,7 @@ print('{n1} clusters | {n2} unique clusters'.format(n1=len(clusters), n2=len(uni
 names = []
 for cluster_names in clusters_names: names += cluster_names
 names = list(set(names))
-print('{n} unique names'.format(n=len(names)))
+print('{n} unique cluster_key'.format(n=len(names)))
 names_tokens = {}
 
 # Reference dictionary: Tokens per Name (names_tokens)
@@ -21,7 +21,7 @@ for name in names:
                        exclude_numbers=True, exclude_digit_tokens=True)
     names_tokens[name] = tokens
 np.save(os.path.join(results_dir, 'names_tokens.npy'), names_tokens)
-print('{n} names tokens values in dictionary'.format(n=len(names_tokens)))
+print('{n} cluster_key tokens values in dictionary'.format(n=len(names_tokens)))
 print('examples:', list(names_tokens.items())[:2])
 
 # Reference list: Names pairs (names_pairs)
@@ -32,7 +32,7 @@ for cluster, clusters_names in response.items():
     names_pairs += clusters_name_pairs
     clusters_names_pairs[cluster] = clusters_name_pairs
 np.save(os.path.join(results_dir, 'clusters_names_pairs.npy'), clusters_names_pairs)
-print('{n} names pairs'.format(n=len(names_pairs)))
+print('{n} cluster_key pairs'.format(n=len(names_pairs)))
 print('example:', names_pairs[:2])
 print('{n} clusters_names_pairs'.format(n=len(clusters_names_pairs)))
 print('example:', list(clusters_names_pairs.items())[:2])
@@ -101,7 +101,7 @@ for token_pair in tokens_pairs:
 np.save(os.path.join(results_dir, 'tokens_pairs_scores.npy'), tokens_pairs_scores)
 print('{n} token pairs scores'.format(n=len(tokens_pairs_scores)))
 print('examples:', list(tokens_pairs_scores.items())[:2])
-write_duration('scoring names pairs by matrices', start=start1)
+write_duration('scoring cluster_key pairs by matrices', start=start1)
 write_duration('References preparation', start=start)
 
 from names_scoring import *

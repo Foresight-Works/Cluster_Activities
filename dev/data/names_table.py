@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 results_dir = 'C:\\Users\\RonyArmon\\Projects_Code\\Cluster_Activities\\results'
-names = open(os.path.join(results_dir, 'names.txt')).read().split('\n')
+names = open(os.path.join(results_dir, 'cluster_key.txt')).read().split('\n')
 names = [n for n in names if n]
 vals = []
 for index, name in enumerate(names):

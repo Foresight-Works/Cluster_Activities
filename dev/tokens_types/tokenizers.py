@@ -2,7 +2,7 @@ import nltk
 #nltk.download('stopwords')
 from nltk.corpus import stopwords
 import re
-names=open('names.txt').read().split('\n')
+names=open('cluster_key.txt').read().split('\n')
 
 punctuation_marks="=|\+|_|\.|:|\/|\*|\'|,|?"
 

@@ -99,7 +99,7 @@ def get_cluster_key(cluster_id, cutoff=0.8):
             match_score += matches_tokens_counts[token]
         match_scores[pair_matches] = match_score
 
-    # Score each match by it's length in relation to the names lengths
+    # Score each match by it's length in relation to the cluster_key lengths
     names = []
     for name_pair in cluster_names_pairs: names += name_pair
     names_lengths_median = np.median(np.array([len(name) for name in names]))

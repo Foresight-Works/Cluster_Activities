@@ -1,5 +1,5 @@
 from modules.clustering import *
-from dev.cluster.names.v001.cluster_names import *
+from dev.cluster_key.v001.cluster_names import *
 
 transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
 gen_start = time.time()
@@ -10,7 +10,7 @@ checked = []
 projects = parse_graphml_file(data_path)
 ids = list(projects[ids_col])
 names = list(projects[names_col])
-print('{} names'.format(len(names)))
+print('{} cluster_key'.format(len(names)))
 tokens = tokenize(names, is_list=True, exclude_stopwords=True, \
                   exclude_numbers=True, exclude_digit_tokens=True)
 print('{} unique tokens'.format(len(names)))
@@ -35,7 +35,7 @@ print(projects.info())
 print(projects[[ids_col, names_col, 'cluster']].head())
 projects.to_excel('results.xlsx', index=False)
 
-# Cluster names
+# Cluster cluster_key
 clusters = list(projects['cluster'].unique())
 # for cluster in clusters:
 #     #print('cluster', cluster)

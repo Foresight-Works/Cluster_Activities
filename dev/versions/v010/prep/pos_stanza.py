@@ -5,8 +5,8 @@ import numpy as np
 import os
 nlp = stanza.Pipeline(lang="en", use_gpu= True)
 results_dir = 'C:\\Users\\RonyArmon\\Projects_Code\\Cluster_Activities\\results'
-names = open(os.path.join(results_dir, 'names.txt')).read().split('\n')
-print('{n} unique task names'.format(n=len(names)))
+names = open(os.path.join(results_dir, 'cluster_key.txt')).read().split('\n')
+print('{n} unique task cluster_key'.format(n=len(names)))
 
 import ast
 start = time.time()

@@ -8,7 +8,7 @@ for file in data_files:
     task_names += project_names
 tasks_names = list(set(task_names))
 
-with open('./results/names.txt', 'w', encoding="utf-8") as f:
+with open('./results/cluster_key.txt', 'w', encoding="utf-8") as f:
     for name in task_names:
         name = name.lower()
         f.write('{n}\n'.format(n=name))

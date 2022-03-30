@@ -22,10 +22,10 @@ engine = create_engine('postgresql+psycopg2://postgres:1234@localhost/{db}'.form
 projects = sqlio.read_sql_query('SELECT * FROM projects', engine)
 ids = list(projects['Activity ID'])
 names = list(projects['Activity Name'])
-print('{} names'.format(len(names)))
+print('{} cluster_key'.format(len(names)))
 
 names = list(projects['Activity Name'].unique())
-print('{} names'.format(len(names)))
+print('{} cluster_key'.format(len(names)))
 start = time.time()
 transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
 end = time.time()

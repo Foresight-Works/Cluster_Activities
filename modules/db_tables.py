@@ -5,9 +5,9 @@ import pandas.io.sql as sqlio
 
 def build_create_table_statement(table_name, cols, cols_types):
     '''
-    Build Create table statement with the names and types for each column
+    Build Create table statement with the cluster_key and types for each column
     :param table_name(str): The name of the table to create
-    :param cols(list): Table column names
+    :param cols(list): Table column cluster_key
     :param cols_types: Column response types (postgres)
     '''
     statement_cols_types = ''
@@ -24,7 +24,7 @@ def insert_into_table_statement(table_name, cols, cols_vals):
     Update table
     :param db_name(str): The name of the database to connect using the engine
     :param table_name(str): The name of the table to create
-    :param cols(list): Table column names
+    :param cols(list): Table column cluster_key
     :param cols_vals(list): Column values
     '''
     cols_str, vals_str = "(", "("

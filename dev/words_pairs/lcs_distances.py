@@ -52,7 +52,7 @@ print('Calculate lcs distances for {n} tokens pairs'.format(n=len(tokens_pairs))
 start1 = time.time()
 names_pairs_lcs_distances = lcs_scores(tokens_pairs, num_executors)
 write_duration('distances calculations', start=start1)
-#for names, distance in names_pairs_lcs_distances.items(): print(names, distance)
+#for cluster_key, distance in names_pairs_lcs_distances.items(): print(cluster_key, distance)
 write_duration('distances calculations', start=start1)
 
 pr.disable()

@@ -12,7 +12,7 @@ for name in names:
     tokens += tokens1
 
 tokens = list(set(tokens))
-print('{n1} names | {n2} tokens'.format(n1=len(names), n2=len(tokens)))
+print('{n1} cluster_key | {n2} tokens'.format(n1=len(names), n2=len(tokens)))
 
 with open('../words_pairs/results/tokens.txt', 'w') as f:
     for t in tokens:

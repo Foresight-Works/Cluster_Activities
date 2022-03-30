@@ -24,7 +24,7 @@ clusters, cluster_names = list(data.keys()), list(data.values())
 names = []
 for n in cluster_names: names += n
 names = list(set(names))
-print('{n} unique names'.format(n=len(names)))
+print('{n} unique cluster_key'.format(n=len(names)))
 names_tokens = {}
 
 # Reference dictionary: Distance matrices (distance_matrices)
@@ -43,7 +43,7 @@ for name in names:
     tokens = tokenize(name, unique=True, exclude_stopwords=True, \
                        exclude_numbers=True, exclude_digit_tokens=True)
     names_tokens[name] = tokens
-print('{n} names tokens:'.format(n=len(names_tokens)))
+print('{n} cluster_key tokens:'.format(n=len(names_tokens)))
 print('examples:', list(names_tokens.items())[:2])
 
 # Reference list: Names pairs (names_pairs)
@@ -53,7 +53,7 @@ for cluster, cluster_names in data.items():
     cluster_name_pairs = tuple(combinations(cluster_names, 2))
     names_pairs += cluster_name_pairs
     clusters_names_pairs[cluster] = cluster_name_pairs
-print('{n} names pairs'.format(n=len(names_pairs)))
+print('{n} cluster_key pairs'.format(n=len(names_pairs)))
 print('example:', names_pairs[:2])
 print('{n} clusters_names_pairs'.format(n=len(clusters_names_pairs)))
 print('example:', list(clusters_names_pairs.items())[:2])
@@ -78,14 +78,14 @@ for file, matrix in distance_matrices.items():
     matrices_scores[file.split('.')[0]] = token_pairs_scores
     print('{n} token pairs scores'.format(n=len(token_pairs_scores)))
     print('examples:', list(token_pairs_scores.items())[:2])
-print_duration('scoring names pairs by matrices', start_time=start)
+print_duration('scoring cluster_key pairs by matrices', start_time=start)
 
 # Build a list(tuple) of token pairs (tuples)
 
 def filterMatrixByTokens (names_pair, distance_matrix):
     '''
     Filter input distance matrix indexed by tokens to keep the columns and rows for the
-    tokens in the input names
+    tokens in the input cluster_key
     '''
     name1, name2 = names_pair
     tokens1, tokens2 = names_tokens[name1], names_tokens[name2]
@@ -95,8 +95,8 @@ def filterMatrixByTokens (names_pair, distance_matrix):
 
 def build_clusters_matrices(cluster, names):
     '''
-    Identify the pair or names between each name in the cluster, and for each name pair, extract the
-    distance matrices for the tokens of the names in this pair
+    Identify the pair or cluster_key between each name in the cluster, and for each name pair, extract the
+    distance matrices for the tokens of the cluster_key in this pair
 
     '''
     names_pairs = list(combinations(names, 2))
@@ -120,7 +120,7 @@ def scoreTokensPair(tokens, distance_matrix):
 
 # def scoreNamesPair(name_pair):
 #     '''
-#     Score a pair of names for similarity
+#     Score a pair of cluster_key for similarity
 #     '''
 #     name1, name2 = name_pair
 #     tokens1, tokens2 = names_tokens[name1], names_tokens[name2]

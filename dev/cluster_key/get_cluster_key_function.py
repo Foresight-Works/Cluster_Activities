@@ -34,7 +34,6 @@ def result_from_table(experiment_id, result_key='clusters'):
             clusters[k] = v
     return clusters
 
-
 matrices_dir = '/home/rony/Projects_Code/Cluster_Activities/matrices'
 distance_matrices = []
 matrices = os.listdir(matrices_dir)
@@ -42,7 +41,7 @@ for matrix in matrices:
     path = os.path.join(matrices_dir, matrix)
     distance_matrices.append(pd.read_pickle(path))
 
-punctuation_marks="=|\+|_|\.|:|\/|\*|\'|,|?"
+punctuation_marks="=|\+|_|\.|:|\/|\*|\'|,|\?"
 def split_tokens (tokens, splitter):
     tokens_splitter= [t for t in tokens if splitter in t]
     tokens = [t for t in tokens if splitter not in t]
@@ -68,11 +67,13 @@ def isint(value):
     except ValueError:
         return False
 
-# Todo: Identify and normalize entity names as <name>
-def normalize_entities(name):
+def normalize_entities(name, punctuation_symbols=punctuation_marks):
     '''
     Identify names in tokens by the presence of symbols
     '''
+    #print('normalize f')
+    #print('name:', name)
+    name = name.replace('&amp','')
     tokens = name.split(' ')
     for token in tokens:
         if re.findall('\d', token):
@@ -80,9 +81,14 @@ def normalize_entities(name):
                 name = name.replace(token, '<name>')
             else:
                 name = name.replace(token, '<number')
+        elif re.findall(punctuation_symbols, token):
+            name = name.replace(token, '<name>')
+    name = name.replace('<name> <name>', '<name>').replace('<number> <number>', '<number>')
+    #print('normalized name:', name)
+
     return name
 
-def tokenize(data, unique=True, is_list=False, exclude_stopwords=False, exclude_chars=True,\
+def tokenize(data, unique=False, is_list=False, exclude_stopwords=False, exclude_chars=True,\
               split_backslah=True, split_hyphen=True, split_plus=True,\
               clean_punctuation=False, exclude_numbers=False, exclude_digit_tokens=False, \
               punctuation_symbols=punctuation_marks, stopwords=set(stopwords.words('english')),\
@@ -93,13 +99,13 @@ def tokenize(data, unique=True, is_list=False, exclude_stopwords=False, exclude_
         data = ' '.join(data)
         data = re.sub('\s{2,}', ' ', data)
 
-    # if normalized_entities:
-    #     normalize_entities(data)
-    #     pattern = '\<.+?\>|\w*\d{1,}\.*\d{1,}\w*|\w+'
-    #     tokenizer = nltk.RegexpTokenizer(pattern)
-    #     tokens = tokenizer.tokenize(name)
-    # else: tokens = nltk.word_tokenize(data)
-    tokens = nltk.word_tokenize(data)
+    if normalized_entities:
+        data = normalize_entities(data)
+        pattern = '\<.+?\>|\w*\d{1,}\.*\d{1,}\w*|\w+'
+        tokenizer = nltk.RegexpTokenizer(pattern)
+        tokens = tokenizer.tokenize(data)
+    else:
+        tokens = nltk.word_tokenize(data)
     tokens = [t.lower() for t in tokens]
     if split_backslah: tokens = split_tokens (tokens, '/')
     if split_hyphen: tokens = split_tokens(tokens, '-')
@@ -131,7 +137,7 @@ def get_key(cluster_names, cutoff=0.8):
         tokens = tokenize(name, unique=True, exclude_stopwords=False, \
                            exclude_numbers=True, exclude_digit_tokens=True)
         names_tokens[name] = tokens
-    print('names_tokens:', names_tokens)
+    #print('names_tokens:', names_tokens)
     cluster_names_pairs = tuple(combinations(cluster_names, 2))
     pairs_matches = []
     for name_pair in cluster_names_pairs:
@@ -246,14 +252,14 @@ def get_key_parts(names):
             names_parts[index].append(name_split[index])
     names_parts = dict(names_parts)
 
-    print('generating key by parts')
+    #print('generating key by parts')
     key_parts = ['']
     for index, names_part in names_parts.items():
-        print('names_part:', names_part)
+        #print('names_part:', names_part)
         if len(names_part) > 1:
             # Get key by the name part
             parts_key = get_key(names_part, cutoff=0.8)
-            print('parts_key:', parts_key)
+            #print('parts_key:', parts_key)
             part_key_tokens = tokenize(parts_key, unique=True, exclude_stopwords=False, \
                                        exclude_numbers=True, exclude_digit_tokens=True)
             #print('part_key_tokens:', part_key_tokens)
@@ -273,13 +279,13 @@ def get_key_parts(names):
 
 clusters = result_from_table(experiment_id)
 for key, names in clusters.items():
-    print('=================')
+    print('====== Cluster Names ========')
     for name in names: print(name)
-    print('-----------------')
-    print('key            :', key)
+    print('------ Keys Identified ------')
+    print('key (v1):', key)
     new_key = get_key(names, cutoff=0.8)
-    print('new key by name:', new_key)
+    print('key (v2):', new_key)
     new_key = get_key_parts(names)
-    print('new key by parts:', new_key)
+    print('key (v3):', new_key)
 
 

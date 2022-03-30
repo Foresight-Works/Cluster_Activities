@@ -6,12 +6,12 @@ from concurrent.futures import ProcessPoolExecutor
 exclude = ['ba5 & ba8 - shaft f (type ii) amendment - delink effluent pit {4b1-4} [approved]',\
            'ba5 & ba8 - bd amendment (type ii) - shaft a location shift {4b4-1}',\
            'installation bypass-station man (incl. valves and pipes) "umleitdampfeinf�hrung"']
-names = open('../results/names.txt').read().split('\n')
+names = open('../results/cluster_key.txt').read().split('\n')
 checked = 0
 
-# names = names[checked:]
+# cluster_key = cluster_key[checked:]
 names = names[:100]
-print('{n} unique task names'.format(n=len(names)))
+print('{n} unique task cluster_key'.format(n=len(names)))
 
 nlp = stanza.Pipeline(lang="en")
 

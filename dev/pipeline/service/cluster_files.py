@@ -1,5 +1,5 @@
 from modules.clustering import *
-from dev.cluster.names.v001.cluster_names import *
+from dev.cluster_key.v001.cluster_names import *
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
 duration = []
@@ -54,13 +54,13 @@ def pipeline():
             tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
             duration.append(['words_pairs', round(time.time() - start, 2)])
 
-            # Encode names
+            # Encode cluster_key
             start = time.time()
             names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
             X = np.array(names_embeddings)
             duration.append(['encode_names', round(time.time() - start, 2)])
 
-            # Cluster names
+            # Cluster cluster_key
             start = time.time()
             n_clusters = int(len(names) * n_clusters_perc / 100)
             model_params['n_clusters'] = n_clusters

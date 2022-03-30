@@ -11,8 +11,8 @@ model_name = 'glove-twitter-25'
 
 # Tokens
 results_dir = 'C:\\Users\\RonyArmon\\Projects_Code\\Cluster_Activities\\results'
-unique_names = open(os.path.join(results_dir, 'names.txt')).read().split('\n')
-print('{n} unique names tokenized'.format(n=len(unique_names)))
+unique_names = open(os.path.join(results_dir, 'cluster_key.txt')).read().split('\n')
+print('{n} unique cluster_key tokenized'.format(n=len(unique_names)))
 tokens = []
 for name in unique_names:
     name_tokens = nltk.word_tokenize(name)

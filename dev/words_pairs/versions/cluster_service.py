@@ -48,7 +48,7 @@ def pipeline():
             print(projects.info())
             projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
             names, ids = list(projects[names_col]), list(projects[ids_col])
-            print('names sample:', names[:10])
+            print('cluster_key sample:', names[:10])
             duration.append(['parse_data', round((datetime.now() - start).total_seconds(), 2)])
 
             ### Tokens similarity ###

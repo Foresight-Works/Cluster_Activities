@@ -6,8 +6,8 @@ print('{} tasks to cluster'.format(len(task_names)))
 
 clustered = []
 def cluster_task(name):
-    '''Calculate name similarity for input name compared to all names
-    from a list of names and cluster names that are more similar than the
+    '''Calculate name similarity for input name compared to all cluster_key
+    from a list of cluster_key and cluster cluster_key that are more similar than the
     specified threshold.
     '''
     lower_sim, upper_sim = 0.8, 1.0

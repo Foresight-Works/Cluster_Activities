@@ -61,7 +61,7 @@ def pipeline():
             tokens_similarity.to_pickle(os.path.join(results_dir, 'tokens_similarity.pkl'))
             duration.append(['tokens_similarity', round(time.time() - start, 2)])
 
-            # Encode names
+            # Encode cluster_key
             start = time.time()
             names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
             X = np.array(names_embeddings)
@@ -70,7 +70,7 @@ def pipeline():
             np.save(os.path.join(results_dir, 'ids_embeddings.npy'), ids_embeddings)
             duration.append(['encode_names', round(time.time() - start, 2)])
 
-            # Cluster names
+            # Cluster cluster_key
             start = time.time()
             n_clusters = int(len(names) * n_clusters_perc / 100)
             model_params['n_clusters'] = n_clusters

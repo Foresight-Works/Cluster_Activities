@@ -24,7 +24,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
 
     projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
     names, ids = list(projects[names_col]), list(projects[ids_col])
-    print('names sample:', names[:10])
+    print('cluster_key sample:', names[:10])
 
     names = list(projects[names_col])
     tokens = tokenize(names, is_list=True, exclude_stopwords=True, \
@@ -35,8 +35,8 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     # Token distance matrices
     subprocess.call('python tokens_distances.py', shell=True)
 
-    # Encode names
-    print('Encode activity names')
+    # Encode cluster_key
+    print('Encode activity cluster_key')
 
     # Sentences transformer
     print('Loading language model')
@@ -244,5 +244,3 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
         write_duration('Pipeline', pipeline_start)
         conn.commit()
         conn.close()
-        if 'tmp' in os.listdir():
-            shutil.rmtree('tmp')

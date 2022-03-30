@@ -38,7 +38,7 @@ def create_table(table_name, cols, cols_types, conn):
     :param password(str): The Postgres user password
     :param db_name(str): The name of the database to connect using the engine
     :param table_name(str): The name of the table to create
-    :param cols(list): Table column names
+    :param cols(list): Table column cluster_key
     :param cols_types: Column response types (postgres)
     '''
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
@@ -66,7 +66,7 @@ def insert_into_table(table_name, cols, cols_vals, conn):
     Update table
     :param db_name(str): The name of the database to connect using the engine
     :param table_name(str): The name of the table to create
-    :param cols(list): Table column names
+    :param cols(list): Table column cluster_key
     :param cols_vals(list): Column values
     '''
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);
@@ -93,7 +93,7 @@ def update_table(db_name, table_name, cols, cols_vals, conn):
     Update table
     :param db_name(str): The name of the database to connect using the engine
     :param table_name(str): The name of the table to create
-    :param cols(list): Table column names
+    :param cols(list): Table column cluster_key
     :param cols_vals(list): Column values
     '''
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT);

@@ -50,7 +50,7 @@ def run_service():
     projects = pd.DataFrame()
     if file_names:
         num_files = len(file_names)
-        # File names to pass to the results table (temp. proxy for experiment name)
+        # File cluster_key to pass to the results table (temp. proxy for experiment name)
         file_names_str = [f.split('.')[0].replace('tmp/', '') for f in file_names]
         file_names_str = r'*'.join(file_names_str).rstrip(r'*')
         # File name validation

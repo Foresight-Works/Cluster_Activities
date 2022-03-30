@@ -55,7 +55,7 @@ def parse_csv(csv_string, headers):
 def parse_files(raw_files, headers, format):
     '''
     Parse graphml files and join the parsed products to a dataframe
-    raw_files(dictionary): Files raw response keyed by the files' names
+    raw_files(dictionary): Files raw response keyed by the files' cluster_key
     '''
     parsed_dfs = pd.DataFrame()
     for name, file_data in raw_files.items():
@@ -78,7 +78,7 @@ for file_name in file_names:
     print(type(file_posted))
     unzipped[file_name] = file_posted
 
-print('unzipped file names:', unzipped.keys())
+print('unzipped file cluster_key:', unzipped.keys())
 parsed_dfs = parse_files(unzipped, headers, format)
 print(parsed_dfs.info())
 print(parsed_dfs.head())

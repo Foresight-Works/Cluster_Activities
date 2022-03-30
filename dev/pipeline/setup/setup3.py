@@ -45,7 +45,7 @@ with open(os.path.join(results_dir, 'tokens.txt'), 'w') as f: f.write(' ')
 data_path = os.path.join(data_dir, file)
 
 # App modules
-from dev.cluster.names.v001.cluster_names import *
+from dev.cluster_key.v001.cluster_names import *
 from dev.data.py_postgres import *
 
 # Tables

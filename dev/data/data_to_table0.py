@@ -34,7 +34,7 @@ companies_df = filter_empty_columns(companies_df)
 companies_df.columns = [c.replace(' ', '_').lower() for c in companies_df.columns]
 df_info(companies_df).to_excel(os.path.join(results_dir, 'companies_df_info.xlsx'), index=False)
 
-# Count task names repeats in the dataset
+# Count task cluster_key repeats in the dataset
 names_counts = count_names(companies_df)
 names_counts.to_excel(os.path.join(results_dir, 'names_counts.xlsx'), index=False)
 #companies_df.to_excel(os.path.join(data_dir, 'companies_data.xlsx'), index=False)

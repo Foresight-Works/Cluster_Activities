@@ -44,7 +44,7 @@ for lemma in lemmas:
                     #synonyms = [s for s in synonyms if '_' not in s]
                     multi_words = [s for s in synonyms if any(m in s for m in markers)]
                     synonyms = [s for s in synonyms if s not in multi_words]
-                    # Exclude proper nouns, such as names (e.g. Clarence_Day) and capitalized forms
+                    # Exclude proper nouns, such as cluster_key (e.g. Clarence_Day) and capitalized forms
                     synonyms = [s for s in synonyms if s == s.lower()]
                     # Exclude numeric synonyms
                     synonyms = [s for s in synonyms if type(isint(s))!=int]

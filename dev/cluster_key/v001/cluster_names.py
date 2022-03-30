@@ -63,7 +63,7 @@ def find_matches(names, distances_matrix):
             cluster_key = matches[nearest_match_index]
         else:
             #print('no matches found for:')
-            #print(names)
+            #print(cluster_key)
             cluster_key = names[0]
         
         return cluster_key

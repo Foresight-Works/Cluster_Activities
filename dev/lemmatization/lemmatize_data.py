@@ -9,7 +9,7 @@ for cluster, cluster_names in data.items(): names += cluster_names
 names = list(set(names))
 names = names[:10]
 names = ["I'm drinking water now", "I drank water yesteday", "I drink a lot of beer"]
-print('{n} unique task names'.format(n=len(names)))
+print('{n} unique task cluster_key'.format(n=len(names)))
 exclude = ['ba5 & ba8 - shaft f (type ii) amendment - delink effluent pit {4b1-4} [approved]',\
            'ba5 & ba8 - bd amendment (type ii) - shaft a location shift {4b4-1}',\
            'installation bypass-station man (incl. valves and pipes) "umleitdampfeinf�hrung"']

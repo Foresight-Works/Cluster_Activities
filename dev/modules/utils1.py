@@ -62,9 +62,9 @@ def parse_graphml_files(file_paths):
 def graphmls_df(raw_files_data):
     '''
     Parse graphml files and join the parsed products to a dataframe
-    raw_files_data(dictionary): Files raw response keyed by the files' names
+    raw_files_data(dictionary): Files raw response keyed by the files' cluster_key
     '''
-    print('file names:', raw_files_data.keys())
+    print('file cluster_key:', raw_files_data.keys())
     files_nodes = []
     for name, file_data in raw_files_data.items():
         print('name:', name)
@@ -120,7 +120,7 @@ def csvs_df(raw_files_data):
     Concat the response in csv files to a joined dataframe
     raw_files_data(dictionary):
     '''
-    print('file names:', raw_files_data.keys())
+    print('file cluster_key:', raw_files_data.keys())
     for name, file_data in raw_files_data.items():
         print('file name:', name)
         df = pd.read_csv(io.StringIO(file_data), sep=", ")

@@ -29,7 +29,7 @@ def run_similarity(tokens, num_executors):
 projects = parse_graphml_file(data_path)
 ids = list(projects[ids_col])
 names = list(projects[names_col])
-print('{} names'.format(len(names)))
+print('{} cluster_key'.format(len(names)))
 tokens = tokenize(names, is_list=True, exclude_stopwords=True, \
                   exclude_numbers=True, exclude_digit_tokens=True)
 print('{} unique tokens'.format(len(names)))
@@ -67,7 +67,7 @@ print(projects.info())
 print(projects[[ids_col, names_col, 'cluster']].head())
 projects.to_excel('results.xlsx', index=False)
 
-# Cluster names
+# Cluster cluster_key
 clusters = list(projects['cluster'].unique())
 for cluster in clusters:
     print('cluster', cluster)

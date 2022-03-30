@@ -81,7 +81,7 @@ def pipeline():
             print(projects.info())
             projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
             names, ids = list(projects[names_col]), list(projects[ids_col])
-            print('names sample:', names[:10])
+            print('cluster_key sample:', names[:10])
             duration.append(['parse_data', round((datetime.now() - start).total_seconds(), 2)])
 
             names = list(projects[names_col])
@@ -91,8 +91,8 @@ def pipeline():
                 for token in tokens: f.write('{t}\n'.format(t=token))
 
             subprocess.call('python tokens_distances.py', shell=True)
-            # Encode names
-            print('Encode activity names')
+            # Encode cluster_key
+            print('Encode activity cluster_key')
             start = datetime.now()
             names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
             X = np.array(names_embeddings)
@@ -238,7 +238,7 @@ def pipeline():
 
                     # Name clusters and build results
                     subprocess.call('python build_response.py', shell=True)
-                    if response_type == 'names':
+                    if response_type == 'cluster_key':
                         dict_file_name = 'named_clusters.npy'
                     else: dict_file_name = 'named_clusters_ids.npy'
                     response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
