@@ -28,7 +28,6 @@ def result_from_table(experiment_id, run_id, result_key='clusters'):
             clusters[k] = v
     return clusters
 
-matrices_dir = '/home/rony/Projects_Code/Cluster_Activities/matrices'
 distance_matrices = []
 matrices = os.listdir(matrices_dir)
 for matrix in matrices:
