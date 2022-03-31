@@ -84,7 +84,6 @@ def normalize_entities(name, punctuation_symbols=punctuation_marks):
         elif re.findall(punctuation_symbols, token):
             name = name.replace(token, '<name>')
     name = name.replace('<name> <name>', '<name>').replace('<number> <number>', '<number>')
-    #print('normalized name:', name)
 
     return name
 
@@ -131,7 +130,7 @@ def tokens_count(tokens):
             counts[token] = 1
     return counts
 
-def get_key(cluster_names, cutoff=0.8):
+def text_to_key(cluster_names, cutoff=0.8):
     names_tokens = {}
     for name in cluster_names:
         tokens = tokenize(name, unique=True, exclude_stopwords=False, \
@@ -207,29 +206,21 @@ def get_key(cluster_names, cutoff=0.8):
     return cluster_key
 
 def get_tokens_locations(parts):
-    #print('parts:', parts)
-
     tokens_locations = defaultdict(list)
     for part in parts:
-        #print('part:', part)
         tokens = tokenize(part, unique=True, exclude_stopwords=False, \
                           exclude_numbers=True, exclude_digit_tokens=True)
         tokens_indices = [tokens.index(t) for t in tokens]
-        #print('tokens:', tokens)
-        #print('tokens indices:', tokens_indices)
         for token in tokens:
-        #    #print('token, tokens.index(token)', token, tokens.index(token))
             tokens_locations[token].append(tokens_indices[tokens.index(token)])
-    #print('tokens_locations:', dict(tokens_locations))
     tokens_typical_locations = {}
     for token, locations in tokens_locations.items():
         token_typical_location = max(set(locations), key=locations.count)
         tokens_typical_locations[token] = token_typical_location
 
-    #print('tokens_typical_locations:', tokens_typical_locations)
     return tokens_typical_locations
 
-def get_key_parts(names):
+def get_key(names):
     '''
     Split a group of using a splitter symbol (e.g. hyphen) to produce lists of the phrase parts
     Splitter: ' - '
@@ -237,41 +228,30 @@ def get_key_parts(names):
     # Store names parts by their location relative to a hyphen break in each name
     names_parts = defaultdict(list)
     for name in names:
-        #print('name:', name)
         name_split = name.split(' - ')
         delimiters = ' - |/|\(|\)|\[|\]' # To keep parenthesis use ' - |/|,(\(.+?\))'
         name_split = [i.rstrip().lstrip() for i in re.split(delimiters, name) if i]
-        #print('split:', name_split)
+
         # Number of parts produced by a hyphen break
         num_parts = len(name_split)
-        #print('num_parts:', num_parts)
         parts_indices = np.arange(num_parts)
-        #print('parts_indices:', parts_indices)
         for index in parts_indices:
-            #if index in names_parts: names_parts[index].append(name_split[index])
             names_parts[index].append(name_split[index])
     names_parts = dict(names_parts)
 
-    #print('generating key by parts')
     key_parts = ['']
     for index, names_part in names_parts.items():
-        #print('names_part:', names_part)
         if len(names_part) > 1:
             # Get key by the name part
             parts_key = get_key(names_part, cutoff=0.8)
-            #print('parts_key:', parts_key)
             part_key_tokens = tokenize(parts_key, unique=True, exclude_stopwords=False, \
                                        exclude_numbers=True, exclude_digit_tokens=True)
-            #print('part_key_tokens:', part_key_tokens)
             # Re-order the key words by their typical order in the name parts
             tokens_typical_locations = get_tokens_locations(names_part)
             key_tokens_locations = {k: v for k, v in tokens_typical_locations.items() if k in part_key_tokens}
-            #print('key_tokens_locations:', key_tokens_locations)
             sorted_key_tokens_locations = {k: v for k, v in sorted(key_tokens_locations.items(), key=lambda item: item[1])}
-            #print('sorted_key_tokens_locations:', sorted_key_tokens_locations)
             parts_key = ' '.join(list(sorted_key_tokens_locations.keys()))
             parts_key = string.capwords(parts_key)
-            #print('ordered parts_key:', parts_key)
             key_parts.append(parts_key)
 
     key_parts = [i for i in key_parts if i]
@@ -283,9 +263,9 @@ for key, names in clusters.items():
     for name in names: print(name)
     print('------ Keys Identified ------')
     print('key (v1):', key)
-    new_key = get_key(names, cutoff=0.8)
+    new_key = text_to_key(names, cutoff=0.8)
     print('key (v2):', new_key)
-    new_key = get_key_parts(names)
+    new_key = get_key(names)
     print('key (v3):', new_key)
 
 

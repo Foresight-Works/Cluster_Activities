@@ -3,7 +3,7 @@ import sys
 from setup import *
 
 def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str,\
-                 runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
+                 runs_cols, results_cols, metrics_cols, metrics_optimize, service_location, conn_params,\
                  min_cluster_size, n_clusters_posted):
     conn = mysql.connect(**conn_params)
     cur = conn.cursor()
@@ -18,9 +18,6 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     # Calculate Planned and Actual Duration
     id_planned_duration = activities_duration(projects, 'planned')
     id_actual_duration = activities_duration(projects, 'actual')
-
-    print('id_planned_duration:', id_planned_duration)
-    print('id_actual_duration:', id_actual_duration)
 
     projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
     names, ids = list(projects[names_col]), list(projects[ids_col])
@@ -75,6 +72,25 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             .format(nc=n_clusters_posted, tc=tasks_count)}
         print(clustering_result)
     else:
+        ## Distance matrices
+        distance_matrices = []
+        matrices_paths = []
+        # Distance matrices paths
+        for object_summary in ds_bucket_obj.objects.filter(Prefix=matrices_dir):
+            file_key = object_summary.key
+            print(file_key, file_key.split('/'))
+            if file_key.split('/')[1]:
+                matrices_paths.append(file_key)
+        print('matrices file paths:', matrices_paths)
+
+        # Load distance matrices
+        for matrix_path in matrices_paths:
+            matrix_file = matrix_path.split('/')[1]
+            s3.Bucket(ds_bucket).download_file(matrix_path, matrix_file)
+            distance_matrices.append(pd.read_pickle(matrix_file))
+            os.remove(matrix_file)
+            print('file {f} downloaded'.format(f=matrix_file))
+
         for run_id, n_clusters in enumerate(n_clusters_runs):
             run_id += 1
             print('*** run id={r} | {n} clusters ***'.format(r=run_id, n=n_clusters))
@@ -126,7 +142,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
 
             # Run Reference Dictionaries
             print('run references directory:', references_dir)
-            reference_dictionaries(clustering_result, references_dir)
+            reference_dictionaries(clustering_result, references_dir, distance_matrices)
             subprocess.call('python words_pairs.py {path}'.format(path=references_dir), shell=True)
             words_pairs_score = open(os.path.join(results_dir, 'words_pairs_score.txt')).read().split('\n')[0]
             print('words_pairs_score:', words_pairs_score)
@@ -187,7 +203,8 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
 
             ## Name clusters and build results
             subprocess.call('python build_response.py {eid} {rid} {fn}'.\
-                            format(eid=experiment_id, rid=best_run_id, fn=file_names_str), shell=True)
+                            format(eid=experiment_id, rid=best_run_id,\
+                                   fn=file_names_str), shell=True)
             if client == 'ui':
                 dict_file_name = 'named_clusters.npy'
             else: dict_file_name = 'named_clusters_ids.npy'
@@ -208,19 +225,12 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
                 clustering_result = json.dumps(response_dict)
                 clustering_result = clustering_result.replace("'", "''")
 
-            # print('** Runs table **')
-            # runs_df = pd.read_sql_query("SELECT * FROM {db}.runs".format(eid=experiment_id, db=db_name), conn)
-            # print(runs_df)
-
-            print('clustering_result:', clustering_result)
             result_row_query = "SELECT * FROM {db}.runs WHERE experiment_id={eid} AND run_id={rid}"\
                                    .format(db=db_name, eid=experiment_id, rid=best_run_id)
             cur.execute(result_row_query)
             results_row = [i for i in cur.fetchall()[0]]
-            print('results_row:', results_row)
             results_row.append(clustering_result)
             statement = insert_into_table_statement('{db}.results'.format(db=db_name), results_cols, results_row)
-            print('insert into statement:', statement)
             cur.execute(statement)
             conn.commit()
             print('** Results table **')

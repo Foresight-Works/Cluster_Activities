@@ -35,13 +35,25 @@ import pika
 import ast
 import threading
 import mysql.connector as mysql
-
 from configparser import ConfigParser
+from collections import defaultdict
+import string
+
+
+# File selection menu
+import boto3
+ds_bucket = 'foresight-ds-docs'
+aws_access_key_id = 'AKIAQIALQA3XKOG2MNFS'
+aws_secret_access_key = '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'
+s3 = boto3.resource('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
+ds_bucket_obj = s3.Bucket(ds_bucket)
+matrices_dir = 'matrices'
+
+# Configuration
 def config_vals(header, param):
     vals = config.get(header, param)
     return [i.lstrip().rstrip() for i in vals.split(',')]
-
-# Configuration
 config = ConfigParser()
 config.read(r'./config.ini')
 extensions = config_vals('data', 'extensions')
@@ -77,7 +89,6 @@ if modules_dir not in sys.path:
 data_dir = os.path.join(working_dir, 'data', 'experiments')
 results_dir = os.path.join(working_dir, 'results')
 tokens_path = os.path.join(results_dir, 'tokens.txt')
-matrices_dir = os.path.join(working_dir, 'matrices')
 models_dir = os.path.join(working_dir, 'models')
 standard_dirs = ['results', 'models', 'matrices']
 for dir in standard_dirs:
@@ -112,3 +123,6 @@ runs_cols, runs_types = list(cols_types.keys()), list(cols_types.values())
 results_cols_types = {**cols_types, **metrics_cols, 'Result': 'JSON'}
 results_cols, results_types = list(results_cols_types.keys()), list(results_cols_types.values())
 metrics_cols = list(metrics_cols.keys())
+db_name = 'CAdb'
+location_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password':'exp8546$fs', 'database': db_name},\
+                      'Remote': {'host': '172.31.36.11', 'user':'researchUIuser', 'password':'query1234$fs', 'database': db_name}}

@@ -54,7 +54,7 @@ def scoresToMatrix(token_pairs_scores, fillna_value):
     matrix = matrix.fillna(fillna_value)
     return (matrix)
 
-def reference_dictionaries(clustering_result, references_dir):
+def reference_dictionaries(clustering_result, references_dir, distance_matrices):
     start = time.time()
     print('building reference dictionaries')
     np.save(os.path.join(references_dir, 'clustering_result.npy'), clustering_result)
@@ -97,12 +97,6 @@ def reference_dictionaries(clustering_result, references_dir):
         tokens_pairs += list(itertools.product(name_pairs_tokens1, name_pairs_tokens2))
     print('{n} token pairs'.format(n=len(tokens_pairs)))
     print('examples:', tokens_pairs[:2])
-
-    distance_matrices = []
-    matrices = os.listdir(matrices_dir)
-    for matrix in matrices:
-        path = os.path.join(matrices_dir, matrix)
-        distance_matrices.append(pd.read_pickle(path))
 
     # Reference dictionaries: Tokens pairs - Similarity scores (tokens_pairs_scores)
     start1 = time.time()

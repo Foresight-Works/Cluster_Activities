@@ -105,7 +105,7 @@ def run_service():
         if len(projects) > 0:
             print('file_names_str to pipeline:', file_names_str)
             run_pipeline_args = (projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str, \
-                         runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
+                         runs_cols, results_cols, metrics_cols, metrics_optimize, service_location, conn_params,\
                          min_cluster_size, n_clusters_posted)
             pipeline = threading.Thread(target=run_pipeline, args=run_pipeline_args)
             pipeline.start()

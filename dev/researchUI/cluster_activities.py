@@ -211,7 +211,7 @@ def pipeline():
                 print('Calculation completed')
 
                 # Name clusters and build results
-                subprocess.call('python build_response.py', shell=True)
+                subprocess.call('python build_response1.py', shell=True)
                 if response_type == 'cluster_key': dict_file_name = 'named_clusters.npy'
                 else: dict_file_name = 'named_clusters_ids.npy'
                 response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]

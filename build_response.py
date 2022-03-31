@@ -1,27 +1,21 @@
-import ast
-import os
-import re
-import nltk
-import itertools
-from itertools import combinations
-from nltk.corpus import stopwords
-import numpy as np
-import pandas as pd
-import mysql.connector as mysql
-from collections import defaultdict
-import string
+import sys
+from setup import *
 
-db_name = 'CAdb'
-location_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password':'exp8546$fs', 'database': db_name},\
-                      'Remote': {'host': '172.31.36.11', 'user':'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
-conn_params = location_db_params['Local']
-conn = mysql.connect(**conn_params)
-cur = conn.cursor()
-cur.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
-experiment_id = 10
-def result_from_table(experiment_id, result_key='clusters'):
+print('Building response')
+experiment_id, best_run_id, file_names_str = sys.argv[1], sys.argv[2], sys.argv[3]
+print('experiment_id:', experiment_id)
+print('best_run_id:', best_run_id)
+print('file_names_str in build response:', file_names_str)
+experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
+experiment_dir = os.path.join(results_dir, experiment_dir_name)
+run_dir = os.path.join(experiment_dir, 'runs', best_run_id)
+references_dir = os.path.join(run_dir, 'references')
+print('reference dictionaries directory:', references_dir)
+
+def result_from_table(experiment_id, run_id, result_key='clusters'):
     result_df = pd.read_sql_query("SELECT * FROM results \
-    WHERE experiment_id={eid}".format(eid=experiment_id), conn)
+    WHERE experiment_id={eid} and run_id = {rid}"
+                                  .format(eid=experiment_id, rid=run_id), conn)
     result = result_df['result'].values[0]
     result = ast.literal_eval(result)
     if result_key == 'clusters':
@@ -41,7 +35,7 @@ for matrix in matrices:
     path = os.path.join(matrices_dir, matrix)
     distance_matrices.append(pd.read_pickle(path))
 
-punctuation_marks="=|\+|_|\.|:|\/|\*|\'|,|\?"
+punctuation_marks="=|\+|_|\.|:|;|\/|\*|\'|,|\?"
 def split_tokens (tokens, splitter):
     tokens_splitter= [t for t in tokens if splitter in t]
     tokens = [t for t in tokens if splitter not in t]
@@ -73,17 +67,17 @@ def normalize_entities(name, punctuation_symbols=punctuation_marks):
     '''
     #print('normalize f')
     #print('name:', name)
-    name = name.replace('&amp','')
+    name = name.replace('&amp', '')
     tokens = name.split(' ')
     for token in tokens:
         if re.findall('\d', token):
             if re.findall('[A-Za-z]', token):
                 name = name.replace(token, '<name>')
             else:
-                name = name.replace(token, '<number')
+                name = name.replace(token, '<number>')
         elif re.findall(punctuation_symbols, token):
             name = name.replace(token, '<name>')
-    name = name.replace('<name> <name>', '<name>').replace('<number> <number>', '<number>')
+    name = name.replace('<name><name>', '<name>').replace('<number><number>', '<number>')
 
     return name
 
@@ -130,7 +124,23 @@ def tokens_count(tokens):
             counts[token] = 1
     return counts
 
-def text_to_key(cluster_names, cutoff=0.8):
+def get_tokens_locations(parts):
+    tokens_locations = defaultdict(list)
+    for part in parts:
+        tokens = tokenize(part, unique=True, exclude_stopwords=False, \
+                          exclude_numbers=True, exclude_digit_tokens=True)
+        tokens_indices = [tokens.index(t) for t in tokens]
+        for token in tokens:
+            tokens_locations[token].append(tokens_indices[tokens.index(token)])
+    tokens_typical_locations = {}
+    for token, locations in tokens_locations.items():
+        token_typical_location = max(set(locations), key=locations.count)
+        tokens_typical_locations[token] = token_typical_location
+
+    return tokens_typical_locations
+
+def text_to_key(cluster_names, cutoff=0.4):
+    cluster_key = ''
     names_tokens = {}
     for name in cluster_names:
         tokens = tokenize(name, unique=True, exclude_stopwords=False, \
@@ -194,41 +204,30 @@ def text_to_key(cluster_names, cutoff=0.8):
     for name_pair in cluster_names_pairs: names += name_pair
     names_lengths_median = np.median(np.array([len(name) for name in names]))
     for pair_matches in pairs_matches:
-        near_median_factor = len(pair_matches)/names_lengths_median
-        match_scores[pair_matches] = near_median_factor * match_scores[pair_matches]
-
+        if names_lengths_median>0:
+            near_median_factor = len(pair_matches)/names_lengths_median
+            match_scores[pair_matches] = near_median_factor * match_scores[pair_matches]
+        else: match_scores[pair_matches] = 0
     # Identify the best scoring match
     max_score = max(list(match_scores.values()))
     for pair_matches, match_score in match_scores.items():
         if match_score == max_score:
             cluster_key = pair_matches
+
     cluster_key = ' '.join(list(set(cluster_key)))
     return cluster_key
 
-def get_tokens_locations(parts):
-    tokens_locations = defaultdict(list)
-    for part in parts:
-        tokens = tokenize(part, unique=True, exclude_stopwords=False, \
-                          exclude_numbers=True, exclude_digit_tokens=True)
-        tokens_indices = [tokens.index(t) for t in tokens]
-        for token in tokens:
-            tokens_locations[token].append(tokens_indices[tokens.index(token)])
-    tokens_typical_locations = {}
-    for token, locations in tokens_locations.items():
-        token_typical_location = max(set(locations), key=locations.count)
-        tokens_typical_locations[token] = token_typical_location
-
-    return tokens_typical_locations
-
-def get_key(names):
+def parts_to_texts(cluster_id):
     '''
     Split a group of using a splitter symbol (e.g. hyphen) to produce lists of the phrase parts
     Splitter: ' - '
     '''
     # Store names parts by their location relative to a hyphen break in each name
     names_parts = defaultdict(list)
-    for name in names:
-        name_split = name.split(' - ')
+    cluster_names = clustering_result[cluster_id]
+    #print('cluster id:', cluster_id)
+    #rint('cluster names:', cluster_names)
+    for name in cluster_names:
         delimiters = ' - |/|\(|\)|\[|\]' # To keep parenthesis use ' - |/|,(\(.+?\))'
         name_split = [i.rstrip().lstrip() for i in re.split(delimiters, name) if i]
 
@@ -238,34 +237,74 @@ def get_key(names):
         for index in parts_indices:
             names_parts[index].append(name_split[index])
     names_parts = dict(names_parts)
-
     key_parts = ['']
     for index, names_part in names_parts.items():
         if len(names_part) > 1:
             # Get key by the name part
-            parts_key = get_key(names_part, cutoff=0.8)
-            part_key_tokens = tokenize(parts_key, unique=True, exclude_stopwords=False, \
-                                       exclude_numbers=True, exclude_digit_tokens=True)
-            # Re-order the key words by their typical order in the name parts
-            tokens_typical_locations = get_tokens_locations(names_part)
-            key_tokens_locations = {k: v for k, v in tokens_typical_locations.items() if k in part_key_tokens}
-            sorted_key_tokens_locations = {k: v for k, v in sorted(key_tokens_locations.items(), key=lambda item: item[1])}
-            parts_key = ' '.join(list(sorted_key_tokens_locations.keys()))
-            parts_key = string.capwords(parts_key)
-            key_parts.append(parts_key)
-
+            parts_key = text_to_key(names_part, cutoff=0.8)
+            if parts_key:
+                part_key_tokens = tokenize(parts_key, unique=True, exclude_stopwords=False, \
+                                           exclude_numbers=True, exclude_digit_tokens=True)
+                # Re-order the key words by their typical order in the name parts
+                tokens_typical_locations = get_tokens_locations(names_part)
+                key_tokens_locations = {k: v for k, v in tokens_typical_locations.items() if k in part_key_tokens}
+                sorted_key_tokens_locations = {k: v for k, v in sorted(key_tokens_locations.items(), key=lambda item: item[1])}
+                parts_key = ' '.join(list(sorted_key_tokens_locations.keys()))
+                parts_key = string.capwords(parts_key)
+                key_parts.append(parts_key)
     key_parts = [i for i in key_parts if i]
-    return ' - '.join(key_parts).lstrip(' - ')
+    if not key_parts:
+        if normalize_entities(cluster_names[0]):
+            key_parts = [normalize_entities(cluster_names[0])]
+    entity_labels = ['<number><name>', '<name><number>', '<name>', '<number>']
+    key_parts1 = []
+    for key_part in key_parts:
+        key_part = key_part.replace('> <', '><')
+        # Clear entity or number tags if they open a name part
+        for label in entity_labels:
+            label_pattern = '^\s*{p}*\s*{l}+'.format(l=label, p=punctuation_marks)
+            if re.findall(label_pattern, key_part):
+                key_part = re.sub(label_pattern, '', key_part)
+                key_part = key_part.lstrip().rstrip()
+        key_parts1.append(key_part)
+    key_parts1 = [p for p in key_parts1 if p]
+    key = ' - '.join(key_parts1)
+    key = key.replace('&amp', '')
+    key = re.sub('/|,|;', '-', key)
 
-clusters = result_from_table(experiment_id)
-for key, names in clusters.items():
-    print('====== Cluster Names ========')
-    for name in names: print(name)
-    print('------ Keys Identified ------')
-    print('key (v1):', key)
-    new_key = text_to_key(names, cutoff=0.8)
-    print('key (v2):', new_key)
-    new_key = get_key(names)
-    print('key (v3):', new_key)
+    key = re.sub('^[\s|{p}|-]*'.format(p=punctuation_marks), '', key)
+    key = key.lstrip('-')
+    return cluster_id, key
 
+def key_clusters(clustering_result, num_executors):
+    executor = ProcessPoolExecutor(num_executors)
+    cluster_ids = list(clustering_result.keys())
+    print('{n} cluster_ids:'.format(n=len(cluster_ids)), cluster_ids)
+    named_clusters, named_clusters_ids = {}, {}
+    for cluster_id, cluster_key in executor.map(parts_to_texts, cluster_ids):
+        activities_ids = clusters_namesIDs[cluster_id]
+        named_clusters[cluster_key] = list(zip(activities_ids, clustering_result[cluster_id]))
+        named_clusters[cluster_key] = [tuple(i) for i in named_clusters[cluster_key]]
+        named_clusters_ids[cluster_key] = activities_ids
+    executor.shutdown()
+    # Todo integration: replace file_names_str by the identifier(s) defined for the response
+    named_clusters = {file_names_str: named_clusters}
+    return named_clusters, named_clusters_ids
 
+# Experiment result (to build as response)
+clustering_result = {}
+if 'clustering_result.npy' in os.listdir(references_dir):
+    clustering_result = np.load(os.path.join(references_dir, 'clustering_result.npy'), allow_pickle=True)[()]
+    print('clustering_result example:', list(clustering_result.items())[:1])
+print(100*'-')
+if 'clusters_namesIDs.npy' in os.listdir(run_dir):
+    clusters_namesIDs = np.load(os.path.join(run_dir, 'clusters_namesIDs.npy'), allow_pickle=True)[()]
+    print('clusters_namesIDs example:', list(clusters_namesIDs.items())[:1])
+
+num_executors = int(config.get('run', 'num_executors'))
+named_clusters, named_clusters_ids = key_clusters(clustering_result, num_executors)
+np.save(os.path.join(results_dir, 'named_clusters.npy'), named_clusters)
+np.save(os.path.join(results_dir, 'named_clusters_ids.npy'), named_clusters_ids)
+print(100*'-')
+cluster_names = sorted(list(named_clusters[file_names_str].keys()))
+cluster_names = '\n'.join(cluster_names)

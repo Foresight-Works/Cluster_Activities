@@ -1,3 +1,5 @@
+import os
+
 from setup import *
 start = time.time()
 distance_matrices = []
@@ -61,6 +63,9 @@ scaled_matrix = scaled_matrix.replace(0, 1)
 #print(scaled_matrix)
 distance_matrices.append(scaled_matrix)
 for index, matrix in enumerate(distance_matrices):
-    path = os.path.join(matrices_dir, 'matrix_{i}.pkl'.format(i=index))
-    matrix.to_pickle(path)
+    matrix_file = 'matrix_{i}.pkl'.format(i=index)
+    matrix.to_pickle(matrix_file)
+    s3_client.upload_file(matrix_file, ds_bucket, os.path.join(matrices_dir, matrix_file))
+    os.remove(matrix_file)
+
 write_duration('distances matrices calculation', start)

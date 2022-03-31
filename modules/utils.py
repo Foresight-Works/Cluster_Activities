@@ -34,7 +34,6 @@ def allowed_file(filename, extensions):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in extensions
 
-
 def parse_graphml_file(file_path):
     file_data = open(file_path).read().split('</node>')
     nodes = [s for s in file_data if 'node id' in s]
@@ -53,8 +52,6 @@ def parse_graphml_file(file_path):
         node_df = pd.DataFrame([values], columns=keys)
         nodes_df = nodes_df.append(node_df)
     return nodes_df
-
-
 
 def parse_graphml_files(file_paths):
     '''
@@ -87,7 +84,6 @@ def parse_graphml_files(file_paths):
     print('{} all nodes'.format(len(nodes_df)))
     return nodes_df
 
-
 def df_info(df):
     cols = df.columns
     rows_count = len(df)
@@ -102,7 +98,6 @@ def df_info(df):
     coverage_df['type'] = list(df.dtypes.values)
     coverage_df = coverage_df[coverage_df['coverage'] > 0].sort_values(by=['coverage'], ascending=False)
     return coverage_df
-
 
 def lists_to_dict_df(list_a, list_b, col_a=None, col_b=None, result_as='dict'):
 
@@ -125,7 +120,6 @@ def lists_to_dict_df(list_a, list_b, col_a=None, col_b=None, result_as='dict'):
         combined = combined.sort_values(by=col_b, ascending=False)
     return combined
 
-
 def count_names(companies_df):
     task_names = companies_df['activity_name'][companies_df['activity_type']=='TT_Task']
     unique_tasks = task_names.unique()
@@ -139,6 +133,14 @@ def count_names(companies_df):
 
     return(names_counts)
 
+def tokens_count(tokens):
+    counts = dict()
+    for token in tokens:
+        if token in counts:
+            counts[token] += 1
+        else:
+            counts[token] = 1
+    return counts
 
 def filter_empty_columns(df):
     empty_cols, rows_count = [], len(df)
