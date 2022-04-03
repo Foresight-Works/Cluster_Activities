@@ -6,11 +6,13 @@ pd.set_option("display.max_rows", None, "display.max_columns", None, 'display.ma
 from setup import *
 
 def parse_graphml(graphml_str, headers):
+
     '''
     Parse a graphml file contents to a dataframe
     :param graphml_str (string): The file contents to parse
     :param headers (list): The columns to parse
     '''
+
     nodes = graphml_str.split('</node>')
     nodes = [s for s in nodes if 'node id' in s]
     nodes = [n.lstrip().rstrip() for n in nodes]
@@ -26,7 +28,7 @@ def parse_graphml(graphml_str, headers):
         keys = ['ID'] + [re.findall('=(.*?)>', n)[0] for n in node_rows]
         values = [id] + [re.findall('>(.*?)<', n)[0] for n in node_rows]
         node_df = pd.DataFrame([values], columns = keys)
-        nodes_df = nodes_df.append(node_df)
+        nodes_df = pd.concat([nodes_df, node_df])
 
     return nodes_df[headers]
 
@@ -92,7 +94,6 @@ def xer_nodes(xer_file_path):
 			task_lines.append(line)
 		task_lines = '</node>'+'\n'+'\n'.join(task_lines)+'\n'
 		with open(graphml_file, 'a') as f: f.write(task_lines)
-
 
 	return graphml_file
 	jpype.shutdownJVM()
