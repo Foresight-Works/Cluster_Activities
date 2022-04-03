@@ -39,12 +39,21 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     print('Loading language model')
     start = datetime.now()
     sentences_model = config.get('language_models', 'sentences')
+    print('sentences_model:', sentences_model)
     model_path = os.path.join(models_dir, sentences_model)
+    import psutil
+    process = psutil.Process(os.getpid())
+    print('memory_info:', process.memory_info().rss)
+
     if sentences_model in os.listdir(models_dir):
         transformer_model = SentenceTransformer(model_path)
+        print('memory_info:', process.memory_info().rss)
+
     else:
         transformer_model = SentenceTransformer(sentences_model)
         transformer_model.save(model_path)
+        print('memory_info:', process.memory_info().rss)
+
     duration.append(['model_upload', round((datetime.now() - start).total_seconds(), 2)])
 
     names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
