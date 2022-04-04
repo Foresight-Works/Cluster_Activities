@@ -3,6 +3,7 @@ import time
 import json
 import threading
 import pika
+from scipy.stats import zscore
 
 def build_result(data, clusters, names_col, ids_col):
     clustering_result, clusters_namesIDs = {}, {}
@@ -111,4 +112,20 @@ def write_name_cluster(results_path, name, cluster):
     with open(results_path, 'a') as f:
         f.write(result)
 
+def x_outliers(x, threshold=3):
 
+    '''
+    Filter a list of values of outliers
+    :params:
+    x: A list of numeric values
+    threshold: The outliers cutoff
+    :return:
+    The filtered list
+    '''
+
+    x = pd.DataFrame(x, columns=['value'])
+    transformed = x[['value']].transform(zscore)
+    x['zscore'] = transformed
+    x_vals = x['value'][x['zscore'] <= threshold]
+    max_xvals = x_vals.max()
+    return max_xvals

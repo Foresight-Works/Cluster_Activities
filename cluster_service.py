@@ -77,10 +77,9 @@ def run_service():
                     print('xer format')
                     xer_lines = file_posted.split('\n')
                     print('xer_lines sample:', xer_lines[:10])
-                    with open('tmp_xer.xer', 'w') as f:
+                    with open('tmp_data_file.xer', 'w') as f:
                         for line in xer_lines: f.write('{l}\n'.format(l=line))
-                    graphml_file = xer_nodes('tmp_xer.xer')
-                    if 'tmp_xer.xer' in os.listdir(): os.remove('tmp_xer.xer')
+                    graphml_file = xer_nodes('tmp_data_file.xer')
                     graphml_str = open(graphml_file).read()
                     parsed_df = parse_graphml(graphml_str, headers)
 
@@ -89,6 +88,12 @@ def run_service():
                 print('file: {n}, {r} tasks'.format(n=file_name, r=len(parsed_df)))
                 projects = pd.concat([projects, parsed_df])
 
+        # Remove tmp files
+        file_types = ['xer', 'graphml']
+        for file_type in file_types:
+            tmp_file = 'tmp_data_file.{ft}'.format(ft=file_type)
+            if tmp_file in os.listdir(): os.remove(tmp_file)
+
         # Projects TDAs
         print('Projects')
         print(projects.head())
@@ -96,7 +101,7 @@ def run_service():
         print('task type values:', projects[task_type].unique())
         print(projects[task_type].value_counts())
         projects = projects[projects[task_type].isin(['TT_TASK', 'TT_Task'])]
-        projects.to_excel('projects1.xlsx', index=False)
+        projects.to_excel(os.path.join(experiment_dir, 'parsed_data.xlsx'), index=False)
         tasks_count = len(projects)
         print('{n} tdas'.format(n=tasks_count))
         print('projects')

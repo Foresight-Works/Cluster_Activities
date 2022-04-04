@@ -1,5 +1,6 @@
+import os.path
 import sys
-
+import pandas as pd
 from setup import *
 
 def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str,\
@@ -18,8 +19,36 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     # Calculate Planned and Actual Duration
     id_planned_duration = activities_duration(projects, 'planned')
     id_actual_duration = activities_duration(projects, 'actual')
+    
+    print('Duration validation')
+    c = list(zip(list(id_planned_duration.keys()), list(id_planned_duration.values())))
+    planned_df = pd.DataFrame(c, columns=['id', 'planned_duration'])
+    c = list(zip(list(id_actual_duration.keys()), list(id_actual_duration.values())))
+    actual_df = pd.DataFrame(c, columns=['id', 'actual_duration'])
+    actual_planned = pd.merge(planned_df, actual_df, on='id').dropna()
+    actual_planned = actual_planned.loc[(actual_planned[['actual_duration', 'planned_duration']] > 0).all(axis=1)]
+    actual_planned['ratio'] = actual_planned['actual_duration'] / actual_planned['planned_duration']
+    actual_planned['overrun'] = actual_planned['actual_duration'] / actual_planned['planned_duration'] - 1
+    actual_planned['perc overrun'] = 100 * actual_planned['overrun']
+    print(actual_planned.info())
+    print(actual_planned.head(20))
+    actual_df.to_excel(os.path.join(experiment_dir, 'actual_df.xlsx'), index=False)
+    planned_df.to_excel(os.path.join(experiment_dir, 'planned_df.xlsx'), index=False)
+    actual_planned.to_excel(os.path.join(experiment_dir, 'actual_planned.xlsx'), index=False)
+    print('duration stats')
+    print(actual_planned[['actual_duration', 'planned_duration', 'ratio']].describe())
 
-    projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
+    from modules.plots import histogram_stats, save_fig
+    histogram_stats(actual_planned['actual_duration'], 'Actual Duration', 'duration values',\
+                    os.path.join(experiment_dir, 'actual_duration_histogram.png'))
+    histogram_stats(actual_planned['planned_duration'], 'Planned Duration', 'duration values',\
+                    os.path.join(experiment_dir, 'planned_duration_histogram.png'))
+    histogram_stats(actual_planned['ratio'], 'Planned to Actual Duration', 'duration values', \
+                    os.path.join(experiment_dir, 'planned_actual_ratio_histogram.png'))
+    histogram_stats(actual_planned['perc overrun'], 'Percent Overrun', 'duration values', \
+                    os.path.join(experiment_dir, 'percent_overrun_histogram.png'))
+
+    ################################################################################
     names, ids = list(projects[names_col]), list(projects[ids_col])
     print('cluster_key sample:', names[:10])
 

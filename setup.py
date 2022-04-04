@@ -106,6 +106,7 @@ from modules.db_tables import *
 from modules.evaluate import *
 from modules.tokenizers import *
 from modules.pipeline import *
+from modules.plots import *
 
 # Tables
 metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max', 1), 'ch_index': ('max', 1),\

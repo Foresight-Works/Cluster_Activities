@@ -5,6 +5,7 @@ from scipy.spatial.distance import pdist, squareform
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 from datetime import datetime
+from setup import *
 
 def infer_dt_format(dt):
     '''
@@ -41,6 +42,7 @@ def activities_duration(project_df, calculate):
         project_df[header] = [datetime.strptime(date_string, dt_format) for date_string in list(project_df[header])]
     project_df['Duration'] = (project_df[headers[1]] - project_df[headers[0]]).dt.days.astype(int)
     print('{n} tasks in results'.format(n=len(project_df)))
+    #project_df.to_excel('{c}_duration_calculation.xlsx'.format(c=calculate), index=False)
     return dict(zip(list(project_df['ID']), list(project_df['Duration'])))
 
 
