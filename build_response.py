@@ -273,6 +273,7 @@ def parts_to_texts(cluster_id):
 
     key = re.sub('^[\s|{p}|-]*'.format(p=punctuation_marks), '', key)
     key = key.lstrip('-')
+    if not key.rstrip().lstrip(): key = cluster_names[0]
     return cluster_id, key
 
 def key_clusters(clustering_result, num_executors):

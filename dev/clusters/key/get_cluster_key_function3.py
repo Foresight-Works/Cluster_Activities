@@ -18,7 +18,7 @@ conn_params = location_db_params['Local']
 conn = mysql.connect(**conn_params)
 cur = conn.cursor()
 cur.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
-experiment_id = 10
+experiment_id = 138
 def result_from_table(experiment_id, result_key='clusters'):
     result_df = pd.read_sql_query("SELECT * FROM results \
     WHERE experiment_id={eid}".format(eid=experiment_id), conn)
