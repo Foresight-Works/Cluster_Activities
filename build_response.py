@@ -107,8 +107,6 @@ def parts_to_texts(cluster_id):
     # Store names parts by their location relative to a hyphen break in each name
     names_parts = defaultdict(list)
     cluster_names = clustering_result[cluster_id]
-    #print('cluster id:', cluster_id)
-    #rint('cluster names:', cluster_names)
     for name in cluster_names:
         delimiters = ' - |/|\(|\)|\[|\]' # To keep parenthesis use ' - |/|,(\(.+?\))'
         name_split = [i.rstrip().lstrip() for i in re.split(delimiters, name) if i]
