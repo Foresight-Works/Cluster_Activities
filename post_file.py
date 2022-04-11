@@ -97,7 +97,7 @@ def get_results(experiment_id, conn):
 ## Configuration
 min_cluster_size = 0
 # Data
-data_path = '../data/experiments/'
+data_path = './data/experiments/'
 file_names = ['CCGTD1_IPS_sample.zip']
 print('file_names:', file_names)
 files = prepare_files(file_names, data_path)

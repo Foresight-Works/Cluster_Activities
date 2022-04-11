@@ -1,26 +1,41 @@
-from modules.libraries import *
-from modules.config import *
-from modules.utils import *
+import os
+import sys
+modules_dir = os.path.join(os.getcwd(), 'modules')
+if modules_dir not in sys.path:
+    sys.path.append(modules_dir)
+from libraries import *
+from config import *
+from parsers import *
+from utils import *
 from modules.tokenizers import *
+from aws.s3 import *
 
-print('Building response')
-experiment_id, best_run_id, file_names_str = sys.argv[1], sys.argv[2], sys.argv[3]
-print('experiment_id:', experiment_id)
-print('best_run_id:', best_run_id)
-print('file_names_str in build response:', file_names_str)
-experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
-experiment_dir = os.path.join(results_dir, experiment_dir_name)
-run_dir = os.path.join(experiment_dir, 'runs', best_run_id)
-references_dir = os.path.join(run_dir, 'references')
-print('reference dictionaries directory:', references_dir)
+db_name = 'CAdb'
+conn_params = {'host': 'localhost', 'user':'rony', 'password':'exp8546$fs', 'database': db_name}
+conn = mysql.connect(**conn_params)
+cur = conn.cursor()
+cur.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 
-distance_matrices = []
-matrices = os.listdir(matrices_dir)
-for matrix in matrices:
-    path = os.path.join(matrices_dir, matrix)
-    print('path:', path)
-    distance_matrices.append(pd.read_pickle(path))
+def results_from_table(experiment_id, ids=False, result_key='clusters'):
+    result_df = pd.read_sql_query("SELECT * FROM results \
+    WHERE experiment_id={eid}".format(eid=experiment_id), conn)
+    result = result_df['result'].values[0]
+    result = ast.literal_eval(result)
+    if result_key == 'clusters':
+        result_key = [c for c in result.keys() if 'duration' not in c][0]
+    result = result[result_key]
+    clusters = {}
+    for k, v in result.items():
+        # if len(k.split(' ')) > 1:
+        if not ids:
+            v = [i[1] for i in v]
+        clusters[k] = v
+    return clusters
 
+experiment_id = 232
+clustering_result = results_from_table(experiment_id)
+
+############### build response functions ##############
 def text_to_key(cluster_names, cutoff=0.4):
     cluster_key = ''
     names_tokens = {}
@@ -53,7 +68,8 @@ def text_to_key(cluster_names, cutoff=0.4):
                     token1, token2 = tokens_pair
                     token_pairs_score = 0
                     for index, matrix in enumerate(distance_matrices):
-                        if all(x in matrix.columns for x in tokens_pair):
+                        all_in = all(x in matrix.columns for x in tokens_pair)
+                        if all_in:
                             matrix_score = matrix.at[token1, token2]
                         else: matrix_score = 0
                         token_pairs_score += matrix_score
@@ -99,16 +115,17 @@ def text_to_key(cluster_names, cutoff=0.4):
     cluster_key = ' '.join(list(set(cluster_key)))
     return cluster_key
 
-def parts_to_texts(cluster_id):
+# todo: names to cluster_id
+def parts_to_texts(cluster_names):
+#def parts_to_texts(cluster_id):
     '''
     Split a group of using a splitter symbol (e.g. hyphen) to produce lists of the phrase parts
     Splitter: ' - '
     '''
     # Store names parts by their location relative to a hyphen break in each name
     names_parts = defaultdict(list)
-    cluster_names = clustering_result[cluster_id]
-    #print('cluster id:', cluster_id)
-    #rint('cluster names:', cluster_names)
+    # todo: names to cluster_id
+    #cluster_names = clustering_result[cluster_id]
     for name in cluster_names:
         delimiters = ' - |/|\(|\)|\[|\]' # To keep parenthesis use ' - |/|,(\(.+?\))'
         name_split = [i.rstrip().lstrip() for i in re.split(delimiters, name) if i]
@@ -157,35 +174,31 @@ def parts_to_texts(cluster_id):
     key = re.sub('^[\s|{p}|-]*'.format(p=punctuation_marks), '', key)
     key = key.lstrip('-')
     if not key.rstrip().lstrip(): key = cluster_names[0]
-    return cluster_id, key
+    # todo: return cluster_id, key
+    return key
+#######################################################
+distance_matrices = []
+paths = get_s3_paths(ds_bucket_obj, matrices_dir)
+for path in paths:
+    file = load_pickle_file(path, s3, ds_bucket, matrices_dir)
+    distance_matrices.append(file)
 
-def key_clusters(clustering_result, num_executors):
-    executor = ProcessPoolExecutor(num_executors)
-    cluster_ids = list(clustering_result.keys())
-    named_clusters, named_clusters_ids = {}, {}
-    for cluster_id, cluster_key in executor.map(parts_to_texts, cluster_ids):
-        activities_ids = clusters_namesIDs[cluster_id]
-        named_clusters[cluster_key] = list(zip(activities_ids, clustering_result[cluster_id]))
-        named_clusters[cluster_key] = [tuple(i) for i in named_clusters[cluster_key]]
-        named_clusters_ids[cluster_key] = activities_ids
-    executor.shutdown()
-    # Todo integration: replace file_names_str by the identifier(s) defined for the response
-    named_clusters = {file_names_str: named_clusters}
-    return named_clusters, named_clusters_ids
-
-# Experiment result (to build as response)
-clustering_result = {}
-if 'clustering_result.npy' in os.listdir(references_dir):
-    clustering_result = np.load(os.path.join(references_dir, 'clustering_result.npy'), allow_pickle=True)[()]
-    print('clustering_result example:', list(clustering_result.items())[:1])
-print(100*'-')
-if 'clusters_namesIDs.npy' in os.listdir(run_dir):
-    clusters_namesIDs = np.load(os.path.join(run_dir, 'clusters_namesIDs.npy'), allow_pickle=True)[()]
-    print('clusters_namesIDs example:', list(clusters_namesIDs.items())[:1])
-
-named_clusters, named_clusters_ids = key_clusters(clustering_result, num_executors)
-np.save(os.path.join(results_dir, 'named_clusters.npy'), named_clusters)
-np.save(os.path.join(results_dir, 'named_clusters_ids.npy'), named_clusters_ids)
-print(100*'-')
-cluster_names = sorted(list(named_clusters[file_names_str].keys()))
-cluster_names = '\n'.join(cluster_names)
+tokens_not_in_matrices = []
+#cluster_ids = list(clustering_result.keys())
+#########################################################################################
+single_word_key = []
+for key, names in clustering_result.items():
+    if ((key == 'Condenser') & (len(key.split(' ')) == 1) & (len(names[0].split(' ')) > 1)):
+    #if ((len(key.split(' ')) == 1) & (len(names[0].split(' ')) > 1)):
+        single_word_key.append(key)
+        print(60*'+')
+        print('key:', key)
+        print((4+len(key))*'=')
+        for name in names: print(name)
+        key = parts_to_texts(names)
+        print((4+len(key))*'-')
+        print('new key:', key)
+print('{n1} of a total of {n2} clusters have a single word key:\n'\
+      .format(n1=len(single_word_key), n2=len(clustering_result)), single_word_key)
+tokens_not_in_matrices = list(set(tokens_not_in_matrices))
+print('Tokens not in matrices:', tokens_not_in_matrices)

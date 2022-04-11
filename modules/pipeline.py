@@ -1,11 +1,25 @@
-import os.path
+import os
 import sys
-import pandas as pd
-from setup import *
+modules_dir = os.path.join(os.getcwd(), 'modules')
+if modules_dir not in sys.path:
+    sys.path.insert(0, modules_dir)
+print('sys.path:', sys.path)
+from modules.libraries import *
+from modules.config import *
+
+from modules.build_references import *
+from modules.utils import *
+from modules.clustering import *
+from modules.db_tables import *
+from modules.evaluate import *
+from modules.tokenizers import *
+from modules.tokens_distances import *
+from modules.aws.s3 import *
 
 def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str,\
-                 runs_cols, results_cols, metrics_cols, metrics_optimize, service_location, conn_params,\
+                 runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
                  min_cluster_size, n_clusters_posted):
+    print('matrices_dir:', matrices_dir)
     conn = mysql.connect(**conn_params)
     cur = conn.cursor()
     cur.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
@@ -20,46 +34,23 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     id_planned_duration = activities_duration(projects, 'planned')
     id_actual_duration = activities_duration(projects, 'actual')
     
-    print('Duration validation')
-    c = list(zip(list(id_planned_duration.keys()), list(id_planned_duration.values())))
-    planned_df = pd.DataFrame(c, columns=['id', 'planned_duration'])
-    c = list(zip(list(id_actual_duration.keys()), list(id_actual_duration.values())))
-    actual_df = pd.DataFrame(c, columns=['id', 'actual_duration'])
-    actual_planned = pd.merge(planned_df, actual_df, on='id').dropna()
-    actual_planned = actual_planned.loc[(actual_planned[['actual_duration', 'planned_duration']] > 0).all(axis=1)]
-    actual_planned['ratio'] = actual_planned['actual_duration'] / actual_planned['planned_duration']
-    actual_planned['overrun'] = actual_planned['actual_duration'] / actual_planned['planned_duration'] - 1
-    actual_planned['perc overrun'] = 100 * actual_planned['overrun']
-    print(actual_planned.info())
-    print(actual_planned.head(20))
-    actual_df.to_excel(os.path.join(experiment_dir, 'actual_df.xlsx'), index=False)
-    planned_df.to_excel(os.path.join(experiment_dir, 'planned_df.xlsx'), index=False)
-    actual_planned.to_excel(os.path.join(experiment_dir, 'actual_planned.xlsx'), index=False)
-    print('duration stats')
-    print(actual_planned[['actual_duration', 'planned_duration', 'ratio']].describe())
-
-    from modules.plots import histogram_stats, save_fig
-    histogram_stats(actual_planned['actual_duration'], 'Actual Duration', 'duration values',\
-                    os.path.join(experiment_dir, 'actual_duration_histogram.png'))
-    histogram_stats(actual_planned['planned_duration'], 'Planned Duration', 'duration values',\
-                    os.path.join(experiment_dir, 'planned_duration_histogram.png'))
-    histogram_stats(actual_planned['ratio'], 'Planned to Actual Duration', 'duration values', \
-                    os.path.join(experiment_dir, 'planned_actual_ratio_histogram.png'))
-    histogram_stats(actual_planned['perc overrun'], 'Percent Overrun', 'duration values', \
-                    os.path.join(experiment_dir, 'percent_overrun_histogram.png'))
-
-    ################################################################################
     names, ids = list(projects[names_col]), list(projects[ids_col])
     print('cluster_key sample:', names[:10])
 
     names = list(projects[names_col])
-    tokens = tokenize(names, is_list=True, exclude_stopwords=True, \
+    tokens = tokenize_texts(names, exclude_stopwords=False, \
                       exclude_numbers=True, exclude_digit_tokens=True)
     with open(tokens_path, 'w') as f:
         for token in tokens: f.write('{t}\n'.format(t=token))
 
+    ####################################################################################################
     # Token distance matrices
-    subprocess.call('python tokens_distances.py', shell=True)
+    subprocess.call('python modules/tokens_distances.py', shell=True)
+    distance_matrices = []
+    paths = get_s3_paths(ds_bucket_obj, matrices_dir)
+    for path in paths:
+        file = load_pickle_file(path, s3, ds_bucket, matrices_dir)
+        distance_matrices.append(file)
 
     # Encode cluster_key
     print('Encode activity cluster_key')
@@ -67,7 +58,6 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     # Sentences transformer
     print('Loading language model')
     start = datetime.now()
-    sentences_model = config.get('language_models', 'sentences')
     print('sentences_model:', sentences_model)
     model_path = os.path.join(models_dir, sentences_model)
     import psutil
@@ -110,25 +100,6 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             .format(nc=n_clusters_posted, tc=tasks_count)}
         print(clustering_result)
     else:
-        ## Distance matrices
-        distance_matrices = []
-        matrices_paths = []
-        # Distance matrices paths
-        for object_summary in ds_bucket_obj.objects.filter(Prefix=matrices_dir):
-            file_key = object_summary.key
-            print(file_key, file_key.split('/'))
-            if file_key.split('/')[1]:
-                matrices_paths.append(file_key)
-        print('matrices file paths:', matrices_paths)
-
-        # Load distance matrices
-        for matrix_path in matrices_paths:
-            matrix_file = matrix_path.split('/')[1]
-            s3.Bucket(ds_bucket).download_file(matrix_path, matrix_file)
-            distance_matrices.append(pd.read_pickle(matrix_file))
-            os.remove(matrix_file)
-            print('file {f} downloaded'.format(f=matrix_file))
-
         for run_id, n_clusters in enumerate(n_clusters_runs):
             run_id += 1
             print('*** run id={r} | {n} clusters ***'.format(r=run_id, n=n_clusters))
@@ -142,7 +113,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             model_params['affinity'] = affinity
             clustering_params_write = '_'.join(['{param}|{val}'.format(param=k, val=v) for k, v in model_params.items()])
             model_params['n_clusters'] = n_clusters
-            model_conf = model_conf_instance(model_name, model_params)
+            model_conf = model_conf_instance(clustering_model_name, model_params)
             clustering = model_conf.fit(X)
             clusters_labels = list(clustering.labels_)
             projects['cluster'] = clusters_labels
@@ -203,7 +174,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             print('file_names_str written:', file_names_str)
             runs_row = [experiment_id, run_id, file_names_str, \
                            num_files, run_start, run_end, run_duration,\
-                           tasks_count, sentences_model, model_name, clustering_params_write, \
+                           tasks_count, sentences_model, clustering_model_name, clustering_params_write, \
                            n_clusters, ave_std,\
                            mean_tpc, median_tpc, min_tpc, max_tpc,\
                            min_max_tpc, wcss, bcss, ch_index, db_index, silhouette,\
@@ -271,9 +242,9 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             statement = insert_into_table_statement('{db}.results'.format(db=db_name), results_cols, results_row)
             cur.execute(statement)
             conn.commit()
-            print('** Results table **')
-            results_df = pd.read_sql_query("SELECT * FROM {db}.results".format(db=db_name), conn)
-            print(results_df)
+            # print('** Results table **')
+            # results_df = pd.read_sql_query("SELECT * FROM {db}.results".format(db=db_name), conn)
+            # print(results_df)
 
         ## Publish results
         QUEUE_NAME = 'experiment_{id}'.format(id=experiment_id)

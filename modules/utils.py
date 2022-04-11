@@ -1,9 +1,5 @@
-import pandas as pd
-import time
-import json
-import threading
-import pika
-from scipy.stats import zscore
+from modules.libraries import *
+from modules.config import *
 
 def build_result(data, clusters, names_col, ids_col):
     clustering_result, clusters_namesIDs = {}, {}
@@ -28,12 +24,6 @@ def write_duration(process, start):
     duration_mins = round(duration_secs / 60, 2)
     print('{p} took {ds} seconds, {dm} minutes'
           .format(p=process, ds=duration_secs, dm=duration_mins))
-
-def allowed_file(filename, extensions):
-    """ Tests if filetype is an allowed filetype """
-
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in extensions
 
 def df_info(df):
     cols = df.columns
@@ -129,3 +119,4 @@ def x_outliers(x, threshold=3):
     x_vals = x['value'][x['zscore'] <= threshold]
     max_xvals = x_vals.max()
     return max_xvals
+

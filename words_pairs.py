@@ -1,4 +1,6 @@
-from setup import *
+from modules.libraries import *
+from modules.config import *
+
 references_dir = sys.argv[1]
 print(os.listdir(references_dir))
 print('running words pairs')

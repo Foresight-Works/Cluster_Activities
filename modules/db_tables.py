@@ -1,7 +1,10 @@
-import re
-import pandas as pd
-import pandas.io.sql as sqlio
-
+import os
+import sys
+modules_dir = os.path.join(os.getcwd(), 'modules')
+if modules_dir not in sys.path:
+    sys.path.append(modules_dir)
+from libraries import *
+from config import *
 
 def build_create_table_statement(table_name, cols, cols_types):
     '''
@@ -36,7 +39,5 @@ def insert_into_table_statement(table_name, cols, cols_vals):
         #vals_str += "{v},".format(v=val)
     cols_str = cols_str.rstrip(",")+")"
     vals_str = vals_str.rstrip(",")+")"
-    print('cols str:', cols_str)
-    print('vals str:', vals_str)
     return "INSERT INTO {tn} {cv} VALUES {vs}".format(tn=table_name, cv=cols_str, vs=vals_str)
 

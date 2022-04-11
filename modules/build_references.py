@@ -1,58 +1,7 @@
-from setup import *
+from modules.libraries import *
+from modules.config import *
 from modules.tokenizers import *
 from modules.utils import *
-
-def filter_embeddings(vocab_tokens, embeddings):
-    '''
-    Filter embeddings dictionary for the vectors of a given vocabulary
-    :param vocab_tokens(list): The tokens of an input vocabulary
-    :param embeddings (dictionary): Embedding vectors obtained from a language model, keyed by tokens
-    '''
-    vocab_embeddings, not_in_vocabulary = {}, []
-    for token in vocab_tokens:
-        try:
-            vocab_embeddings[token] = embeddings[token]
-        except KeyError as e:
-            if 'not in vocabulary' in str(e):
-                not_in_vocabulary.append(token)
-    return vocab_embeddings, not_in_vocabulary
-
-def string_similarity_ratio(token_pair):
-    token1, token2 = token_pair
-    score = Levenshtein.ratio(token1, token2)
-    return (token_pair, score)
-
-def run_string_similarity_ratio(tokens_pairs, num_executors):
-    tokens_scores = {}
-    executor = ProcessPoolExecutor(num_executors)
-    chunksize = int(len(tokens_pairs)/(10*num_executors))
-    if num_executors > 1:
-        for token_pair, score in executor.map(string_similarity_ratio, tokens_pairs, chunksize=chunksize):
-            tokens_scores[token_pair] = score
-        executor.shutdown()
-    else:
-        for token_pair, score in map(string_similarity_ratio, tokens_pairs):
-            tokens_scores[token_pair] = score
-    return tokens_scores
-
-def scoresToMatrix(token_pairs_scores, fillna_value):
-    token_pairs = list(token_pairs_scores.keys())
-    #print('token_pairs sample:', token_pairs[:2])
-    tokens = []
-    for tokens_pair in token_pairs: tokens += list(tokens_pair)
-    unique_tokens = list(set(tokens))
-    matrix = pd.DataFrame(index=unique_tokens, columns=unique_tokens)
-    reversed_pairs_scores = {}
-    for token_pair, score in token_pairs_scores.items():
-        reversed_pair = (token_pair[1], token_pair[0])
-        reversed_pairs_scores[reversed_pair] = score
-    token_pairs_scores = {**token_pairs_scores, **reversed_pairs_scores}
-    for token_pair, score in token_pairs_scores.items():
-        #print(token_pair, score)
-        token1, token2 = token_pair
-        matrix.at[token1, token2] = score
-    matrix = matrix.fillna(fillna_value)
-    return (matrix)
 
 def reference_dictionaries(clustering_result, references_dir, distance_matrices):
     start = time.time()
@@ -72,6 +21,7 @@ def reference_dictionaries(clustering_result, references_dir, distance_matrices)
         tokens = tokenize(name, unique=True, exclude_stopwords=True, \
                            exclude_numbers=True, exclude_digit_tokens=True)
         names_tokens[name] = tokens
+
     np.save(os.path.join(references_dir, 'names_tokens.npy'), names_tokens)
     print('{n} cluster_key tokens values in dictionary'.format(n=len(names_tokens)))
     print('examples:', list(names_tokens.items())[:2])

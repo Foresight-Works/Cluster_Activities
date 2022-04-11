@@ -1,6 +1,12 @@
 import os
-
-from setup import *
+import sys
+modules_dir = os.path.join(os.getcwd(), 'modules')
+if modules_dir not in sys.path:
+    sys.path.append(modules_dir)
+from libraries import *
+from config import *
+from parsers import *
+from pipeline import *
 
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
@@ -55,8 +61,8 @@ def run_service():
         file_names_str = r'*'.join(file_names_str).rstrip(r'*')
         # File name validation
         for file_name in file_names:
-            print('file_name:', file_name)
-            if allowed_file(file_name, config.get('data', 'extensions')):
+            file_type = file_name.split('.')[1]
+            if file_type in extensions:
                 print(f'allowing file {file_name}')
                 print('===={f}===='.format(f=file_name))
                 encodings = ['utf-8-sig', 'latin-1', 'ISO-8859-1', 'Windows-1252']
@@ -95,6 +101,8 @@ def run_service():
             if tmp_file in os.listdir(): os.remove(tmp_file)
 
         # Projects TDAs
+        print(projects.columns)
+        projects['Label'] = [name.replace('&amp', '') for name in list(projects['Label'])]
         print('Projects')
         print(projects.head())
         print(projects.info())
@@ -110,7 +118,7 @@ def run_service():
         if len(projects) > 0:
             print('file_names_str to pipeline:', file_names_str)
             run_pipeline_args = (projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str, \
-                         runs_cols, results_cols, metrics_cols, metrics_optimize, service_location, conn_params,\
+                         runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
                          min_cluster_size, n_clusters_posted)
             pipeline = threading.Thread(target=run_pipeline, args=run_pipeline_args)
             pipeline.start()
