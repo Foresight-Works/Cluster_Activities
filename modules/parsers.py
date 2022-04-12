@@ -15,9 +15,9 @@ def parse_graphml(graphml_str, headers):
     nodes = [n.replace('"', '') for n in nodes]
     # Exclude file header
     nodes = nodes[1:]
-
     nodes_df = pd.DataFrame()
-    for node in nodes:
+    print('parsing {n} nodes'.format(n=len(nodes)))
+    for index, node in enumerate(nodes):
         node_rows = node.split('\n')
         id = re.findall('=(.*?)>', node_rows[0])[0]
         node_rows = node_rows[1:]

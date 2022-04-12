@@ -14,7 +14,7 @@ s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_a
 ds_bucket_obj = s3.Bucket(ds_bucket)
 matrices_dir = 'matrices'
 extensions = ['graphml', 'csv', 'xer', 'zip']
-ids_col, names_col, task_type = 'ID', 'Label', 'TaskType',
+ids_col, names_col, task_type = 'ID', 'Label', 'TaskType'
 duration_cols = ['PlannedStart', 'PlannedEnd']
 headers = ['ID', 'TaskType', 'Label', 'PlannedStart', 'PlannedEnd', 'ActualStart', 'ActualEnd', 'Float', 'Status']
 

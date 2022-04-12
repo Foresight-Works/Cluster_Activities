@@ -63,7 +63,6 @@ def run_service():
         for file_name in file_names:
             file_type = file_name.split('.')[1]
             if file_type in extensions:
-                print(f'allowing file {file_name}')
                 print('===={f}===='.format(f=file_name))
                 encodings = ['utf-8-sig', 'latin-1', 'ISO-8859-1', 'Windows-1252']
                 encoded, index = False, 0
@@ -109,6 +108,14 @@ def run_service():
         print('task type values:', projects[task_type].unique())
         print(projects[task_type].value_counts())
         projects = projects[projects[task_type].isin(['TT_TASK', 'TT_Task'])]
+        # Drop duplicates
+        rows_count1 = len(projects)
+        print('rows count, all rows=', rows_count1)
+        projects = projects.drop_duplicates()
+        rows_count2 = len(projects)
+        print('rows count, no duplicates=', rows_count2)
+        print('{n} duplicate tasks dropped'.format(n=rows_count1-rows_count2))
+
         projects.to_excel(os.path.join(experiment_dir, 'parsed_data.xlsx'), index=False)
         tasks_count = len(projects)
         print('{n} tdas'.format(n=tasks_count))
