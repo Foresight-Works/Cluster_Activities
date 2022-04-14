@@ -1,7 +1,7 @@
 from modules.libraries import *
 from modules.config import *
 
-def parse_graphml(graphml_str, headers):
+def parse_graphml(file_name, graphml_str, headers):
 
     '''
     Parse a graphml file contents to a dataframe
@@ -26,7 +26,9 @@ def parse_graphml(graphml_str, headers):
         node_df = pd.DataFrame([values], columns = keys)
         nodes_df = pd.concat([nodes_df, node_df])
 
-    return nodes_df[headers]
+    nodes_df = nodes_df[headers]
+    nodes_df['File'] = file_name
+    return nodes_df
 
 def parse_csv(csv_string):
     '''

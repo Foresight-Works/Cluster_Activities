@@ -77,7 +77,7 @@ def run_service():
                         index += 1
                 format = file_name.split('.')[1]
                 if format == 'graphml':
-                    parsed_df = parse_graphml(file_posted, headers)
+                    parsed_df = parse_graphml(file_name, graphml_str, headers)
                 elif format == 'xer':
                     print('xer format')
                     xer_lines = file_posted.split('\n')
@@ -86,7 +86,7 @@ def run_service():
                         for line in xer_lines: f.write('{l}\n'.format(l=line))
                     graphml_file = xer_nodes('tmp_data_file.xer')
                     graphml_str = open(graphml_file).read()
-                    parsed_df = parse_graphml(graphml_str, headers)
+                    parsed_df = parse_graphml(file_name, graphml_str, headers)
 
                 elif format == 'csv':
                     parsed_df = parse_csv(file_posted)
@@ -117,6 +117,8 @@ def run_service():
         print('rows count, no duplicates=', rows_count2)
         print('{n} duplicate tasks dropped'.format(n=rows_count1-rows_count2))
 
+        # A {task id: source file} dictionary to make the file name per task available for the RCF analysis in the research UI
+        ids_files = dict(zip(list(projects['ID']), list(projects['File'])))
         projects.to_excel(os.path.join(experiment_dir, 'parsed_data.xlsx'), index=False)
         tasks_count = len(projects)
         print('{n} tdas'.format(n=tasks_count))
@@ -128,7 +130,7 @@ def run_service():
             print('file_names_str to pipeline:', file_names_str)
             run_pipeline_args = (projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str, \
                          runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
-                         min_cluster_size, n_clusters_posted, duplicates_count)
+                         min_cluster_size, n_clusters_posted, duplicates_count, ids_files)
             pipeline = threading.Thread(target=run_pipeline, args=run_pipeline_args)
             pipeline.start()
             pipeline.join(0)

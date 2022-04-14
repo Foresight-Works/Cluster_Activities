@@ -18,7 +18,7 @@ from modules.aws.s3 import *
 
 def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str,\
                  runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
-                 min_cluster_size, n_clusters_posted, duplicates_count):
+                 min_cluster_size, n_clusters_posted, duplicates_count, ids_files):
     print('matrices_dir:', matrices_dir)
     conn = mysql.connect(**conn_params)
     cur = conn.cursor()
@@ -226,6 +226,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
                 response_dict['planned_duration_vals'], response_dict['actual_duration_vals'] \
                     = id_planned_duration, id_actual_duration
                 response_dict['duplicates_count'] = duplicates_count
+                response_dict['ids_files'] = ids_files
                 clustering_result = json.dumps(response_dict)
                 clustering_result = clustering_result.replace("'", "''")
 
