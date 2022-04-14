@@ -4,8 +4,8 @@ import sys
 modules_dir = os.path.join(os.getcwd(), 'modules')
 if modules_dir not in sys.path:
     sys.path.append(modules_dir)
-from libraries import *
 
+import boto3
 ds_bucket = 'foresight-ds-docs'
 aws_access_key_id = 'AKIAQIALQA3XKOG2MNFS'
 aws_secret_access_key = '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'
@@ -61,5 +61,3 @@ standard_dirs = ['results', 'models', 'matrices', 'tmp']
 for dir in standard_dirs:
     if dir not in os.listdir('.'):
         os.mkdir(dir)
-
-

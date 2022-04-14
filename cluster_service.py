@@ -113,6 +113,7 @@ def run_service():
         print('rows count, all rows=', rows_count1)
         projects = projects.drop_duplicates()
         rows_count2 = len(projects)
+        duplicates_count = int(rows_count1 - rows_count2)
         print('rows count, no duplicates=', rows_count2)
         print('{n} duplicate tasks dropped'.format(n=rows_count1-rows_count2))
 
@@ -122,11 +123,12 @@ def run_service():
         print('projects')
         print(projects.head())
         print(projects.info())
+
         if len(projects) > 0:
             print('file_names_str to pipeline:', file_names_str)
             run_pipeline_args = (projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str, \
                          runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
-                         min_cluster_size, n_clusters_posted)
+                         min_cluster_size, n_clusters_posted, duplicates_count)
             pipeline = threading.Thread(target=run_pipeline, args=run_pipeline_args)
             pipeline.start()
             pipeline.join(0)

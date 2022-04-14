@@ -15,14 +15,15 @@ files = [f for f in files if any(y in f for y in files_num)]
 print(files)
 parsed_dfs = pd.DataFrame()
 for file in files:
-    results_file = '{f}.xlsx'.format(f=file.replace('.graphml', ''))
+    results_file = '{f}.xlsx'.format(f=file.replace('.xer', ''))
     print(file, results_file)
     file = files[0]
     xer_file_path = os.path.join(files_path, file)
     graphml_file = xer_nodes(xer_file_path)
     graphml_str = open(graphml_file).read()
     parsed_df = parse_graphml(graphml_str, headers)
-    print(parsed_df.info())
+    #print(parsed_df.info())
+    print('{n1} rows | {n2} dedupliated rows'.format(n1=len(parsed_df), n2=len(parsed_df.drop_duplicates())))
     parsed_df.to_excel(results_file, index=False)
     parsed_dfs = pd.concat([parsed_dfs, parsed_df])
 

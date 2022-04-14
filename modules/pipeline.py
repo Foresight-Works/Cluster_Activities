@@ -18,7 +18,7 @@ from modules.aws.s3 import *
 
 def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str,\
                  runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
-                 min_cluster_size, n_clusters_posted):
+                 min_cluster_size, n_clusters_posted, duplicates_count):
     print('matrices_dir:', matrices_dir)
     conn = mysql.connect(**conn_params)
     cur = conn.cursor()
@@ -78,7 +78,6 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
     X = np.array(names_embeddings)
     ids_embeddings = dict(zip(ids, X))
-    #np.save(os.path.join(results_dir, 'ids_embeddings.npy'), ids_embeddings)
     duration.append(['encode_names', round((datetime.now() - start).total_seconds(), 2)])
 
     runs_rows = []
@@ -218,11 +217,6 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
                 dict_file_name = 'named_clusters.npy'
             else: dict_file_name = 'named_clusters_ids.npy'
             response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
-
-            ## message id
-            message_id = 'experiment_{eid}'.format(eid=experiment_id)
-            #response_dict.setdefault('message_id', message_id)
-            ###
             message = json.dumps(response_dict)
 
             # Write best clustering result
@@ -231,6 +225,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             else:
                 response_dict['planned_duration_vals'], response_dict['actual_duration_vals'] \
                     = id_planned_duration, id_actual_duration
+                response_dict['duplicates_count'] = duplicates_count
                 clustering_result = json.dumps(response_dict)
                 clustering_result = clustering_result.replace("'", "''")
 

@@ -167,8 +167,8 @@ def key_clusters(clustering_result, num_executors):
         named_clusters[cluster_key] = [tuple(i) for i in named_clusters[cluster_key]]
         named_clusters_ids[cluster_key] = activities_ids
     executor.shutdown()
-    # Todo integration: replace file_names_str by the identifier(s) defined for the response
-    named_clusters = {file_names_str: named_clusters}
+    # Todo integration: replace clusters by the identifier(s) defined for the response
+    named_clusters = {'clusters': named_clusters}
     return named_clusters, named_clusters_ids
 
 # Experiment result (to build as response)
@@ -185,5 +185,5 @@ named_clusters, named_clusters_ids = key_clusters(clustering_result, num_executo
 np.save(os.path.join(results_dir, 'named_clusters.npy'), named_clusters)
 np.save(os.path.join(results_dir, 'named_clusters_ids.npy'), named_clusters_ids)
 print(100*'-')
-cluster_names = sorted(list(named_clusters[file_names_str].keys()))
+cluster_names = sorted(list(named_clusters['clusters'].keys()))
 cluster_names = '\n'.join(cluster_names)

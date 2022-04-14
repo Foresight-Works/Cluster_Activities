@@ -41,17 +41,35 @@ def read_xer(xer_file):
                     pass
     return tables
 
-
 dir = '/home/rony/Projects_Code/Cluster_Activities/data/MTR_Tunnels/xers'
 files = os.listdir(dir)
-file = files[0]
-print('files:', files)
+file = '823A_As-built_Programme.xer'
 #for file in files:
 path = os.path.join(dir, file)
+print('path:', path)
 tables = read_xer(path)
 
 print(tables.keys())
+q = 'Construction Stage Mobile Phone Network'
 for name, table in tables.items():
-    print(60*'+')
-    print(name)
-    print(table.columns)
+    if 'task_name' in table.columns:
+        print(60*'+')
+        print(name)
+        results_file = '{f}.xlsx'.format(f=file.replace('.xer', ''))
+        table.to_excel(results_file, index=False)
+    #     tasks = list(table['task_name'])
+    #     #print('tasks:', tasks)
+    #     f = [t for t in tasks if q in t]
+    #     print(f)
+    #     tasks.sort()
+    #     for t in tasks: print(t)
+        #print(table)
+        #print(table.columns)
+        #table['task_id'] = table['task_id'].astype(int)
+        #print(table['task_id'].describe())
+        # for c in table.columns:
+        #     print(c)
+        #     cvals = list(table[c])
+        #     f = [v for v in cvals if q in v]
+        #     #print(table[c].head())
+        #     print(f)

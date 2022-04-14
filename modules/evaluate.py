@@ -1,3 +1,5 @@
+import pandas as pd
+
 from modules.libraries import *
 from modules.config import *
 
@@ -17,6 +19,8 @@ def infer_dt_format(dt):
             break
     return dt_format
 
+
+
 def activities_duration(project_df, calculate):
     '''
     Calculate the planned and actual duration for program activities
@@ -34,6 +38,7 @@ def activities_duration(project_df, calculate):
         header_sample = project_df[header].values[0]
         dt_format = infer_dt_format(header_sample)
         project_df[header] = [datetime.strptime(date_string, dt_format) for date_string in list(project_df[header])]
+
     project_df['Duration'] = (project_df[headers[1]] - project_df[headers[0]]).dt.days.astype(int)
     print('{n} tasks in results'.format(n=len(project_df)))
     #project_df.to_excel('{c}_duration_calculation.xlsx'.format(c=calculate), index=False)
