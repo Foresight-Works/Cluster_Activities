@@ -42,3 +42,4 @@ def results_file_name(model_name, hyper_params_conf):
         if k not in exclude: model_name += '_{k}{v}'.format(k=k, v=str(v).capitalize())
         # name = name[:-1]
     return model_name
+
