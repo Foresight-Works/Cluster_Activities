@@ -31,9 +31,11 @@ def text_to_key(cluster_names, cutoff=0.4):
     #print('names_tokens:', names_tokens)
     cluster_names_pairs = tuple(combinations(cluster_names, 2))
     pairs_matches = []
+    source_tokens = [] # Store for all tokens in cluster names
     for name_pair in cluster_names_pairs:
         name1, name2 = name_pair
         tokens1, tokens2 = names_tokens[name1], names_tokens[name2]
+        source_tokens = source_tokens + tokens1 + tokens2
         tokens1 = [t.lower() for t in tokens1]
         tokens2 = [t.lower() for t in tokens2]
         if name1 == name2:
@@ -69,6 +71,7 @@ def text_to_key(cluster_names, cutoff=0.4):
                     pair_matches.append(matched_token)
 
         pairs_matches.append(tuple(pair_matches))
+
     matches_tokens = []
     for pair_matches in pairs_matches: matches_tokens += list(pair_matches)
     matches_tokens_counts = tokens_count(matches_tokens)
@@ -95,6 +98,11 @@ def text_to_key(cluster_names, cutoff=0.4):
     for pair_matches, match_score in match_scores.items():
         if match_score == max_score:
             cluster_key = pair_matches
+
+    # Re-introduce the uppercase form for uppercase entities
+    if uppercased_entities_text(source_tokens):
+       uppercased_tokens_dict = build_uppercased_tokens_dict(list(set(source_tokens)))
+       cluster_key = replace_uppercased(cluster_key, uppercased_tokens_dict)
 
     cluster_key = ' '.join(list(set(cluster_key)))
     return cluster_key
@@ -153,7 +161,7 @@ def parts_to_texts(cluster_id):
     key = re.sub('/|,|;', '-', key)
 
     key = re.sub('^[\s|{p}|-]*'.format(p=punctuation_marks), '', key)
-    key = key.lstrip('-')
+    key = key.lstrip('-').replace('{{', '').replace('}}', '')
     if not key.rstrip().lstrip(): key = cluster_names[0]
     return cluster_id, key
 

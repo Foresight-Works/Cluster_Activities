@@ -1,7 +1,9 @@
 from modules.libraries import *
 from modules.config import *
 from nltk.corpus import stopwords
-punctuation_marks="=|\+|_|\.|:|\/|\*|\'|,|\?"
+print('tokenizers imported')
+
+punctuation_marks="=|-|\+|_|\.|:|\/|\*|\'|,|\?"
 def isfloat(value):
     '''
     Check if the input value type is float
@@ -28,15 +30,76 @@ def split_tokens (tokens, splitter):
     for t in tokens_splitter: tokens += t.split(splitter)
     return tokens
 
+def uppercase_characters(token):
+
+    '''
+    Check if all characters in the input token are uppercased
+    '''
+
+    uppercased = False
+    c = 0
+    for l in token:
+        if l.isupper():
+            c += 1
+    if c == len(token): uppercased = True
+    return uppercased
+
+
+def uppercased_entities_text(tokens):
+
+    '''
+    Check if all token characters in a list of input tokens are uppercased
+    '''
+    uppercased_in = False
+    for token in tokens:
+        if uppercase_characters(token):
+            uppercased_in = True
+            break
+    return uppercased_in
+
+def build_uppercased_tokens_dict(tokens):
+    '''
+    Build a dictionary of tokens connecting their lowercased (key) to uppercased (value) formats
+    '''
+    uppercased_tokens_dict = {}
+    for token in tokens:
+        if uppercase_characters(token):
+            uppercased_tokens_dict[token.lower()] = token
+    return uppercased_tokens_dict
+
+
+def replace_uppercased(text_tokens, uppercased_tokens_dict):
+    '''
+    Replace text tokens by their uppercased forms given in uppercased_tokens_dict
+    :params source_tokens(list): The tokens of the source text which include the uppercased tokens in their uppercase formats
+    :params text_tokens(list): The tokens of the text to modify
+    :params uppercased_tokens_dict (dict): a dictionary of tokens connecting their lowercased (key) to uppercased (value) formats
+    return:
+    A list of the texts' modified tokens
+    '''
+
+    text_tokens1 = []
+    for token in text_tokens:
+        if token in list(uppercased_tokens_dict.keys()):
+            print(token, uppercased_tokens_dict[token])
+            token1 = uppercased_tokens_dict[token]
+        else:
+            token1 = token
+        text_tokens1.append(token1)
+    text_tokens = text_tokens1
+    return text_tokens
+
+
 def normalize(text, punctuation_marks=punctuation_marks):
     '''
     Identify texts in tokens by the presence of symbols
     '''
     #print('normalize f')
     #print('text:', text)
-    text = text.replace('&amp','')
+    text = text.replace('&amp', '')
     tokens = text.split(' ')
     for token in tokens:
+        # Entities and Numbers
         if re.findall('\d', token):
             if re.findall('[A-Za-z]', token):
                 text = text.replace(token, '<name>')
@@ -44,6 +107,7 @@ def normalize(text, punctuation_marks=punctuation_marks):
                 text = text.replace(token, '<number>')
         elif re.findall(punctuation_marks, token):
             text = text.replace(token, '<name>')
+
     text = text.replace('<name> <name>', '<name>').replace('<number> <number>', '<number>')
     return text
 
