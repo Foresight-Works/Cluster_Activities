@@ -57,6 +57,7 @@ def uppercased_entities_text(tokens):
             break
     return uppercased_in
 
+
 def build_uppercased_tokens_dict(tokens):
     '''
     Build a dictionary of tokens connecting their lowercased (key) to uppercased (value) formats
@@ -64,7 +65,7 @@ def build_uppercased_tokens_dict(tokens):
     uppercased_tokens_dict = {}
     for token in tokens:
         if uppercase_characters(token):
-            uppercased_tokens_dict[token.lower()] = token
+            uppercased_tokens_dict[token.capitalize()] = token
     return uppercased_tokens_dict
 
 
@@ -115,7 +116,7 @@ def tokenize(text, unique=False, exclude_stopwords=False, exclude_chars=True,\
               split_backslah=True, split_hyphen=True, split_plus=True, exclude_parenthesis_terms=False,\
               clean_punctuation=False, exclude_numbers=False, exclude_digit_tokens=False, \
               punctuation_marks=punctuation_marks, stopwords=set(stopwords.words('english')),\
-              normalized_entities=True):
+              normalized_entities=True, lowercased=True):
     if exclude_parenthesis_terms:
         pattern= '\(.+?\)|\w*\d{1,}\.*\d{1,}\w*|\w+'
         text= re.sub(text, '', pattern)
@@ -127,7 +128,7 @@ def tokenize(text, unique=False, exclude_stopwords=False, exclude_chars=True,\
         tokens = tokenizer.tokenize(text)
     else:
         tokens = nltk.word_tokenize(text)
-    tokens = [t.lower() for t in tokens]
+    if lowercased: tokens = [t.lower() for t in tokens]
     if split_backslah: tokens = split_tokens (tokens, '/')
     if split_hyphen: tokens = split_tokens(tokens, '-')
     if split_plus: tokens = split_tokens(tokens, '+')

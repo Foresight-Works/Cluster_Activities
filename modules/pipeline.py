@@ -92,6 +92,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     print('n_clusters runs:', n_clusters_runs)
     tasks_count = X.shape[0]
     print('(tasks_count / 2):', (tasks_count / 2))
+    granularity_optimizer = False
     if n_clusters_posted > (tasks_count / 2):
         print('n_clusters_posted > (tasks_count / 2)')
         clustering_result = {'clustering_result': 'The number of clusters posted ({nc}) is in the range of the tasks count ({tc}).\n \
@@ -99,6 +100,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             .format(nc=n_clusters_posted, tc=tasks_count)}
         print(clustering_result)
     else:
+        granularity_optimizer = True
         for run_id, n_clusters in enumerate(n_clusters_runs):
             run_id += 1
             print('*** run id={r} | {n} clusters ***'.format(r=run_id, n=n_clusters))
@@ -210,8 +212,11 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             write_duration('Clusters calculation', pipeline_start)
 
             ## Name clusters and build results
+            if not granularity_optimizer: rid = run_id # pre-selected num_clusters
+            else: rid = best_run_id
+            print('rid=', rid)
             subprocess.call('python build_response.py {eid} {rid} {fn}'.\
-                            format(eid=experiment_id, rid=best_run_id,\
+                            format(eid=experiment_id, rid=rid,\
                                    fn=file_names_str), shell=True)
             if client == 'ui':
                 dict_file_name = 'named_clusters.npy'
@@ -233,6 +238,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             result_row_query = "SELECT * FROM {db}.runs WHERE experiment_id={eid} AND run_id={rid}"\
                                    .format(db=db_name, eid=experiment_id, rid=best_run_id)
             cur.execute(result_row_query)
+            # if not granularity_optimizer
             results_row = [i for i in cur.fetchall()[0]]
             results_row.append(clustering_result)
             statement = insert_into_table_statement('{db}.results'.format(db=db_name), results_cols, results_row)

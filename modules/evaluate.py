@@ -1,5 +1,6 @@
+from datetime import datetime
 import pandas as pd
-
+import numpy as np
 from modules.libraries import *
 from modules.config import *
 
@@ -18,7 +19,6 @@ def infer_dt_format(dt):
                 dt_format = "%d{}%m{}%Y".format(sep, sep)
             break
     return dt_format
-
 
 
 def activities_duration(project_df, calculate):
@@ -41,7 +41,6 @@ def activities_duration(project_df, calculate):
 
     project_df['Duration'] = (project_df[headers[1]] - project_df[headers[0]]).dt.days.astype(int)
     print('{n} tasks in results'.format(n=len(project_df)))
-    #project_df.to_excel('{c}_duration_calculation.xlsx'.format(c=calculate), index=False)
     return dict(zip(list(project_df['ID']), list(project_df['Duration'])))
 
 

@@ -99,11 +99,6 @@ def text_to_key(cluster_names, cutoff=0.4):
         if match_score == max_score:
             cluster_key = pair_matches
 
-    # Re-introduce the uppercase form for uppercase entities
-    if uppercased_entities_text(source_tokens):
-       uppercased_tokens_dict = build_uppercased_tokens_dict(list(set(source_tokens)))
-       cluster_key = replace_uppercased(cluster_key, uppercased_tokens_dict)
-
     cluster_key = ' '.join(list(set(cluster_key)))
     return cluster_key
 
@@ -126,8 +121,19 @@ def parts_to_texts(cluster_id):
             names_parts[index].append(name_split[index])
     names_parts = dict(names_parts)
     key_parts = ['']
+
+    names_parts_tokens = []
+    uppercased_tokens_dicts = []
     for index, names_part in names_parts.items():
         if len(names_part) > 1:
+            names_part_tokens = tokenize_texts(names_part, unique=True, exclude_stopwords=False, \
+                                           exclude_numbers=True, exclude_digit_tokens=True, lowercased=False)
+            print('names_part_tokens:', names_part_tokens)
+            uppercased_tokens_dict = build_uppercased_tokens_dict(names_part_tokens)
+            print('uppercased_tokens_dict:', uppercased_tokens_dict)
+            uppercased_tokens_dicts.append(uppercased_tokens_dict)
+
+
             # Get key by the name part
             parts_key = text_to_key(names_part, cutoff=0.8)
             if parts_key:
@@ -159,12 +165,21 @@ def parts_to_texts(cluster_id):
     key = ' - '.join(key_parts1)
     key = key.replace('&amp', '')
     key = re.sub('/|,|;', '-', key)
-
     key = re.sub('^[\s|{p}|-]*'.format(p=punctuation_marks), '', key)
     key = key.lstrip('-').replace('{{', '').replace('}}', '')
+
+    # Normalize uppercased entities
+    uppercased_tokens_dicts = reduce(lambda aggr, new: aggr.update(new) or aggr, uppercased_tokens_dicts, {})
+    if uppercased_tokens_dicts:
+        key_tokens = key.split(' ')
+        key_tokens = replace_uppercased(key_tokens, uppercased_tokens_dicts)
+        key = ' '.join(key_tokens)
+
     if not key.rstrip().lstrip(): key = cluster_names[0]
     return cluster_id, key
 
+# Todo: re-test performance with 1 vs 4 executors
+num_executors = 1
 def key_clusters(clustering_result, num_executors):
     executor = ProcessPoolExecutor(num_executors)
     cluster_ids = list(clustering_result.keys())

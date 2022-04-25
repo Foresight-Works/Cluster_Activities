@@ -2,6 +2,7 @@ import sys
 import os
 import itertools
 from itertools import combinations
+from functools import reduce
 from datetime import datetime
 import sqlite3
 import shutil

@@ -1,5 +1,6 @@
 from modules.libraries import *
 from modules.config import *
+import re
 
 def parse_graphml(file_name, graphml_str, headers):
 
@@ -8,17 +9,18 @@ def parse_graphml(file_name, graphml_str, headers):
     :param graphml_str (string): The file contents to parse
     :param headers (list): The columns to parse
     '''
-
+    #graphml_str = graphml_str.replace('')
     nodes = graphml_str.split('</node>')
     nodes = [s for s in nodes if 'node id' in s]
     nodes = [n.lstrip().rstrip() for n in nodes]
     nodes = [n.replace('"', '') for n in nodes]
     # Exclude file header
-    nodes = nodes[1:]
+    # nodes = nodes[1:]
     nodes_df = pd.DataFrame()
     print('parsing {n} nodes'.format(n=len(nodes)))
     for index, node in enumerate(nodes):
         node_rows = node.split('\n')
+        node_rows = [r for r in node_rows if re.findall('<node id|<data key', r)]
         id = re.findall('=(.*?)>', node_rows[0])[0]
         node_rows = node_rows[1:]
         keys = ['ID'] + [re.findall('=(.*?)>', n)[0] for n in node_rows]

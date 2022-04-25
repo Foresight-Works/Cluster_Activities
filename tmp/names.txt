@@ -1,4 +1,1 @@
-CCGTD1_I 1543 BA5 - Resubmission of Temp works for Shaft D (Wall Only) {4b3(r2)}
-CCGTD1_I 1544 BA5 - Resubmission of Temp works for Shaft D (Excav & ELS) {4b3(r2)-1}
-CCGTD1_I 1632 Submission and approval of temporary works for Shaft D (Wall, Excav. & ELS) {4b3(r1)}
-CCGTD1_I 1657 Review and design temporary works for Shaft D (Wall, Excav. & ELS) {4b3(r1)}
+None
