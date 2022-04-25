@@ -84,7 +84,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
 
     # Number of cluster per run
     print('n_clusters_posted:', n_clusters_posted)
-    if n_clusters_posted > 1:
+    if n_clusters_posted > 0:
         n_clusters_runs = [n_clusters_posted]
     else:
         n_clusters_runs = [int(len(names) * n_clusters_perc/100) for n_clusters_perc in n_clusters_percs]
@@ -92,7 +92,6 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     print('n_clusters runs:', n_clusters_runs)
     tasks_count = X.shape[0]
     print('(tasks_count / 2):', (tasks_count / 2))
-    granularity_optimizer = False
     if n_clusters_posted > (tasks_count / 2):
         print('n_clusters_posted > (tasks_count / 2)')
         clustering_result = {'clustering_result': 'The number of clusters posted ({nc}) is in the range of the tasks count ({tc}).\n \
@@ -100,7 +99,6 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             .format(nc=n_clusters_posted, tc=tasks_count)}
         print(clustering_result)
     else:
-        granularity_optimizer = True
         for run_id, n_clusters in enumerate(n_clusters_runs):
             run_id += 1
             print('*** run id={r} | {n} clusters ***'.format(r=run_id, n=n_clusters))
@@ -182,7 +180,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
                            words_pairs_score]
             runs_row = [str(i) for i in runs_row]
             statement = insert_into_table_statement('{db}.runs'.format(db=db_name), runs_cols, runs_row)
-            print('insert into statement:', statement)
+            print('insert into runs statement:', statement)
             cur.execute(statement)
             conn.commit()
 
@@ -206,17 +204,15 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             print('scaled_scores')
             print(scaled_scores)
             # If the user did not specify a desired run to provide as a response, deliver the run with the highest score
-            best_run_id = vote(scaled_scores, metrics_cols, metrics_optimize)
+            if n_clusters_posted > 0: best_run_id = 1
+            else: best_run_id = vote(scaled_scores, metrics_cols, metrics_optimize)
             # Check point: Selected_run_id in run ids
             print('best_run_id:', best_run_id)
             write_duration('Clusters calculation', pipeline_start)
 
             ## Name clusters and build results
-            if not granularity_optimizer: rid = run_id # pre-selected num_clusters
-            else: rid = best_run_id
-            print('rid=', rid)
             subprocess.call('python build_response.py {eid} {rid} {fn}'.\
-                            format(eid=experiment_id, rid=rid,\
+                            format(eid=experiment_id, rid=best_run_id,\
                                    fn=file_names_str), shell=True)
             if client == 'ui':
                 dict_file_name = 'named_clusters.npy'

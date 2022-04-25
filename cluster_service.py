@@ -31,8 +31,9 @@ def run_service():
     cur = conn.cursor()
     cur.execute("INSERT INTO experiments (experiment_id) VALUES ({id})".format(id=experiment_id))
     conn.commit()
+    n_clusters_posted = int(request.values.get('num_clusters', '-1'))
+    print('n_clusters_posted:', n_clusters_posted)
 
-    n_clusters_posted = int(request.values.get('num_clusters', '1'))
     experiment_dir = os.path.join(results_dir, experiment_dir_name)
     if experiment_dir_name not in os.listdir(results_dir):
         os.mkdir(experiment_dir)
@@ -85,7 +86,9 @@ def run_service():
                     with open('tmp_data_file.xer', 'w') as f:
                         for line in xer_lines: f.write('{l}\n'.format(l=line))
                     graphml_file = xer_nodes('tmp_data_file.xer')
+                    os.remove('tmp_data_file.xer')
                     graphml_str = open(graphml_file).read()
+                    os.remove(graphml_file)
                     parsed_df = parse_graphml(file_name, graphml_str, headers)
 
                 elif format == 'csv':

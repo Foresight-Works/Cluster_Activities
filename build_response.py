@@ -18,7 +18,6 @@ distance_matrices = []
 matrices = os.listdir(matrices_dir)
 for matrix in matrices:
     path = os.path.join(matrices_dir, matrix)
-    print('path:', path)
     distance_matrices.append(pd.read_pickle(path))
 
 def text_to_key(cluster_names, cutoff=0.4):
@@ -28,7 +27,6 @@ def text_to_key(cluster_names, cutoff=0.4):
         tokens = tokenize(name, unique=True, exclude_stopwords=False, \
                            exclude_numbers=True, exclude_digit_tokens=True)
         names_tokens[name] = tokens
-    #print('names_tokens:', names_tokens)
     cluster_names_pairs = tuple(combinations(cluster_names, 2))
     pairs_matches = []
     source_tokens = [] # Store for all tokens in cluster names
@@ -67,7 +65,6 @@ def text_to_key(cluster_names, cutoff=0.4):
                 if max_score >= cutoff:
                     for tokens_pair, pair_score in token_pairs_scores.items():
                         if pair_score == max_score: matched_token = tokens_pair[1]
-                    #print('matched token with best score:', matched_token)
                     pair_matches.append(matched_token)
 
         pairs_matches.append(tuple(pair_matches))
@@ -128,9 +125,7 @@ def parts_to_texts(cluster_id):
         if len(names_part) > 1:
             names_part_tokens = tokenize_texts(names_part, unique=True, exclude_stopwords=False, \
                                            exclude_numbers=True, exclude_digit_tokens=True, lowercased=False)
-            print('names_part_tokens:', names_part_tokens)
             uppercased_tokens_dict = build_uppercased_tokens_dict(names_part_tokens)
-            print('uppercased_tokens_dict:', uppercased_tokens_dict)
             uppercased_tokens_dicts.append(uppercased_tokens_dict)
 
 
