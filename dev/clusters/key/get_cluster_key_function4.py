@@ -68,7 +68,6 @@ def isint(value):
     except ValueError:
         return False
 
-# Todo: Identify and normalize entity names as <name>
 def normalize_entities(name, punctuation_marks=punctuation_marks):
     '''
     Identify names in tokens by the presence of symbols
@@ -150,7 +149,6 @@ def get_tokens_locations(parts):
 
     return tokens_typical_locations
 
-# todo pipline, rename text_to_key>texts_to_key, cluster_names->texts
 tokens_not_in_matrices = []
 def texts_to_key(texts, cutoff=0.4):
     cluster_key = ''

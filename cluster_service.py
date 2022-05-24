@@ -18,8 +18,6 @@ def run_service():
     experiment_id = request.values.get('experiment_id', ' ')
     print('experiment_id posted:', experiment_id)
     experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
-    client = request.values.get('client', ' ')
-    print('client:', client)
     min_cluster_size = request.values.get('min_cluster_size', ' ')
     if min_cluster_size == ' ': min_cluster_size = 0
     else: min_cluster_size = int(min_cluster_size)
@@ -78,6 +76,8 @@ def run_service():
                         index += 1
                 format = file_name.split('.')[1]
                 if format == 'graphml':
+                    print('file_name:', file_name)
+                    graphml_str = open(file_name).read()
                     parsed_df = parse_graphml(file_name, graphml_str, headers)
                 elif format == 'xer':
                     print('xer format')
@@ -122,16 +122,16 @@ def run_service():
 
         # A {task id: source file} dictionary to make the file name per task available for the RCF analysis in the research UI
         ids_files = dict(zip(list(projects['ID']), list(projects['File'])))
-        projects.to_excel(os.path.join(experiment_dir, 'parsed_data.xlsx'), index=False)
         tasks_count = len(projects)
         print('{n} tdas'.format(n=tasks_count))
-        print('projects')
-        print(projects.head())
-        print(projects.info())
+
+        # Clean names of underlines
+        projects['Label'] = [name.replace('_', ' ') for name in list(projects['Label'])]
+        projects.to_excel(os.path.join(experiment_dir, 'parsed_data.xlsx'), index=False)
 
         if len(projects) > 0:
             print('file_names_str to pipeline:', file_names_str)
-            run_pipeline_args = (projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str, \
+            run_pipeline_args = (projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str, \
                          runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
                          min_cluster_size, n_clusters_posted, duplicates_count, ids_files)
             pipeline = threading.Thread(target=run_pipeline, args=run_pipeline_args)

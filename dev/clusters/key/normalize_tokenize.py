@@ -68,7 +68,6 @@ def isint(value):
     except ValueError:
         return False
 
-# Todo: Identify and normalize entity names as <name>
 def normalize_entities(name, punctuation_symbols=punctuation_marks):
     '''
     Identify names in tokens by the presence of symbols

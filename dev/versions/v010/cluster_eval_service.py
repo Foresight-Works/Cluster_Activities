@@ -47,7 +47,6 @@ def pipeline():
             for p in save_paths: print(p)
             print('upload status:', status)
             projects = parse_graphml_files(save_paths)
-            # todo: Change to a storage in a postgress db
             projects.to_excel(os.path.join(results_dir, 'projects.xlsx'), index=False)
             names, ids = list(projects[names_col]), list(projects[ids_col])
 

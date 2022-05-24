@@ -1,18 +1,17 @@
+import time
 from modules.libraries import *
 from modules.config import *
 
 def build_result(data, clusters, names_col, ids_col):
-    clustering_result, clusters_namesIDs = {}, {}
+    clustering_result = {}
     for cluster_key, cluster in enumerate(clusters):
         cluster_key_name = str(cluster_key+1)
         cluster_names = list(data[names_col][data['cluster'] == cluster])
+        names_ids = list(data[ids_col][data['cluster'] == cluster])
+        cluster_names_ids = list(zip(cluster_names, names_ids))
+        clustering_result[cluster_key_name] = cluster_names_ids
 
-        # Filter clustering_result of orphans and empty clusters
-        if len(cluster_names) > 1:
-            names_ids = list(data[ids_col][data['cluster'] == cluster])
-            clustering_result[cluster_key_name] = cluster_names
-            clusters_namesIDs[cluster_key_name] = names_ids
-    return clustering_result, clusters_namesIDs
+    return clustering_result
 
 def write_duration(process, start):
     '''
@@ -102,6 +101,7 @@ def write_name_cluster(results_path, name, cluster):
     with open(results_path, 'a') as f:
         f.write(result)
 
+from scipy import stats
 def x_outliers(x, threshold=3):
 
     '''
@@ -114,7 +114,7 @@ def x_outliers(x, threshold=3):
     '''
 
     x = pd.DataFrame(x, columns=['value'])
-    transformed = x[['value']].transform(zscore)
+    transformed = x[['value']].transform(stats.zscore)
     x['zscore'] = transformed
     x_vals = x['value'][x['zscore'] <= threshold]
     max_xvals = x_vals.max()

@@ -1,3 +1,5 @@
+import time
+
 from modules.libraries import *
 from modules.config import *
 from modules.tokenizers import *
@@ -6,16 +8,20 @@ from modules.utils import *
 def reference_dictionaries(clustering_result, references_dir, distance_matrices):
     start = time.time()
     print('building reference dictionaries')
-    np.save(os.path.join(references_dir, 'clustering_result.npy'), clustering_result)
-    clusters, clusters_names = list(clustering_result.keys()), list(clustering_result.values())
-    unique_clusters = list(set(clusters))
-    print('{n1} clusters | {n2} unique clusters'.format(n1=len(clusters), n2=len(unique_clusters)))
-    names = []
-    for cluster_names in clusters_names: names += cluster_names
-    names = list(set(names))
+
+    # Replace (id, name) by name for each task in each cluster
+    # Collect names for tokenization
+    clusters_names = []
+    for cluster, tasks in clustering_result.items():
+        cluster_tasks_names = [p[0] for p in tasks]
+        clustering_result[cluster] = cluster_tasks_names
+        clusters_names += cluster_tasks_names
+
+    unique_clusters = list(set(clustering_result.keys()))
+    print('{n1} clusters | {n2} unique clusters'.format(n1=len(clustering_result.keys()), n2=len(unique_clusters)))
+    names = list(set(clusters_names))
     print('{n} unique cluster_key'.format(n=len(names)))
     names_tokens = {}
-
     # Reference dictionary: Tokens per Name (names_tokens)
     for name in names:
         tokens = tokenize(name, unique=True, exclude_stopwords=True, \

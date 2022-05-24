@@ -55,9 +55,10 @@ if modules_dir not in sys.path:
     sys.path.append(modules_dir)
 data_dir = os.path.join(working_dir, 'data', 'experiments')
 results_dir = os.path.join(working_dir, 'results')
-tokens_path = os.path.join(results_dir, 'tokens.txt')
 models_dir = os.path.join(working_dir, 'models')
+matrices_dir = os.path.join(working_dir, 'matrices')
 standard_dirs = ['results', 'models', 'matrices', 'tmp']
 for dir in standard_dirs:
     if dir not in os.listdir('.'):
         os.mkdir(dir)
+

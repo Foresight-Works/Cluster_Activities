@@ -15,8 +15,10 @@ from modules.evaluate import *
 from modules.tokenizers import *
 from modules.tokens_distances import *
 from modules.aws.s3 import *
+from modules.clusters_naming import *
+from modules.tokens_distances import *
 
-def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_files, file_names_str,\
+def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, file_names_str,\
                  runs_cols, results_cols, metrics_cols, metrics_optimize, conn_params,\
                  min_cluster_size, n_clusters_posted, duplicates_count, ids_files):
     print('matrices_dir:', matrices_dir)
@@ -33,24 +35,43 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     # Calculate Planned and Actual Duration
     id_planned_duration = activities_duration(projects, 'planned')
     id_actual_duration = activities_duration(projects, 'actual')
-    
+
+    # todo: test add 1 update when a null treatment rule is available
+    # # Add 1 to planned duration calculated as 0 and to it's corresponding actual duration
+    # for id, planned_duration in id_planned_duration.items():
+    #     if planned_duration == 0:
+    #         id_planned_duration[id] = 1
+    #         id_actual_duration[id] += 1
+
     names, ids = list(projects[names_col]), list(projects[ids_col])
     print('cluster_key sample:', names[:10])
 
     names = list(projects[names_col])
     tokens = tokenize_texts(names, exclude_stopwords=False, \
-                      exclude_numbers=True, exclude_digit_tokens=True)
+                      exclude_numbers=True, exclude_digit_tokens=True, split_underline=False)
+    tokens_path = os.path.join(experiment_dir, 'tokens.txt')
     with open(tokens_path, 'w') as f:
         for token in tokens: f.write('{t}\n'.format(t=token))
 
     ####################################################################################################
     # Token distance matrices
-    subprocess.call('python modules/tokens_distances.py', shell=True)
-    distance_matrices = []
-    paths = get_s3_paths(ds_bucket_obj, matrices_dir)
-    for path in paths:
-        file = load_pickle_file(path, s3, ds_bucket, matrices_dir)
-        distance_matrices.append(file)
+    tokens = [t for t in tokens if t]
+    tokens = list(set(tokens))
+    print('build distance matrices for {n} tokens'.format(n=len(tokens)))
+    distance_matrices = build_distance_matrices(tokens)
+    print('distance matrices built')
+    for index, matrix in enumerate(distance_matrices):
+        matrix_file = 'matrix_{i}.pkl'.format(i=index)
+        matrix_path = os.path.join(matrices_dir, matrix_file)
+        matrix.to_pickle(matrix_path)
+        # Todo integration: re-connect to s3 client for a bucket to set up on ds workbench
+        # s3_client.upload_file(matrix_path, ds_bucket, os.path.join(matrices_dir, matrix_file))
+
+    # distance_matrices = []
+    # paths = get_s3_paths(ds_bucket_obj, matrices_dir)
+    # for path in paths:
+    #     file = load_pickle_file(path, s3, ds_bucket, matrices_dir)
+    #     distance_matrices.append(file)
 
     # Encode cluster_key
     print('Encode activity cluster_key')
@@ -79,10 +100,9 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
     X = np.array(names_embeddings)
     ids_embeddings = dict(zip(ids, X))
     duration.append(['encode_names', round((datetime.now() - start).total_seconds(), 2)])
-
     runs_rows = []
 
-    # Number of cluster per run
+    # Checkpoint: Number of cluster per run
     print('n_clusters_posted:', n_clusters_posted)
     if n_clusters_posted > 0:
         n_clusters_runs = [n_clusters_posted]
@@ -117,8 +137,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             clusters_labels = list(clustering.labels_)
             projects['cluster'] = clusters_labels
             clusters = list(projects['cluster'].unique())
-            clustering_result, clusters_namesIDs = build_result(projects, clusters, names_col, ids_col)
-            np.save(os.path.join(run_dir, 'clusters_namesIDs.npy'), clusters_namesIDs)
+            clustering_result = build_result(projects, clusters, names_col, ids_col)
             duration.append(['cluster_names', round((datetime.now() - start).total_seconds(), 2)])
 
             # Evaluation
@@ -143,17 +162,20 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             ave_std = round(sum(scores['duration_std'])/n_clusters, 2)
             print('average clusters standard deviation:', ave_std)
 
-            # Words-Pairs
+            ## Words-Pairs
             references_dir = os.path.join(run_dir, 'references')
             if 'references' not in os.listdir(run_dir):
                 os.mkdir(references_dir)
+            np.save(os.path.join(references_dir, 'clustering_result.npy'), clustering_result)
 
             # Run Reference Dictionaries
             print('run references directory:', references_dir)
             reference_dictionaries(clustering_result, references_dir, distance_matrices)
             subprocess.call('python words_pairs.py {path}'.format(path=references_dir), shell=True)
-            words_pairs_score = open(os.path.join(results_dir, 'words_pairs_score.txt')).read().split('\n')[0]
+            words_pairs_score_path = os.path.join(results_dir, 'words_pairs_score.txt')
+            words_pairs_score = open(words_pairs_score_path).read().split('\n')[0]
             print('words_pairs_score:', words_pairs_score)
+            os.remove(words_pairs_score_path)
 
             run_end = datetime.now()
             run_duration = round((run_end - run_start).total_seconds(), 2)
@@ -163,6 +185,13 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
 
             # Clusters stats
             tasks_per_cluster = [len(v) for k, v in clusters_dict.items()]
+            tasks_per_cluster_str = [str(t) for t in tasks_per_cluster]
+
+            if run_id == 7:
+                tasks_per_cluster_str = ', '.join(tasks_per_cluster_str)
+                with open('tasks_per_cluster_main.txt', 'w') as f:
+                    f.write(tasks_per_cluster_str)
+
             mean_tpc = round(np.mean(tasks_per_cluster), 2)
             median_tpc = round(np.median(tasks_per_cluster), 2)
             min_tpc, max_tpc = np.min(tasks_per_cluster), np.max(tasks_per_cluster)
@@ -195,7 +224,7 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
         print(scores)
         # Vote on results
         if len(scores) == 0:
-            message = {'clustering_result': 'No clustering result produced the desired minimal clusters level'}
+            message = {'clustering_result': 'No clustering result produced the minimal clusters level defined'}
             clustering_result = message['clustering_result']
             print(clustering_result)
         else:
@@ -211,15 +240,24 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
             write_duration('Clusters calculation', pipeline_start)
 
             ## Name clusters and build results
-            subprocess.call('python build_response.py {eid} {rid} {fn}'.\
-                            format(eid=experiment_id, rid=best_run_id,\
-                                   fn=file_names_str), shell=True)
-            if client == 'ui':
-                dict_file_name = 'named_clusters.npy'
-            else: dict_file_name = 'named_clusters_ids.npy'
-            response_dict = np.load(os.path.join(results_dir, dict_file_name), allow_pickle=True)[()]
-            message = json.dumps(response_dict)
+            experiment_dir_name = 'experiment_{id}'.format(id=experiment_id)
+            experiment_dir = os.path.join(results_dir, experiment_dir_name)
+            run_dir = os.path.join(str(experiment_dir), 'runs', str(best_run_id))
+            references_dir = os.path.join(str(run_dir), 'references')
 
+            # Build and write the result/response dictionary
+            clustering_result = np.load(os.path.join(references_dir, 'clustering_result.npy'),\
+                                        allow_pickle=True)[()]
+            # Todo: re-test performance with 1 vs 4 executors
+            num_executors = 1
+            clustering_result = key_clusters(clustering_result, num_executors)
+
+            # Group clusters
+            print('grouping clusters')
+            grouped_clusters = group_clusters(clustering_result['clusters'], threshold=0.9, use_tasks=True)
+            grouped_clusters = {str(k): v for k, v in grouped_clusters.items()}
+            response_dict = {'clusters': grouped_clusters}
+            message = json.dumps(response_dict)
             # Write best clustering result
             if list(clustering_result.keys())[0] == 'clustering_result':
                 clustering_result = list(clustering_result.values())[0]
@@ -229,20 +267,20 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
                 response_dict['duplicates_count'] = duplicates_count
                 response_dict['ids_files'] = ids_files
                 clustering_result = json.dumps(response_dict)
-                clustering_result = clustering_result.replace("'", "''")
+                clustering_result = clustering_result.replace("'", "''")\
+                    .replace("\n", "''").replace("\\n", "''") \
+                    .replace("\t", "''").replace("\\t", "''")
+                with open('clustering_result.txt', 'w') as f:
+                    f.write(clustering_result)
 
             result_row_query = "SELECT * FROM {db}.runs WHERE experiment_id={eid} AND run_id={rid}"\
                                    .format(db=db_name, eid=experiment_id, rid=best_run_id)
             cur.execute(result_row_query)
-            # if not granularity_optimizer
             results_row = [i for i in cur.fetchall()[0]]
             results_row.append(clustering_result)
             statement = insert_into_table_statement('{db}.results'.format(db=db_name), results_cols, results_row)
             cur.execute(statement)
             conn.commit()
-            # print('** Results table **')
-            # results_df = pd.read_sql_query("SELECT * FROM {db}.results".format(db=db_name), conn)
-            # print(results_df)
 
         ## Publish results
         QUEUE_NAME = 'experiment_{id}'.format(id=experiment_id)
@@ -253,9 +291,6 @@ def run_pipeline(projects, experiment_id, client, experiment_dir, runs_dir, num_
         channel = connection.channel()
         channel.exchange_declare(exchange=EXCHANGE, durable=True, exchange_type='direct')
         channel.queue_declare(queue=QUEUE_NAME)
-        #message_id = 'experiment_{id}'.format(id=experiment_id)
-        #channel.basic_publish(exchange='', routing_key=QUEUE_NAME,\
-        #                      body=message, properties=pika.BasicProperties(message_id=message_id))
         channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
         print('Integration result published')
         write_duration('Pipeline', pipeline_start)

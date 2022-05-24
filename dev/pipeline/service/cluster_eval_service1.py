@@ -69,7 +69,6 @@ def pipeline():
             response, validation_response = build_clusters_response(projects, clusters, tokens_similarity)
             duration.append(['cluster_names', round(time.time() - start, 2)])
 
-            # todo: Evaluate clusters
             clusters_dict = {}
             for cluster in clusters: clusters_dict[cluster] = list(projects[ids_col][projects['cluster'] == cluster])
             scores = evaluate_clusters(clusters_dict, projects, eval_metrics, ids_embeddings=ids_embeddings, scaled=True)

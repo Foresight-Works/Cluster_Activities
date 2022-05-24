@@ -3,7 +3,6 @@ from dev.cluster_key.v001.cluster_names import *
 app = Flask(Flask.__name__)
 app.config['UPLOAD_FOLDER'] = data_dir
 #durations = []
-# todo: update upload or pipeline to allow more then one project in the response path
 
 # Response
 @app.route('/clusters', methods=['POST'])
@@ -28,7 +27,6 @@ def pipeline():
             for token in tokens: f.write('{t}\n'.format(t=token))
         tokens_similarity = run_similarity(tokens, 6)
         tokens_similarity.to_pickle(os.path.join(results_dir, 'words_pairs.pkl'))
-        #Todo integration: transformer_model before pipeline
         transformer_model = SentenceTransformer('all-MiniLM-L6-v2')
         names_embeddings = transformer_model.encode(names, convert_to_tensor=True)
         X = np.array(names_embeddings)

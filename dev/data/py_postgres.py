@@ -88,7 +88,6 @@ def insert_into_table(table_name, cols, cols_vals, conn):
 
 
 def update_table(db_name, table_name, cols, cols_vals, conn):
-    # TODO: Add condition WHERE
     '''
     Update table
     :param db_name(str): The name of the database to connect using the engine

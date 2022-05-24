@@ -2,7 +2,6 @@ from modules.libraries import *
 from modules.config import *
 from modules.utils import *
 
-
 def save_fig(fig_name, results_dir, tight_layout=True,\
              fig_extension="png", resolution=300):
 
@@ -41,12 +40,13 @@ def histogram_stats(x, title, xtitle, fig_path):
     min_ylim, max_ylim = plt.ylim()
 
     # Add median line and value
-    plt.axvline(x.median(), color='k', linestyle='dashed', linewidth=1)
-    plt.text(x.median() * 1.1, max_ylim * 0.9, 'Median: {:.2f}'.format(x.median()))
+    vals_median = np.median(x)
+    plt.axvline(vals_median, color='k', linestyle='dashed', linewidth=1)
+    plt.text(vals_median * 1.1, max_ylim * 0.9, 'Median: {:.2f}'.format(vals_median))
 
     # Add 3rd quartile
     plt.axvline(np.quantile(x, .75), color='k', linestyle='dashed', linewidth=1)
-    plt.text(x.median() * 1.1, max_ylim * 0.7, '3rd Quartile: {:.2f}'.format(np.quantile(x, .75)))
+    plt.text(vals_median * 1.1, max_ylim * 0.7, '3rd Quartile: {:.2f}'.format(np.quantile(x, .75)))
 
     #Add mean line and value
     plt.axvline(x.mean(), color='k', linestyle='dashed', linewidth=1)

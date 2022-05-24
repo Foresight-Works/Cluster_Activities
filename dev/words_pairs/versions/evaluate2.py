@@ -23,7 +23,6 @@ def words_pairs (names, distances_matrices):
                 for token2 in tokens2:
                     pair_score = 0
                     for matrix in tokens_matrices:
-                        # todo: lookup performance: hashing tokens in texts and in matrices so that
                         # row/cols headers are using the same indices, sort by the indices, df -> 2d array
                         # enhancing lookup as its not using sorted indices.
                         pair_score += matrix.at[token1, token2]

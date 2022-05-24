@@ -1,7 +1,6 @@
 from modules.libraries import *
 from modules.config import *
 from nltk.corpus import stopwords
-print('tokenizers imported')
 
 punctuation_marks="=|-|\+|_|\.|:|\/|\*|\'|,|\?"
 def isfloat(value):
@@ -82,7 +81,6 @@ def replace_uppercased(text_tokens, uppercased_tokens_dict):
     text_tokens1 = []
     for token in text_tokens:
         if token in list(uppercased_tokens_dict.keys()):
-            print(token, uppercased_tokens_dict[token])
             token1 = uppercased_tokens_dict[token]
         else:
             token1 = token
@@ -95,8 +93,6 @@ def normalize(text, punctuation_marks=punctuation_marks):
     '''
     Identify texts in tokens by the presence of symbols
     '''
-    #print('normalize f')
-    #print('text:', text)
     text = text.replace('&amp', '')
     tokens = text.split(' ')
     for token in tokens:
@@ -113,7 +109,7 @@ def normalize(text, punctuation_marks=punctuation_marks):
     return text
 
 def tokenize(text, unique=False, exclude_stopwords=False, exclude_chars=True,\
-              split_backslah=True, split_hyphen=True, split_plus=True, exclude_parenthesis_terms=False,\
+              split_backslah=True, split_underline=True, split_hyphen=True, split_plus=True, exclude_parenthesis_terms=False,\
               clean_punctuation=False, exclude_numbers=False, exclude_digit_tokens=False, \
               punctuation_marks=punctuation_marks, stopwords=set(stopwords.words('english')),\
               normalized_entities=True, lowercased=True):
@@ -129,9 +125,10 @@ def tokenize(text, unique=False, exclude_stopwords=False, exclude_chars=True,\
     else:
         tokens = nltk.word_tokenize(text)
     if lowercased: tokens = [t.lower() for t in tokens]
-    if split_backslah: tokens = split_tokens (tokens, '/')
+    if split_backslah: tokens = split_tokens(tokens, '/')
     if split_hyphen: tokens = split_tokens(tokens, '-')
     if split_plus: tokens = split_tokens(tokens, '+')
+    if split_underline: tokens = split_tokens(tokens, '_')
 
     if exclude_stopwords: tokens = [t for t in tokens if t not in stopwords]
     if clean_punctuation: tokens = [re.sub(punctuation_marks, '', t) for t in tokens]

@@ -115,7 +115,6 @@ def text_to_key(cluster_names, cutoff=0.4):
     cluster_key = ' '.join(list(set(cluster_key)))
     return cluster_key
 
-# todo: names to cluster_id
 def parts_to_texts(cluster_names):
 #def parts_to_texts(cluster_id):
     '''
@@ -124,7 +123,6 @@ def parts_to_texts(cluster_names):
     '''
     # Store names parts by their location relative to a hyphen break in each name
     names_parts = defaultdict(list)
-    # todo: names to cluster_id
     #cluster_names = clustering_result[cluster_id]
     for name in cluster_names:
         delimiters = ' - |/|\(|\)|\[|\]' # To keep parenthesis use ' - |/|,(\(.+?\))'
@@ -174,7 +172,6 @@ def parts_to_texts(cluster_names):
     key = re.sub('^[\s|{p}|-]*'.format(p=punctuation_marks), '', key)
     key = key.lstrip('-')
     if not key.rstrip().lstrip(): key = cluster_names[0]
-    # todo: return cluster_id, key
     return key
 #######################################################
 distance_matrices = []
