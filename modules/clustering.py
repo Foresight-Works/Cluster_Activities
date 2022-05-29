@@ -1,14 +1,9 @@
-import os
-import sys
-
 import networkx as nx
-
-modules_dir = os.path.join(os.getcwd(), 'modules')
-if modules_dir not in sys.path:
-    sys.path.append(modules_dir)
-from libraries import *
-from config import *
+from modules.libraries import *
+from modules.config import *
+from modules.clusters_naming import *
 from clusters_naming import *
+from modules.tokenizers import normalize_texts
 
 def model_conf_instance(model_name, hyper_params_conf):
     '''
@@ -51,35 +46,19 @@ def string_similarity_ratio(texts_pair):
     text1, text2 = texts_pair
     return Levenshtein.ratio(text1, text2)
 
-def compare_texts(clusters, text_words_count, threshold, measure='similarity'):
-    '''
-	Measure texts distances using their string similarity
-	:param clusters(dict): The results of a clustering process run, lists of cluster ids and names keyed by the cluster name
-	Example
-	:param text_words_count(int): The minimun number of words in the texts to compare
-	:param threshold: The threshold to determine which texts will be considered similar
-	:param measure_type(str): If similarity the results will be filtered for pairs that score higher than the threshold
+def get_clusters_keys(clusters, text_words_count=1):
 	'''
-
-    # Filter the input by the number of words in the text
-    cluster_keys = list(clusters.keys())
-    filter_keys = [c for c in cluster_keys if len(c.replace(' - ', ' ').split(' ')) > text_words_count]
-    clusters = {k: v for k, v in clusters.items() if k in filter_keys}
-    print('{n} clusters with keys of {t}+ words'.format(n=len(clusters), t=str(text_words_count)))
-
-    # Clusters pair combinations
-    cluster_keys = list(clusters.keys())
-    clusters_pairs = tuple(combinations(cluster_keys, 2))
-    pairs_similarity = {}
-    for pair in clusters_pairs:
-        pairs_similarity[pair] = string_similarity_ratio(pair)
-
-    # Filter scores by the similarity or distance threshold
-    if measure == 'similarity':
-        pairs_similarity = {k: v for k, v in pairs_similarity.items() if v >= threshold}
-    else:
-        pairs_similarity = {k: v for k, v in pairs_similarity.items() if v <= threshold}
-    return pairs_similarity
+	Get the keys of the clusters from a clustering results
+	Filter the input by the number of words in the text
+	:param clusters(dict): The results of a clustering process run, lists of cluster ids and names keyed by the cluster name
+	:param text_words_count(int): The minimun number of words in the texts to compare
+	'''
+	cluster_keys = list(clusters.keys())
+	filter_keys = [c for c in cluster_keys if len(c.replace(' - ', ' ').split(' ')) > text_words_count]
+	clusters = {k: v for k, v in clusters.items() if k in filter_keys}
+	cluster_keys = list(clusters.keys())
+	print('{n} clusters with keys of {t}+ words'.format(n=len(clusters), t=str(text_words_count)))
+	return cluster_keys
 
 def pairs_to_graph(pairs_similarity):
     keysGraph = nx.Graph()
@@ -97,46 +76,45 @@ def is_pair_in_pairs(pair_query, pairs):
 			break
 	return query_in_pairs
 
-
-def group_clusters(clusters, threshold=0.9, use_tasks=True):
+def compare_texts(texts, text_words_count, threshold, measure='similarity'):
 	'''
-	Group clusters
-	:parama clusters: The clusters produced keyed by a cluster name and cluster id
-	:param threshold: The similarity threshold to pass to the function identifying similar
-	clusters
-	:parma use_tasks (bool): If true, build the grouped cluster key using the names
-	of the tasks in the clusters group, otherwise, use the clusters' names.
+	Measure texts distances using their string similarity
+	:param threshold: The threshold to determine which texts will be considered similar
+	:param measure_type(str): If similarity the results will be filtered for pairs that score higher than the threshold
 	'''
+	texts_pairs = tuple(combinations(texts, 2))
+	pairs_similarity = {}
+	for pair in texts_pairs:
+		pairs_similarity[pair] = string_similarity_ratio(pair)
+	# Filter scores by the similarity or distance threshold
+	if measure == 'similarity':
+		pairs_similarity = {k: v for k, v in pairs_similarity.items() if v >= threshold}
+	else:
+		pairs_similarity = {k: v for k, v in pairs_similarity.items() if v <= threshold}
+	return pairs_similarity
 
+def group_clusters(cluster_keys, threshold=0.9):
+	'''
+	Group clusters by their keys using a string similarity method
+	:param clusters: The clusters to group
+	'''
 	# Get merged clusters
-	grouped_clusters = {}
-	pairs_similarity = compare_texts(clusters, 1, threshold)
+	pairs_similarity = compare_texts(cluster_keys, 1, threshold)
 	keysGraph = pairs_to_graph(pairs_similarity)
 	merged_clusters_keys = list(nx.connected_components(keysGraph))
-	## Collect the tasks and build a group name for each cluster grouping
-	for merged_clusters_index, merged_clusters in enumerate(merged_clusters_keys):
-		print('===== Merged clusters keys ======')
-		clusters_keys = []
-		## Build a grouped cluster name
-		# Collect the keys of the clusters merged
-		for index, key in enumerate(merged_clusters):
-			print(key)
-			clusters_keys.append(key)
-		# Tasks for the clusters merged
-		merged_clusters_tasks = []
-		for cluster in merged_clusters:
-			# For response dictionary output
-			cluster_tasks = [t for t in clusters[cluster]]
-			merged_clusters_tasks += cluster_tasks
-		print('----- {n} tasks in merged clusters ------'.format(n=len(merged_clusters_tasks)))
-		for task in merged_clusters_tasks: print(task[0])
-		# Use the task names of cluster keys collected to infer the name for the grouped cluster
-		if use_tasks: names_to_use = [task[0] for task in merged_clusters_tasks]
-		else: names_to_use = clusters_keys
-		merged_cluster_id_clusters_keys = (merged_clusters_index, names_to_use)
-		merged_cluster_id, merged_clsuters_key = parts_to_texts(merged_cluster_id_clusters_keys)
-		grouped_clusters[(merged_cluster_id, merged_clsuters_key)] = merged_clusters_tasks
-		print(30*'-')
-		print('Merged cluster key by tasks names  :', merged_clsuters_key)
+	return merged_clusters_keys
 
-	return(grouped_clusters)
+def names_for_keys(clusters, clusters_keys):
+    '''
+    Collect the keys or the task names for the clusters merged
+    :param clusters(dict): Cluster built and stored under clustering_result['clusters']
+    :param clusters_keys(list): Keys of clusters whose activity names are collected
+    '''
+    clusters_keys = list(clusters_keys)
+    clusters_tasks = []
+    # Tasks per cluster
+    for cluster_key in clusters_keys:
+	    cluster_tasks = clusters[cluster_key]
+	    cluster_tasks = [t[0] for t in cluster_tasks]
+	    clusters_tasks += cluster_tasks
+    return clusters_tasks

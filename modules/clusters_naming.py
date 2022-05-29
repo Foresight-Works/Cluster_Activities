@@ -2,7 +2,8 @@ from modules.libraries import *
 from modules.config import *
 from modules.utils import *
 from modules.tokenizers import *
-from modules.clustering import *
+from clustering import *
+from modules.tokenizers import normalize_texts
 
 distance_matrices = []
 # Todo when integrated to pipeline use matrices_dir from config
@@ -115,7 +116,6 @@ def parts_to_texts(id_cluster_tasks):
     key_parts = ['']
     uppercased_tokens_dicts = []
     for index, tasks_part in tasks_parts.items():
-        a = len(tasks_part)
         if len(tasks_part) > 1:
             tasks_part_tokens = tokenize_texts(tasks_part, unique=True, exclude_stopwords=False, \
                                            exclude_numbers=True, exclude_digit_tokens=True, lowercased=False)
@@ -164,20 +164,62 @@ def parts_to_texts(id_cluster_tasks):
     if not key.rstrip().lstrip(): key = cluster_tasks[0]
     return cluster_id, key
 
-def key_clusters(clustering_result, num_executors):
+
+def key_clusters(clusters, num_executors, to_group=True):
+    '''
+    Derive keys for clusters using the names of the tasks grouped in each cluster
+    :param clusters (dict): Lists of task names/ids tuples, keyed by the cluster numeric key.
+    For example:
+    clusters ['1'] = [('Technical presentations and questions delivery to customer', 'CUS0080'),
+    ('Customer Presentations', 'CUS0090')]
+    '''
     executor = ProcessPoolExecutor(num_executors)
-    cluster_ids = list(clustering_result.keys())
-    ids_clusters_names = []
+    cluster_ids = list(clusters.keys())
+
+    # Prepare names with ids for parallelized execution of the naming operation
+    ids_norm_names = []
     for cluster_id in cluster_ids:
-        cluster_result = clustering_result[cluster_id]
-        ids_clusters_names.append((cluster_id, cluster_result))
-    revised_clusters = {}
-    for cluster_id, cluster_key in executor.map(parts_to_texts, ids_clusters_names):
+        names = [n[0] for n in clusters[cluster_id]]
+        norm_names = list(set(normalize_texts(names)))
+        ids_norm_names.append((cluster_id, norm_names))
+
+    # Cluster names by cluster keys
+    named_clusters = {}
+    for cluster_id, cluster_key in executor.map(parts_to_texts, ids_norm_names):
         cluster_id_key = str((cluster_id, cluster_key))
-        cluster_tasks_ids = clustering_result[cluster_id]
-        revised_clusters[cluster_id_key] = cluster_tasks_ids
-    executor.shutdown()
-    clustering_result = {'clusters': revised_clusters}
-    return clustering_result
+        cluster_tasks_ids = clusters[cluster_id]
+        named_clusters[cluster_id_key] = cluster_tasks_ids
+        executor.shutdown()
+    print('{n} clusters prior to grouping'.format(n=len(named_clusters)))
+    # Group clusters
+    if to_group:
+        grouped_clusters = {}
+        cluster_keys = get_clusters_keys(named_clusters)
+        merged_clusters_keys = group_clusters(cluster_keys)
+        print('{n} cluster groups'.format(n=len(merged_clusters_keys)))
+        keys_merged = []
+        for keys in merged_clusters_keys: keys_merged += list(keys)
+        print('{n} clusters merged:'.format(n=len(keys_merged)))
+        ## Determine grouped cluster names
+        # Collect merged clusters tasks
+        merged_cluster_id_clusters_keys = []
+        cluster_id_tasks = {}
+        for cluster_id, merged_clusters in enumerate(merged_clusters_keys):
+            cluster_tasks = names_for_keys(named_clusters, merged_clusters)
+            cluster_id_tasks[cluster_id] = cluster_tasks
+            norm_names = list(set(normalize_texts(cluster_tasks)))
+            merged_cluster_id_clusters_keys.append((cluster_id, norm_names))
+        # Rename the merged clusters using their tasks
+        executor = ProcessPoolExecutor(num_executors)
+        for cluster_id, merged_clsuters_key \
+               in executor.map(parts_to_texts, merged_cluster_id_clusters_keys):
+            grouped_clusters[(cluster_id, merged_clsuters_key)] = cluster_id_tasks[cluster_id]
+        executor.shutdown()
 
-
+    # Exclude grouped clusters from named clusters
+    named_clusters = {k: v for k, v in named_clusters.items() if k not in keys_merged}
+    print('{n} clusters that were not grouped'.format(n=len(named_clusters)))
+    print('{n} clusters that were grouped'.format(n=len(grouped_clusters)))
+    clusters = {**named_clusters, **grouped_clusters}
+    print('{n} grouped and not grouped clusters'.format(n=len(clusters)))
+    return clusters

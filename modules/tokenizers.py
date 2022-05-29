@@ -154,7 +154,6 @@ def tokenize_texts(texts, unique=False, test='names1.txt', **kwargs):
     if unique: tokenized_texts = sorted(set(tokenized_texts), key=tokenized_texts.index)
     return tokenized_texts
 
-
 def tokens_count(tokens):
     counts = dict()
     for token in tokens:

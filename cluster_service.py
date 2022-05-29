@@ -23,7 +23,7 @@ def run_service():
     else: min_cluster_size = int(min_cluster_size)
     print('min_cluster_size:', min_cluster_size)
     service_location = request.values.get('service_location', ' ')
-    conn_params = location_db_params[service_location]
+    conn_params = server_db_params[service_location]
     print('conn_params:', conn_params)
     conn = mysql.connect(**conn_params)
     cur = conn.cursor()

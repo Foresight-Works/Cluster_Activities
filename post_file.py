@@ -3,29 +3,13 @@ import os
 import ast
 import threading
 from zipfile import ZipFile
-import mysql.connector as mysql
 import requests
 import numpy as np
 import pandas as pd
 import pika
 import json
-
+from modules.config import *
 # Service Location and parameters
-service_location = 'Local' #'Remote'
-url = 'http://127.0.0.01:6002/cluster_analysis/api/v0.1/clustering'
-metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max', 1), 'ch_index': ('max', 1),\
-'db_index':('min', 1), 'silhouette':('max', 1), 'words_pairs': ('max', 1)}
-db_name = 'CAdb'
-location_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password': 'exp8546$fs', 'database': db_name},\
-                      'Remote': {'host': '172.31.36.11', 'user': 'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
-conn_params = location_db_params[service_location]
-conn = mysql.connect(**conn_params)
-c=conn.cursor()
-c.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
-location_url = {'Local': 'http://127.0.0.01:6002/cluster_analysis/api/v0.1/clustering',\
-                'Remote': 'http://172.31.36.11/cluster_analysis/api/v0.1/clustering'}
-url = location_url[service_location]
-print('url:', url)
 
 def prepare_files(file_names, data_path):
     files = {}
@@ -57,9 +41,6 @@ def prepare_files(file_names, data_path):
         os.remove('zipped_files.zip')
 
     return files
-
-# Consumer
-exchange = 'kc.ca.exchange'
 
 
 def get_results(experiment_id, conn):

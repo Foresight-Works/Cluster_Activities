@@ -36,13 +36,6 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
     id_planned_duration = activities_duration(projects, 'planned')
     id_actual_duration = activities_duration(projects, 'actual')
 
-    # todo: test add 1 update when a null treatment rule is available
-    # # Add 1 to planned duration calculated as 0 and to it's corresponding actual duration
-    # for id, planned_duration in id_planned_duration.items():
-    #     if planned_duration == 0:
-    #         id_planned_duration[id] = 1
-    #         id_actual_duration[id] += 1
-
     names, ids = list(projects[names_col]), list(projects[ids_col])
     print('cluster_key sample:', names[:10])
 
@@ -168,7 +161,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
                 os.mkdir(references_dir)
             np.save(os.path.join(references_dir, 'clustering_result.npy'), clustering_result)
 
-            # Run Reference Dictionaries
+            # Reference Dictionaries
             print('run references directory:', references_dir)
             reference_dictionaries(clustering_result, references_dir, distance_matrices)
             subprocess.call('python words_pairs.py {path}'.format(path=references_dir), shell=True)
@@ -185,12 +178,6 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
 
             # Clusters stats
             tasks_per_cluster = [len(v) for k, v in clusters_dict.items()]
-            tasks_per_cluster_str = [str(t) for t in tasks_per_cluster]
-
-            if run_id == 7:
-                tasks_per_cluster_str = ', '.join(tasks_per_cluster_str)
-                with open('tasks_per_cluster_main.txt', 'w') as f:
-                    f.write(tasks_per_cluster_str)
 
             mean_tpc = round(np.mean(tasks_per_cluster), 2)
             median_tpc = round(np.median(tasks_per_cluster), 2)
@@ -198,7 +185,6 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             min_max_tpc = max_tpc-min_tpc
 
             ## Results
-            best = '0' # To be changed to 1 for the best run following scoring and voting
             print('file_names_str written:', file_names_str)
             runs_row = [experiment_id, run_id, file_names_str, \
                            num_files, run_start, run_end, run_duration,\
@@ -246,17 +232,15 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             references_dir = os.path.join(str(run_dir), 'references')
 
             # Build and write the result/response dictionary
-            clustering_result = np.load(os.path.join(references_dir, 'clustering_result.npy'),\
+            clusters = np.load(os.path.join(references_dir, 'clustering_result.npy'),\
                                         allow_pickle=True)[()]
-            # Todo: re-test performance with 1 vs 4 executors
-            num_executors = 1
-            clustering_result = key_clusters(clustering_result, num_executors)
 
-            # Group clusters
-            print('grouping clusters')
-            grouped_clusters = group_clusters(clustering_result['clusters'], threshold=0.9, use_tasks=True)
-            grouped_clusters = {str(k): v for k, v in grouped_clusters.items()}
-            response_dict = {'clusters': grouped_clusters}
+            ## Cluster keys by cluster tasks
+            # Todo: re-test performance with 1 vs 4 executors
+            num_executors = 4
+            response_clusters = key_clusters(clusters, num_executors, to_group=True)
+            response_clusters = {str(k): v for k, v in response_clusters.items()}
+            response_dict = {'clusters': response_clusters}
             message = json.dumps(response_dict)
             # Write best clustering result
             if list(clustering_result.keys())[0] == 'clustering_result':

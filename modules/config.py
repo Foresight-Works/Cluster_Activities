@@ -1,12 +1,32 @@
 # Data and Matrices Storage
 import os
 import sys
+import mysql.connector as mysql
 modules_dir = os.path.join(os.getcwd(), 'modules')
 if modules_dir not in sys.path:
     sys.path.append(modules_dir)
-
 import boto3
+
+### Experiment
+service_location = 'Local'
+num_executors = 6
+
+## Models
+# Cluster analysis
+clustering_model_name = 'AgglomerativeClustering'
+affinity = 'euclidean'
+n_clusters_percs = [2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20]
+min_cluster_size = 0
+# Language
+sentences_model = 'all-MiniLM-L6-v2'
+tokens_model = 'glove-twitter-25'
+# Metrics
+metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max', 1), 'ch_index': ('max', 1),\
+'db_index':('min', 1), 'silhouette':('max', 1), 'words_pairs': ('max', 1)}
+
+# S3 Bucket
 ds_bucket = 'foresight-ds-docs'
+# todo ds_workbench: set up a bucket and update keys
 aws_access_key_id = 'AKIAQIALQA3XKOG2MNFS'
 aws_secret_access_key = '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'
 s3 = boto3.resource('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
@@ -18,24 +38,22 @@ ids_col, names_col, task_type = 'ID', 'Label', 'TaskType'
 duration_cols = ['PlannedStart', 'PlannedEnd']
 headers = ['ID', 'TaskType', 'Label', 'PlannedStart', 'PlannedEnd', 'ActualStart', 'ActualEnd', 'Float', 'Status']
 
-## Models
-# Cluster analysis
-clustering_model_name = 'AgglomerativeClustering'
-affinity = 'euclidean'
-n_clusters_percs = [2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20]
-min_cluster_size = 0
-# Language
-sentences_model = 'all-MiniLM-L6-v2'
-tokens_model = 'glove-twitter-25'
-# Run
-num_executors = 6
-# Database
+# Service URL
+server_url = {'Local': 'http://127.0.0.01:6002/cluster_analysis/api/v0.1/clustering',\
+                'Remote': 'http://172.31.36.11/cluster_analysis/api/v0.1/clustering'}
+url = server_url[service_location]
+print('url:', url)
+
+# Database connection
 db_name = 'CAdb'
-location_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password':'exp8546$fs', 'database': db_name},\
-                      'Remote': {'host': '172.31.36.11', 'user':'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
+server_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password': 'exp8546$fs', 'database': db_name},\
+                      'Remote': {'host': '172.31.36.11', 'user': 'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
+conn_params = server_db_params[service_location]
+conn = mysql.connect(**conn_params)
+c=conn.cursor()
+c.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+
 # Tables
-metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max', 1), 'ch_index': ('max', 1),\
-'db_index':('min', 1), 'silhouette':('max', 1), 'words_pairs': ('max', 1)}
 metrics_cols = {col: 'TEXT' for col, v in metrics_optimize.items()}
 cols_types = {'experiment_id': 'TEXT', 'run_id': 'TEXT', 'file_name': 'TEXT',\
                       'num_files': 'TEXT', 'run_start': 'TEXT', 'run_end': 'TEXT', 'duration':'TEXT',\
@@ -62,3 +80,5 @@ for dir in standard_dirs:
     if dir not in os.listdir('.'):
         os.mkdir(dir)
 
+# Consumer
+exchange = 'kc.ca.exchange'
