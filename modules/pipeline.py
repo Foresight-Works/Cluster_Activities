@@ -254,7 +254,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             response_clusters = key_clusters(clusters, num_executors, to_group=True)
             response_clusters = {str(k): v for k, v in response_clusters.items()}
             response_dict = {'clusters': response_clusters}
-            message = json.dumps(response_dict)
+            #message = json.dumps(response_dict)
             # Write best clustering result
             if list(clustering_result.keys())[0] == 'clustering_result':
                 clustering_result = list(clustering_result.values())[0]
@@ -282,8 +282,9 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
         ## Publish results
         QUEUE_NAME = 'experiment_{id}'.format(id=experiment_id)
         EXCHANGE = 'kc.ca.exchange'
-        credentials = pika.PlainCredentials('rnd', 'Rnd@2143')
-        parameters = pika.ConnectionParameters('172.31.34.107', 5672, '/', credentials)
+        message = '{q}_completed'.format(q=QUEUE_NAME)
+        credentials = pika.PlainCredentials(rmq_user, rmq_password)
+        parameters = pika.ConnectionParameters(rmq_ip, rmq_port, '/', credentials)
         connection = pika.BlockingConnection(parameters)
         channel = connection.channel()
         channel.exchange_declare(exchange=EXCHANGE, durable=True, exchange_type='direct')
@@ -291,5 +292,4 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
         channel.basic_publish(exchange='', routing_key=QUEUE_NAME, body=message)
         print('Integration result published')
         write_duration('Pipeline', pipeline_start)
-        conn.commit()
         conn.close()

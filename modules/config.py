@@ -6,9 +6,11 @@ modules_dir = os.path.join(os.getcwd(), 'modules')
 if modules_dir not in sys.path:
     sys.path.append(modules_dir)
 import boto3
+import pika
 
-### Experiment
+## Experiment
 service_location = 'Local'
+externalIP = os.popen('curl -s ifconfig.me').readline()
 num_executors = 6
 
 ## Models
@@ -43,15 +45,19 @@ duration_cols = ['PlannedStart', 'PlannedEnd']
 headers = ['ID', 'TaskType', 'Label', 'PlannedStart', 'PlannedEnd', 'ActualStart', 'ActualEnd', 'Float', 'Status']
 
 # Service URL
-server_url = {'Local': 'http://127.0.0.01:6002/cluster_analysis/api/v0.1/clustering',\
-                'Remote': 'http://172.31.36.11/cluster_analysis/api/v0.1/clustering'}
+server_url = {'Local': 'http://0.0.0.0:6002/cluster_analysis/api/v0.1/clustering',\
+                'Remote': 'http://{eip}/cluster_analysis/api/v0.1/clustering'.format(eip=externalIP)}
 url = server_url[service_location]
 print('url:', url)
 
 # Database connection
-db_name = 'CAdb'
-server_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password': 'exp8546$fs', 'database': db_name},\
-                      'Remote': {'host': '172.31.36.11', 'user': 'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
+#server_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password': 'exp8546$fs', 'database': db_name},\
+#                    'Remote': {'host': externalIP, 'user': 'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
+
+user, password, db_name = 'rony', 'exp8546$fs', 'CAdb'
+server_db_params = {'Local': {'host': 'localhost', 'user': user, 'password': password, 'database': db_name},\
+                    'Remote': {'host': externalIP, 'user': user, 'password': password, 'database': db_name}}
+
 conn_params = server_db_params[service_location]
 conn = mysql.connect(**conn_params)
 c=conn.cursor()
@@ -65,6 +71,7 @@ cols_types = {'experiment_id': 'TEXT', 'run_id': 'TEXT', 'file_name': 'TEXT',\
                       'num_clusters': 'TEXT', 'mean_duration_std':'TEXT',\
                       'tasks_per_cluster_mean': 'TEXT', 'tasks_per_cluster_median': 'TEXT',\
                       'min_tasks_per_cluster': 'TEXT', 'max_tasks_per_cluster': 'TEXT'}
+
 cols_types = {**cols_types, **metrics_cols}
 runs_cols, runs_types = list(cols_types.keys()), list(cols_types.values())
 results_cols_types = {**cols_types, **metrics_cols, 'Result': 'JSON'}
@@ -85,5 +92,7 @@ for dir in standard_dirs:
     if dir not in os.listdir('.'):
         os.mkdir(dir)
 
-# Consumer
+# Rabbit MQ
+rmq_user, rmq_password = 'rnd', 'Rnd@2143'
+rmq_ip, rmq_port = '172.31.34.107', 5672
 exchange = 'kc.ca.exchange'
