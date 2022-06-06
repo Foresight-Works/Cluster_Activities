@@ -24,9 +24,13 @@ tokens_model = 'glove-twitter-25'
 metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max', 1), 'ch_index': ('max', 1),\
 'db_index':('min', 1), 'silhouette':('max', 1), 'words_pairs': ('max', 1)}
 
+## Data
+# Local path
+data_path = '/home/rony/Projects_Code/Cluster_Activities/data/experiments'
+
 # S3 Bucket
 ds_bucket = 'foresight-ds-docs'
-# todo ds_workbench: set up a bucket and update keys
+# todo ds_workbench: create bucket and update keys
 aws_access_key_id = 'AKIAQIALQA3XKOG2MNFS'
 aws_secret_access_key = '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'
 s3 = boto3.resource('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
@@ -73,9 +77,10 @@ if modules_dir not in sys.path:
     sys.path.append(modules_dir)
 data_dir = os.path.join(working_dir, 'data', 'experiments')
 results_dir = os.path.join(working_dir, 'results')
+validation_dir = os.path.join(working_dir, 'validation')
 models_dir = os.path.join(working_dir, 'models')
 matrices_dir = os.path.join(working_dir, 'matrices')
-standard_dirs = ['results', 'models', 'matrices', 'tmp']
+standard_dirs = ['results', 'validation', 'models', 'matrices']
 for dir in standard_dirs:
     if dir not in os.listdir('.'):
         os.mkdir(dir)

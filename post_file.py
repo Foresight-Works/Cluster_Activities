@@ -8,42 +8,28 @@ import numpy as np
 import pandas as pd
 import pika
 import json
-from modules.config import *
 # Service Location and parameters
+from modules.config import *
 
-def prepare_files(file_names, data_path):
-    files = {}
-    file_types = list(set([t.split('.')[1] for t in file_names]))
-    print('file types:', file_types)
-    # Checkpoint: Files submitted
-    if file_names[0][0] == ' ':
-        print('No file selected')
-        file_checkpoints = False
-    # Checkpoint: Zip file_names
-    elif 'zip' in file_types:
-        # Checkpoint: One among few files zipped
-        if len(file_types) > 1:
-            print('The submitted files include a zip file')
-        else:
-            data_path = os.path.join(data_path, file_names[0])
-            files = {'file': open(data_path, 'rb')}
-            # Zip data files
-    else:
-        file_paths = []
-        for file in file_names:
-            file_paths.append(os.path.join(data_path, file))
-        print('file_paths:', file_paths)
-        with ZipFile('zipped_files.zip', 'w') as zip:
-            # writing each file one by one
-            for file_path in file_paths:
-                zip.write(file_path)
-        files = {'file': open('zipped_files.zip', 'rb')}
-        os.remove('zipped_files.zip')
+def zip_files(file_names, data_path):
+    '''
+    Zip the files posted for analysis
+    :param file_names (list): The names of the files posted for analysis
+    :data_path (str): The absolute path to the directory storing the files to post   
+    return (dict): A zipped copy of the files to analyse keyed by the 'file' key of the post command
+    '''
+    file_paths = {}
+    for file in file_names:
+        data_path = os.path.join(data_path, file)
+        file_paths[file] = data_path
+    with ZipFile('zipped_files.zip', 'w') as zip:
+        for file, file_path in file_paths.items():
+            zip.write(file_path, arcname=file)
+    files_key_value = {'file': open('zipped_files.zip', 'rb')}
+    os.remove('zipped_files.zip')
+    return files_key_value
 
-    return files
-
-
-def get_results(experiment_id, conn):
+def results_consumer(experiment_id, conn):
     def print_message(channel, method, properties, body):
         message = json.loads(body)
         print('message:', message)
@@ -61,9 +47,8 @@ def get_results(experiment_id, conn):
         print('** runs table **')
         print(runs_df)
         channel.queue_delete(queue=queue)
-
     queue = 'experiment_{id}'.format(id=experiment_id)
-    # Consumer
+     # Consumer
     credentials = pika.PlainCredentials('rnd', 'Rnd@2143')
     parameters = pika.ConnectionParameters('172.31.34.107', 5672, '/', credentials)
     connection = pika.BlockingConnection(parameters)
@@ -78,16 +63,13 @@ def get_results(experiment_id, conn):
 ## Configuration
 min_cluster_size = 0
 # Data
-data_path = './data/experiments/'
-file_names = ['CCGTD1_IPS_sample.zip']
+file_names = ['file_94810358.graphml']
 print('file_names:', file_names)
-files = prepare_files(file_names, data_path)
-print(files)
-if files:
-    experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn).astype(int)
-    if len(experiment_ids) == 0: experiment_id = 1
-    else: experiment_id = int(max(experiment_ids.values)[0]) + 1
-    print('experiment_id:', experiment_id)
-    response = requests.post(url, files=files, data={'experiment_id': experiment_id, 'service_location': service_location})
-    if response.text == 'Running clustering pipeline':
-        get_results(experiment_id, conn)
+files_key_value = zip_files(file_names, data_path)
+experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn).astype(int)
+if len(experiment_ids) == 0: experiment_id = 1
+else: experiment_id = int(max(experiment_ids.values)[0]) + 1
+print('experiment_id:', experiment_id)
+response = requests.post(url, files=files_key_value, data={'experiment_id': experiment_id, 'service_location': service_location})
+if response.text == 'Running clustering pipeline':
+    results_consumer(experiment_id, conn)

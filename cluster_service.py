@@ -14,6 +14,7 @@ app.config['UPLOAD_FOLDER'] = data_dir
 # Prepare data and run pipeline
 @app.route('/cluster_analysis/api/v0.1/clustering', methods=['POST'])
 def run_service():
+    print('working directory=', os.getcwd())
     # Experiment set up
     experiment_id = request.values.get('experiment_id', ' ')
     print('experiment_id posted:', experiment_id)
@@ -51,56 +52,29 @@ def run_service():
     zipped_object = ZipFile('temp.zip', "r")
     if 'temp.zip' in os.listdir(): os.remove('temp.zip')
     file_names = zipped_object.namelist()
+    #file_names = ['/' + f if f[0] != '/' else f for f in zipped_object.namelist()]
     print('file_names:', file_names)
     projects = pd.DataFrame()
     if file_names:
         num_files = len(file_names)
         # File cluster_key to pass to the results table (temp. proxy for experiment name)
-        file_names_str = [f.split('.')[0].replace('tmp/', '') for f in file_names]
-        file_names_str = r'*'.join(file_names_str).rstrip(r'*')
+        file_names_str = r'*'.join(file_names).rstrip(r'*')
         # File name validation
         for file_name in file_names:
-            file_type = file_name.split('.')[1]
-            if file_type in extensions:
-                print('===={f}===='.format(f=file_name))
-                encodings = ['utf-8-sig', 'latin-1', 'ISO-8859-1', 'Windows-1252']
-                encoded, index = False, 0
-                while encoded == False:
-                    encoding = encodings[index]
-                    print('encoding using', encoding)
-                    try:
-                        file_posted = zipped_object.read(file_name).decode(encoding=encoding)
-                        encoded = True
-                    except UnicodeDecodeError as e:
-                        print(e)
-                        index += 1
-                format = file_name.split('.')[1]
-                if format == 'graphml':
-                    print('file_name:', file_name)
-                    graphml_str = open(file_name).read()
-                    parsed_df = parse_graphml(file_name, graphml_str, headers)
-                elif format == 'xer':
-                    print('xer format')
-                    xer_lines = file_posted.split('\n')
-                    print('xer_lines sample:', xer_lines[:10])
-                    with open('tmp_data_file.xer', 'w') as f:
-                        for line in xer_lines: f.write('{l}\n'.format(l=line))
-                    graphml_file = xer_nodes('tmp_data_file.xer')
-                    os.remove('tmp_data_file.xer')
-                    graphml_str = open(graphml_file).read()
-                    os.remove(graphml_file)
-                    parsed_df = parse_graphml(file_name, graphml_str, headers)
-
-                elif format == 'csv':
-                    parsed_df = parse_csv(file_posted)
-                print('file: {n}, {r} tasks'.format(n=file_name, r=len(parsed_df)))
-                projects = pd.concat([projects, parsed_df])
-
-        # Remove tmp files
-        file_types = ['xer', 'graphml']
-        for file_type in file_types:
-            tmp_file = 'tmp_data_file.{ft}'.format(ft=file_type)
-            if tmp_file in os.listdir(): os.remove(tmp_file)
+            print('===={f}===='.format(f=file_name))
+            encodings = ['utf-8-sig', 'latin-1', 'ISO-8859-1', 'Windows-1252']
+            encoded, index = False, 0
+            while encoded == False:
+                encoding = encodings[index]
+                print('encoding using', encoding)
+                try:
+                    file_posted = zipped_object.read(file_name).decode(encoding=encoding)
+                    encoded = True
+                except UnicodeDecodeError as e:
+                    print(e)
+                    index += 1
+            parsed_df = parse_graphml(file_name, file_posted, headers)
+            projects = pd.concat([projects, parsed_df])
 
         # Projects TDAs
         print(projects.columns)

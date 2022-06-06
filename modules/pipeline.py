@@ -1,5 +1,8 @@
 import os
 import sys
+
+import pandas as pd
+
 modules_dir = os.path.join(os.getcwd(), 'modules')
 if modules_dir not in sys.path:
     sys.path.insert(0, modules_dir)
@@ -234,6 +237,16 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             # Build and write the result/response dictionary
             clusters = np.load(os.path.join(references_dir, 'clustering_result.npy'),\
                                         allow_pickle=True)[()]
+
+            ## Validation sets
+            parsed_data = pd.read_excel(os.path.join(experiment_dir, 'parsed_data.xlsx'))
+            ids = []
+            for cluster_id, tasks_names_ids in clusters.items():
+                for tasks_names_id in tasks_names_ids:
+                    ids.append((tasks_names_id[1], cluster_id))
+            ids_df = pd.DataFrame(ids, columns=['ID', 'Cluster_ID'])
+            val_df = pd.merge(parsed_data, ids_df)
+            val_df.to_excel(os.path.join(validation_dir, '{f}.xlsx'.format(f=file_names_str)), index=False)
 
             ## Cluster keys by cluster tasks
             # Todo: re-test performance with 1 vs 4 executors
