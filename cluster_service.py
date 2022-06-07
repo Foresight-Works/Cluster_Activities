@@ -52,7 +52,6 @@ def run_service():
     zipped_object = ZipFile('temp.zip', "r")
     if 'temp.zip' in os.listdir(): os.remove('temp.zip')
     file_names = zipped_object.namelist()
-    #file_names = ['/' + f if f[0] != '/' else f for f in zipped_object.namelist()]
     print('file_names:', file_names)
     projects = pd.DataFrame()
     if file_names:
