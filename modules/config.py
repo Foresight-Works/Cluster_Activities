@@ -9,15 +9,15 @@ import boto3
 import pika
 
 ## Server
-service_location = 'Local'
+serviceLocation = 'Local'
 num_executors = 6
-location_IP = {'Local': '0.0.0.0', 'Remote': '172.31.15.123'}
-location_port = {'Local': 6002, 'Remote': 5000}
-serviceIP = location_IP[service_location]
+locationIP = {'Local': '0.0.0.0', 'Remote': '172.31.15.123'}
+locationPort = {'Local': 6002, 'Remote': 5000}
+serviceIP = locationIP[serviceLocation]
+servicePort = locationPort[serviceLocation]
 location_url = {'Local': 'http://0.0.0.0:6002/cluster_analysis/api/v0.1/clustering',\
               'Remote': 'http://{eip}:6002/cluster_analysis/api/v0.1/clustering'.format(eip=serviceIP)}
-url = location_url[service_location]
-
+url = location_url[serviceLocation]
 
 ## Models
 # Cluster analysis
@@ -58,7 +58,7 @@ private_serviceIP = '172.31.15.123'
 user, password, db_name = 'rony', 'exp8546$fs', 'CAdb'
 server_db_params = {'Local': {'host': 'localhost', 'user': user, 'password': password, 'database': db_name},\
                     'Remote': {'host': private_serviceIP, 'user': user, 'password': password, 'database': db_name}}
-conn_params = server_db_params[service_location]
+conn_params = server_db_params[serviceLocation]
 conn = mysql.connect(**conn_params)
 c = conn.cursor()
 c.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
