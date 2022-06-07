@@ -16,9 +16,10 @@ locationPort = {'Local': 6002, 'Remote': 5000}
 serviceIP = locationIP[serviceLocation]
 servicePort = locationPort[serviceLocation]
 url = 'http://{ip}:{port}/cluster_analysis/api/v0.1/clustering'.format(ip=serviceIP, port=servicePort)
-# location_url = {'Local': 'http://0.0.0.0:6002/cluster_analysis/api/v0.1/clustering',\
-#               'Remote': 'http://{eip}:5000/cluster_analysis/api/v0.1/clustering'.format(eip=serviceIP)}
-# url = location_url[serviceLocation]
+# Rabbit MQ
+locationIPmq = {'Local': '172.31.34.107', 'Remote': '172.31.32.121'}
+rmq_ip = locationIPmq[serviceLocation] 
+rmq_port = 5672
 
 ## Models
 # Cluster analysis
@@ -95,5 +96,5 @@ for dir in standard_dirs:
 
 # Rabbit MQ
 rmq_user, rmq_password = 'rnd', 'Rnd@2143'
-rmq_ip, rmq_port = '172.31.34.107', 5672
 exchange = 'kc.ca.exchange'
+
