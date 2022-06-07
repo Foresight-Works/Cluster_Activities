@@ -67,6 +67,7 @@ experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn
 if len(experiment_ids) == 0: experiment_id = 1
 else: experiment_id = int(max(experiment_ids.values)[0]) + 1
 print('experiment_id:', experiment_id)
+print('url:', url)
 response = requests.post(url, files=files_key_value, data={'experiment_id': experiment_id, 'service_location': serviceLocation})
 if response.text == 'Running clustering pipeline':
     print(response.text)
