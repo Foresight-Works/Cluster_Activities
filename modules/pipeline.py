@@ -167,7 +167,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             # Reference Dictionaries
             print('run references directory:', references_dir)
             reference_dictionaries(clustering_result, references_dir, distance_matrices)
-            subprocess.call('python words_pairs.py {path}'.format(path=references_dir), shell=True)
+            subprocess.call('python3 words_pairs.py {path}'.format(path=references_dir), shell=True)
             words_pairs_score_path = os.path.join(results_dir, 'words_pairs_score.txt')
             words_pairs_score = open(words_pairs_score_path).read().split('\n')[0]
             print('words_pairs_score:', words_pairs_score)
