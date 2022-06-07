@@ -9,7 +9,7 @@ import boto3
 import pika
 
 ## Server
-serviceLocation = 'Local'
+serviceLocation = 'Remote'
 num_executors = 6
 locationIP = {'Local': '0.0.0.0', 'Remote': '172.31.15.123'}
 locationPort = {'Local': 6002, 'Remote': 5000}
