@@ -8,10 +8,16 @@ if modules_dir not in sys.path:
 import boto3
 import pika
 
-## Experiment
+## Server
 service_location = 'Local'
-externalIP = os.popen('curl -s ifconfig.me').readline()
 num_executors = 6
+location_IP = {'Local': '0.0.0.0', 'Remote': '172.31.15.123'}
+location_port = {'Local': 6002, 'Remote': 5000}
+serviceIP = location_IP[service_location]
+location_url = {'Local': 'http://0.0.0.0:6002/cluster_analysis/api/v0.1/clustering',\
+              'Remote': 'http://{eip}:6002/cluster_analysis/api/v0.1/clustering'.format(eip=serviceIP)}
+url = location_url[service_location]
+
 
 ## Models
 # Cluster analysis
@@ -44,23 +50,17 @@ ids_col, names_col, task_type = 'ID', 'Label', 'TaskType'
 duration_cols = ['PlannedStart', 'PlannedEnd']
 headers = ['ID', 'TaskType', 'Label', 'PlannedStart', 'PlannedEnd', 'ActualStart', 'ActualEnd', 'Float', 'Status']
 
-# Service URL
-server_url = {'Local': 'http://0.0.0.0:6002/cluster_analysis/api/v0.1/clustering',\
-                'Remote': 'http://{eip}/cluster_analysis/api/v0.1/clustering'.format(eip=externalIP)}
-url = server_url[service_location]
-print('url:', url)
-
 # Database connection
 #server_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password': 'exp8546$fs', 'database': db_name},\
-#                    'Remote': {'host': externalIP, 'user': 'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
-
+#                    'Remote': {'host': serviceIP, 'user': 'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
+print('connecting to mysql')
+private_serviceIP = '172.31.15.123'
 user, password, db_name = 'rony', 'exp8546$fs', 'CAdb'
 server_db_params = {'Local': {'host': 'localhost', 'user': user, 'password': password, 'database': db_name},\
-                    'Remote': {'host': externalIP, 'user': user, 'password': password, 'database': db_name}}
-
+                    'Remote': {'host': private_serviceIP, 'user': user, 'password': password, 'database': db_name}}
 conn_params = server_db_params[service_location]
 conn = mysql.connect(**conn_params)
-c=conn.cursor()
+c = conn.cursor()
 c.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 
 # Tables

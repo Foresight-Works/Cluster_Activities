@@ -120,4 +120,4 @@ def run_service():
 
 if __name__ == '__main__':
     print('host name:', socket.gethostbyname(socket.gethostname()))
-    app.run(host='0.0.0.0', port=6002)
+    app.run(host=serviceIP, port=location_port)

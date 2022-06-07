@@ -37,25 +37,25 @@ def result_from_table(experiment_id, result_key='clusters'):
     result = ast.literal_eval(result)
     return result[result_key]
 
-def results_consumer(experiment_id):
-    def get_results(channel, method, properties, body):
-        print('message:', body)
-        result = result_from_table(experiment_id)
-        print('result:', result)
-        channel.queue_delete(queue=queue)
-
-    # Consumer
-    queue = 'experiment_{id}'.format(id=experiment_id)
-    credentials = pika.PlainCredentials(rmq_user, rmq_password)
-    parameters = pika.ConnectionParameters(rmq_ip, rmq_port, '/', credentials)
-    connection = pika.BlockingConnection(parameters)
-    channel = connection.channel()
-    channel.queue_declare(queue=queue, auto_delete=False)
-    channel.exchange_declare(exchange=exchange, durable=True, exchange_type='direct')
-    channel.basic_consume(queue, get_results, auto_ack=True)
-    t1 = threading.Thread(target=channel.start_consuming)
-    t1.start()
-    t1.join(0)
+# def results_consumer(experiment_id):
+#     def get_results(channel, method, properties, body):
+#         print('message:', body)
+#         result = result_from_table(experiment_id)
+#         print('result:', result)
+#         channel.queue_delete(queue=queue)
+#
+#     # Consumer
+#     queue = 'experiment_{id}'.format(id=experiment_id)
+#     credentials = pika.PlainCredentials(rmq_user, rmq_password)
+#     parameters = pika.ConnectionParameters(rmq_ip, rmq_port, '/', credentials)
+#     connection = pika.BlockingConnection(parameters)
+#     channel = connection.channel()
+#     channel.queue_declare(queue=queue, auto_delete=False)
+#     channel.exchange_declare(exchange=exchange, durable=True, exchange_type='direct')
+#     channel.basic_consume(queue, get_results, auto_ack=True)
+#     t1 = threading.Thread(target=channel.start_consuming)
+#     t1.start()
+#     t1.join(0)
 
 ## Configuration
 min_cluster_size = 0
@@ -69,4 +69,5 @@ else: experiment_id = int(max(experiment_ids.values)[0]) + 1
 print('experiment_id:', experiment_id)
 response = requests.post(url, files=files_key_value, data={'experiment_id': experiment_id, 'service_location': service_location})
 if response.text == 'Running clustering pipeline':
-    results_consumer(experiment_id)
+    print(response.text)
+    #results_consumer(experiment_id)
