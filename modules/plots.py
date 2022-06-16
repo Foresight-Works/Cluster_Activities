@@ -1,6 +1,8 @@
 from modules.libraries import *
 from modules.config import *
 from modules.utils import *
+from matplotlib import pyplot as plt
+import numpy as np
 
 def save_fig(fig_name, results_dir, tight_layout=True,\
              fig_extension="png", resolution=300):
@@ -35,8 +37,8 @@ def histogram_stats(x, title, xtitle, fig_path):
     fig_path: The path (directory and file name) to where the plot will be saved
     :return: A saved histogram plot at the specified path
     '''
-
-    result = plt.hist(x, bins=100, color='c', edgecolor='k', alpha=0.65)
+    xl = list(x)
+    result = plt.hist(xl, bins=1000, color='c', edgecolor='k', alpha=0.65)
     min_ylim, max_ylim = plt.ylim()
 
     # Add median line and value
@@ -49,8 +51,8 @@ def histogram_stats(x, title, xtitle, fig_path):
     plt.text(vals_median * 1.1, max_ylim * 0.7, '3rd Quartile: {:.2f}'.format(np.quantile(x, .75)))
 
     #Add mean line and value
-    plt.axvline(x.mean(), color='k', linestyle='dashed', linewidth=1)
-    plt.text(x.mean() * 1.1, max_ylim * 0.5, 'Mean: {:.2f}'.format(x.mean()))
+    plt.axvline(np.mean(x), color='k', linestyle='dashed', linewidth=1)
+    plt.text(np.mean(x) * 1.1, max_ylim * 0.5, 'Mean: {:.2f}'.format(np.mean(x)))
 
     x = list(x)
     max_xlim = x_outliers(x)

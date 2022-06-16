@@ -103,7 +103,6 @@ def write_name_cluster(results_path, name, cluster):
 
 from scipy import stats
 def x_outliers(x, threshold=3):
-
     '''
     Filter a list of values of outliers
     :params:
