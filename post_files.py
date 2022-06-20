@@ -63,8 +63,7 @@ min_cluster_size = 0
 #example: file_names = ['file_1391426496.graphml']
 #get file_names using [os.listdir('./data/experiments/')]
 #print('file_names:', file_names)
-file_names = ['file_507467107.graphml', 'file_1777289099.graphml', 'file_-874079751.graphml', 'file_830925427.graphml', 'file_-571604732.graphml', 'file_92438446.graphml', 'file_-1960093238.graphml', 'file_-1750241270.graphml', 'file_1514240834.graphml', 'file_-1541330240.graphml', 'file_-1143608016.graphml']
-
+file_names = ['file_92438446.graphml']
 files_key_value = zip_files(file_names, data_path)
 experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn).astype(int)
 if len(experiment_ids) == 0: experiment_id = 1

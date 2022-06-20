@@ -9,10 +9,10 @@ import boto3
 import pika
 
 ## Server
-serviceLocation = 'Remote'
+serviceLocation = 'Local'
 num_executors = 6
 locationIP = {'Local': '0.0.0.0', 'Remote': '172.31.15.123'}
-locationPort = {'Local': 6002, 'Remote': 5000}
+locationPort = {'Local': 6002, 'Local': 5000}
 serviceIP = locationIP[serviceLocation]
 servicePort = locationPort[serviceLocation]
 url = 'http://{ip}:{port}/cluster_analysis/api/v0.1/clustering'.format(ip=serviceIP, port=servicePort)

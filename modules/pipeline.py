@@ -39,6 +39,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
     id_planned_duration = activities_duration(projects, 'planned')
     id_actual_duration = activities_duration(projects, 'actual')
 
+
     names, ids = list(projects[names_col]), list(projects[ids_col])
     print('cluster_key sample:', names[:10])
 
