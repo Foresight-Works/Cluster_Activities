@@ -191,6 +191,7 @@ def key_clusters(clusters, num_executors, to_group=True):
         named_clusters[cluster_id_key] = cluster_tasks_ids
         executor.shutdown()
     print('{n} clusters prior to grouping'.format(n=len(named_clusters)))
+
     # Group clusters
     if to_group:
         grouped_clusters = {}
@@ -205,15 +206,18 @@ def key_clusters(clusters, num_executors, to_group=True):
         merged_cluster_id_clusters_keys = []
         cluster_id_tasks = {}
         for cluster_id, merged_clusters in enumerate(merged_clusters_keys):
-            cluster_tasks = names_for_keys(named_clusters, merged_clusters)
-            cluster_id_tasks[cluster_id] = cluster_tasks
+            cluster_tasks, cluster_tasks_ids = names_for_keys(named_clusters, merged_clusters)
             norm_names = list(set(normalize_texts(cluster_tasks)))
+            #cluster_tasks_ids = [str(cid) for cid in cluster_tasks_ids]
+            cluster_id_tasks[cluster_id] = cluster_tasks_ids
             merged_cluster_id_clusters_keys.append((cluster_id, norm_names))
+        np.save('cluster_id_tasks.npy', cluster_id_tasks)
         # Rename the merged clusters using their tasks
         executor = ProcessPoolExecutor(num_executors)
         for cluster_id, merged_clsuters_key \
                in executor.map(parts_to_texts, merged_cluster_id_clusters_keys):
             grouped_clusters[(cluster_id, merged_clsuters_key)] = cluster_id_tasks[cluster_id]
+            a = 0
         executor.shutdown()
 
     # Exclude grouped clusters from named clusters

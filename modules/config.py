@@ -12,7 +12,7 @@ import pika
 serviceLocation = 'Local'
 num_executors = 6
 locationIP = {'Local': '0.0.0.0', 'Remote': '172.31.15.123'}
-locationPort = {'Local': 6002, 'Local': 5000}
+locationPort = {'Local': 6002, 'Remote': 5000}
 serviceIP = locationIP[serviceLocation]
 servicePort = locationPort[serviceLocation]
 url = 'http://{ip}:{port}/cluster_analysis/api/v0.1/clustering'.format(ip=serviceIP, port=servicePort)
@@ -35,7 +35,8 @@ metrics_optimize = {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max
 'db_index':('min', 1), 'silhouette':('max', 1), 'words_pairs': ('max', 1)}
 
 ## Data
-# Local path
+# todo: Data path composed of local working directory path
+wd = os.getcwd()
 data_path = '/home/rony/Projects_Code/Cluster_Activities/data/experiments'
 
 # S3 Bucket

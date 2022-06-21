@@ -72,7 +72,6 @@ def run_service():
                 except UnicodeDecodeError as e:
                     print(e)
                     index += 1
-
             # Encoding
             # lines = open(file_posted).read().split('\n')
             # lines = [u"{l}".format(l=line) for line in lines]

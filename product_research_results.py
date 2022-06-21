@@ -4,15 +4,7 @@ import ast
 import pandas as pd
 import mysql.connector as mysql
 from modules.evaluate import *
-
-service_location = 'Local'
-db_name = 'CAdb'
-location_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password':'exp8546$fs', 'database': db_name},\
-                      'Remote': {'host': '172.31.36.11', 'user':'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
-conn_params = location_db_params[service_location]
-conn = mysql.connect(**conn_params)
-c = conn.cursor()
-c.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
+from modules.config import *
 
 def result_from_table(experiment_id, result_key):
     result_df = pd.read_sql_query("SELECT * FROM results \
@@ -28,6 +20,8 @@ def prepare_results(experiment_id):
 	md_path = os.path.join(os.getcwd(),'results','experiment_{n}'.format(n=str(experiment_id)),\
 	                       'parsed_data.xlsx')
 	md = pd.read_excel(md_path)
+	print(md.info())
+	print(md['TaskType'].value_counts())
 	# Unique task ids by source file
 	file_names = [re.findall('file_(.*)\.graphml', n)[0] for n in list(md['File'])]
 	md['File'] = file_names
@@ -37,6 +31,7 @@ def prepare_results(experiment_id):
 	no_ids = []
 	clusters = result_from_table(experiment_id, result_key='result')
 	file_name = result_from_table(experiment_id, result_key='file_name')
+	print('file_name:', file_name)
 	file_name = re.findall('file_(.*)\.graphml', file_name)[0]
 	for key, names in clusters.items():
 		key_tuple = ast.literal_eval(key)
@@ -89,7 +84,6 @@ def prepare_results(experiment_id):
 	                    'PlannedEnd', 'ActualStart', 'ActualEnd',  'PlannedDuration',  'ActualDuration', \
 	                   'Float', 'Status', 'File', 'ClusterID', 'ClusterName']]
 	return results
-
-experiment_id = 426
+experiment_id = 447
 results = prepare_results(experiment_id)
 results.to_excel('product_research_results.xlsx', index=False)

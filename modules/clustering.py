@@ -111,10 +111,11 @@ def names_for_keys(clusters, clusters_keys):
     :param clusters_keys(list): Keys of clusters whose activity names are collected
     '''
     clusters_keys = list(clusters_keys)
-    clusters_tasks = []
+    clusters_tasks, clusters_tasks_ids = [], []
     # Tasks per cluster
     for cluster_key in clusters_keys:
-	    cluster_tasks = clusters[cluster_key]
-	    cluster_tasks = [t[0] for t in cluster_tasks]
+	    cluster_tasks_ids = clusters[cluster_key]
+	    clusters_tasks_ids += cluster_tasks_ids
+	    cluster_tasks = [t[0] for t in cluster_tasks_ids]
 	    clusters_tasks += cluster_tasks
-    return clusters_tasks
+    return clusters_tasks, clusters_tasks_ids

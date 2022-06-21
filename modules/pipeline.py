@@ -39,7 +39,6 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
     id_planned_duration = activities_duration(projects, 'planned')
     id_actual_duration = activities_duration(projects, 'actual')
 
-
     names, ids = list(projects[names_col]), list(projects[ids_col])
     print('cluster_key sample:', names[:10])
 
@@ -250,11 +249,11 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             val_df.to_excel(os.path.join(validation_dir, '{f}.xlsx'.format(f=file_names_str)), index=False)
 
             ## Cluster keys by cluster tasks
-            # Todo: re-test performance with 1 vs 4 executors
-            num_executors = 4
+            num_executors = 6
             response_clusters = key_clusters(clusters, num_executors, to_group=True)
             response_clusters = {str(k): v for k, v in response_clusters.items()}
             response_dict = {'clusters': response_clusters}
+
             #message = json.dumps(response_dict)
             # Write best clustering result
             if list(clustering_result.keys())[0] == 'clustering_result':
