@@ -9,7 +9,8 @@ def parse_graphml(file_name, graphml_str, headers):
     :param graphml_str (string): The file contents to parse
     :param headers (list): The columns to parse
     '''
-    #graphml_str = graphml_str.replace('')
+    # Remove umlauts
+    graphml_str = graphml_str.replace('�', '')
     nodes = graphml_str.split('</node>')
     nodes = [s for s in nodes if 'node id' in s]
     nodes = [n.lstrip().rstrip() for n in nodes]
@@ -27,7 +28,6 @@ def parse_graphml(file_name, graphml_str, headers):
         values = [id] + [re.findall('>(.*?)<', n)[0] for n in node_rows]
         node_df = pd.DataFrame([values], columns = keys)
         nodes_df = pd.concat([nodes_df, node_df])
-
     nodes_df = nodes_df[headers]
     nodes_df['File'] = file_name
     return nodes_df

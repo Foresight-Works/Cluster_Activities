@@ -1,6 +1,7 @@
 # to add file metadata: https://stackoverflow.com/questions/22567306/how-to-upload-file-with-python-requests
 import os
 import ast
+import io
 import threading
 from zipfile import ZipFile
 import requests
@@ -11,11 +12,10 @@ import json
 # Service Location and parameters
 from modules.config import *
 
-
 def zip_files(file_names, data_path):
     '''
     Zip the files posted for analysis
-    :param file_names (list): The names of the files posted for analysis
+    :param file_names (list): The names of the files Wposted for analysis
     :data_path (str): The absolute path to the directory storing the files to post   
     return (dict): A zipped copy of the files to analyse keyed by the 'file' key of the post command
     '''
@@ -23,6 +23,7 @@ def zip_files(file_names, data_path):
     for file in file_names:
         data_path1 = os.path.join(data_path, file)
         file_paths[file] = data_path1
+
     with ZipFile('zipped_files.zip', 'w') as zip:
         for file, file_path in file_paths.items():
             zip.write(file_path, arcname=file)
@@ -63,7 +64,7 @@ min_cluster_size = 0
 #example: file_names = ['file_1391426496.graphml']
 #get file_names using [os.listdir('./data/experiments/')]
 #print('file_names:', file_names)
-file_names = ['file_92438446.graphml']
+file_names = ['file_-1960093238.graphml']
 files_key_value = zip_files(file_names, data_path)
 experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn).astype(int)
 if len(experiment_ids) == 0: experiment_id = 1

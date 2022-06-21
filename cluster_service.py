@@ -72,7 +72,15 @@ def run_service():
                 except UnicodeDecodeError as e:
                     print(e)
                     index += 1
-            parsed_df = parse_graphml(file_name, file_posted, headers)
+
+            # Encoding
+            # lines = open(file_posted).read().split('\n')
+            # lines = [u"{l}".format(l=line) for line in lines]
+            # file_path = 'encoded_file.graphml'
+            # with io.open(file_path, mode="a", encoding="UTF8") as fd:
+            #     for line in lines: fd.write(line + "\n")
+            # encoded_file = open.read('encoded_file.graphml')
+            parsed_df = parse_graphml(file_name, file_posted, headers) #encoded_file replaced file_posted
             projects = pd.concat([projects, parsed_df])
 
         # Projects TDAs

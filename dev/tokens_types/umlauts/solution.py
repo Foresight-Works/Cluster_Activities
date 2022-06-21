@@ -1,3 +1,5 @@
+# Source: https://stackoverflow.com/questions/41348343/python-write-umlauts-into-file
+
 import io
 l = [u"Bücher", u"Hefte", u"Mappen"]
 print(l)

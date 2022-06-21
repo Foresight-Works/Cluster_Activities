@@ -90,6 +90,6 @@ def prepare_results(experiment_id):
 	                   'Float', 'Status', 'File', 'ClusterID', 'ClusterName']]
 	return results
 
-experiment_id = 401
+experiment_id = 426
 results = prepare_results(experiment_id)
 results.to_excel('product_research_results.xlsx', index=False)
