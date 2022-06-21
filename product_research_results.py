@@ -30,6 +30,8 @@ def prepare_results(experiment_id):
 	results = []
 	no_ids = []
 	clusters = result_from_table(experiment_id, result_key='result')
+	for k,v in clusters.items():
+		print(k,v)
 	file_name = result_from_table(experiment_id, result_key='file_name')
 	print('file_name:', file_name)
 	file_name = re.findall('file_(.*)\.graphml', file_name)[0]

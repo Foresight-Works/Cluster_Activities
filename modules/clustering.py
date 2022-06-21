@@ -54,8 +54,8 @@ def get_clusters_keys(clusters, text_words_count=1):
 	:param text_words_count(int): The minimun number of words in the texts to compare
 	'''
 	cluster_keys = list(clusters.keys())
-	filter_keys = [c for c in cluster_keys if len(c.replace(' - ', ' ').split(' ')) > text_words_count]
-	clusters = {k: v for k, v in clusters.items() if k in filter_keys}
+	#filter_keys = [c for c in str(cluster_keys) if len(c.replace(' - ', ' ').split(' ')) > text_words_count]
+	#clusters = {k: v for k, v in clusters.items() if k in filter_keys}
 	cluster_keys = list(clusters.keys())
 	print('{n} clusters with keys of {t}+ words'.format(n=len(clusters), t=str(text_words_count)))
 	return cluster_keys
