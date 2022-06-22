@@ -246,7 +246,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
                     ids.append((tasks_names_id[1], cluster_id))
             ids_df = pd.DataFrame(ids, columns=['ID', 'Cluster_ID'])
             val_df = pd.merge(parsed_data, ids_df)
-            val_df.to_excel(os.path.join(validation_dir, '{f}.xlsx'.format(f=file_names_str)), index=False)
+            val_df.to_excel(os.path.join(validation_dir, 'validation.xlsx'.format(f=file_names_str)), index=False)
 
             ## Cluster keys by cluster tasks
             num_executors = 6
