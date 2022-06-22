@@ -251,6 +251,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
             ## Cluster keys by cluster tasks
             num_executors = 6
             response_clusters = key_clusters(clusters, num_executors, to_group=True)
+            np.save(os.path.join(experiment_dir, 'clusters.npy'), response_clusters)
             response_clusters = {str(k): v for k, v in response_clusters.items()}
             response_dict = {'clusters': response_clusters}
 
@@ -267,16 +268,26 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
                 clustering_result = clustering_result.replace("'", "''")\
                     .replace("\n", "''").replace("\\n", "''") \
                     .replace("\t", "''").replace("\\t", "''")
-                with open('clustering_result.txt', 'w') as f:
-                    f.write(clustering_result)
+                clustering_result = clustering_result.replace("''", "\'")
 
+            #results_row.append(clustering_result)
+            ## Write response
+            # Experiment metadata
             result_row_query = "SELECT * FROM {db}.runs WHERE experiment_id={eid} AND run_id={rid}"\
                                    .format(db=db_name, eid=experiment_id, rid=best_run_id)
             cur.execute(result_row_query)
             results_row = [i for i in cur.fetchall()[0]]
-            results_row.append(clustering_result)
+            del results_cols_types['Result']
+            results_cols.remove('Result')
             statement = insert_into_table_statement('{db}.results'.format(db=db_name), results_cols, results_row)
-            cur.execute(statement)
+            # cur.execute(statement)
+            # Clustering results
+            # statement ="""Insert into {db}.results (Result) VALUES (JSON_OBJECT('City', '', 'Population', 139693))\
+            # """.format(db=db_name)
+            statement = """Insert into {db}.results (Result) VALUES ({cl})\
+                        """.format(db=db_name, cl=clustering_result)
+            #print('cluster write statement:', statement)
+            #cur.execute(statement)
             conn.commit()
 
         ## Publish results

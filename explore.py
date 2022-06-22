@@ -5,9 +5,10 @@ import pandas as pd
 
 files = os.listdir()
 #print(files)
-file = 'cluster_id_tasks.npy'
+file = '/home/rony/Projects_Code/Cluster_Activities/results/experiment_505/clusters.npy'
 r = np.load(file, allow_pickle=True)[()]
-print(r)
+print(type(r))
+for k,v in r.items(): print(k)
 qin = 'Vehicle 003 - Validation Vehicle Functions ; EMC pre-test'
 qout ='Vehicle 001 - FO2 WS6 WT1 (inc Modulprufung)'
 queries = {'qin':qin, 'qout':qout}

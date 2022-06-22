@@ -61,10 +61,9 @@ def results_consumer(experiment_id):
 ## Configuration
 min_cluster_size = 0
 # Data
-#example: file_names = ['file_1391426496.graphml']
-#get file_names using [os.listdir('./data/experiments/')]
-#print('file_names:', file_names)
 file_names = ['file_1777289099.graphml']
+file_names = os.listdir('./data/experiments/')
+print('file_names:', file_names)
 files_key_value = zip_files(file_names, data_path)
 experiment_ids = pd.read_sql_query("SELECT experiment_id from experiments", conn).astype(int)
 if len(experiment_ids) == 0: experiment_id = 1

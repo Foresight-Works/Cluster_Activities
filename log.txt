@@ -1,0 +1,46 @@
+connecting to mysql
+connecting to mysql
+sys.path: ['/home/rony/Projects_Code/Cluster_Activities', '/home/rony/anaconda3/lib/python39.zip', '/home/rony/anaconda3/lib/python3.9', '/home/rony/anaconda3/lib/python3.9/lib-dynload', '/home/rony/anaconda3/lib/python3.9/site-packages', '/home/rony/anaconda3/lib/python3.9/site-packages/locket-0.2.1-py3.9.egg', '/home/rony/Projects_Code/Cluster_Activities/modules']
+host name: 127.0.1.1
+ * Serving Flask app "Flask" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+working directory= /home/rony/Projects_Code/Cluster_Activities
+experiment_id posted: 507
+min_cluster_size: 0
+conn_params: {'host': 'localhost', 'user': 'rony', 'password': 'exp8546$fs', 'database': 'CAdb'}
+n_clusters_posted: -1
+metrics optimized: {'min_max_tpc': ('min', 1), 'wcss': ('min', 1), 'bcss': ('max', 1), 'ch_index': ('max', 1), 'db_index': ('min', 1), 'silhouette': ('max', 1), 'words_pairs': ('max', 1)}
+file_names: ['file_507467107.graphml', 'file_1777289099.graphml', 'file_-874079751.graphml', 'file_830925427.graphml', 'file_-571604732.graphml', 'file_92438446.graphml', 'file_-1960093238.graphml', 'file_-1750241270.graphml', 'file_1514240834.graphml', 'file_-1541330240.graphml', 'file_-1143608016.graphml']
+====file_507467107.graphml====
+encoding using utf-8-sig
+parsing 1045 nodes
+====file_1777289099.graphml====
+encoding using utf-8-sig
+parsing 1072 nodes
+====file_-874079751.graphml====
+encoding using utf-8-sig
+parsing 10218 nodes
+====file_830925427.graphml====
+encoding using utf-8-sig
+parsing 4138 nodes
+====file_-571604732.graphml====
+encoding using utf-8-sig
+parsing 5508 nodes
+====file_92438446.graphml====
+encoding using utf-8-sig
+parsing 1348 nodes
+====file_-1960093238.graphml====
+encoding using utf-8-sig
+parsing 2375 nodes
+====file_-1750241270.graphml====
+encoding using utf-8-sig
+parsing 3052 nodes
+====file_1514240834.graphml====
+encoding using utf-8-sig
+parsing 1988 nodes
+====file_-1541330240.graphml====
+encoding using utf-8-sig
+parsing 4527 nodes

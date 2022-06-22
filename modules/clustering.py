@@ -44,6 +44,7 @@ def results_file_name(model_name, hyper_params_conf):
 # Cluster of Clusters function
 def string_similarity_ratio(texts_pair):
     text1, text2 = texts_pair
+    text1, text2 = text1[1], text2[1]
     return Levenshtein.ratio(text1, text2)
 
 def get_clusters_keys(clusters, text_words_count=1):
@@ -53,9 +54,9 @@ def get_clusters_keys(clusters, text_words_count=1):
 	:param clusters(dict): The results of a clustering process run, lists of cluster ids and names keyed by the cluster name
 	:param text_words_count(int): The minimun number of words in the texts to compare
 	'''
-	cluster_keys = list(clusters.keys())
-	filter_keys = [c for c in cluster_keys if len(c.replace(' - ', ' ').split(' ')) > text_words_count]
-	clusters = {k: v for k, v in clusters.items() if k in filter_keys}
+	# cluster_keys = list(clusters.keys())
+	# filter_keys = [c for c in cluster_keys if len(c.replace(' - ', ' ').split(' ')) > text_words_count]
+	# clusters = {k: v for k, v in clusters.items() if k in filter_keys}
 	cluster_keys = list(clusters.keys())
 	print('{n} clusters with keys of {t}+ words'.format(n=len(clusters), t=str(text_words_count)))
 	return cluster_keys
@@ -76,7 +77,7 @@ def is_pair_in_pairs(pair_query, pairs):
 			break
 	return query_in_pairs
 
-def compare_texts(texts, text_words_count, threshold, measure='similarity'):
+def compare_texts(texts, threshold, measure='similarity'):
 	'''
 	Measure texts distances using their string similarity
 	:param threshold: The threshold to determine which texts will be considered similar
@@ -99,7 +100,7 @@ def group_clusters(cluster_keys, threshold=0.9):
 	:param clusters: The clusters to group
 	'''
 	# Get merged clusters
-	pairs_similarity = compare_texts(cluster_keys, 1, threshold)
+	pairs_similarity = compare_texts(cluster_keys, threshold)
 	keysGraph = pairs_to_graph(pairs_similarity)
 	merged_clusters_keys = list(nx.connected_components(keysGraph))
 	return merged_clusters_keys

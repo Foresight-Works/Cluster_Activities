@@ -78,6 +78,7 @@ cols_types = {'experiment_id': 'TEXT', 'run_id': 'TEXT', 'file_name': 'TEXT',\
 cols_types = {**cols_types, **metrics_cols}
 runs_cols, runs_types = list(cols_types.keys()), list(cols_types.values())
 results_cols_types = {**cols_types, **metrics_cols, 'Result': 'JSON'}
+#results_cols_types = {**cols_types, **metrics_cols, 'Result': 'TEXT'}
 results_cols, results_types = list(results_cols_types.keys()), list(results_cols_types.values())
 metrics_cols = list(metrics_cols.keys())
 # Paths and Directories

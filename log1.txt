@@ -1,0 +1,9 @@
+connecting to mysql
+connecting to mysql
+sys.path: ['/home/rony/Projects_Code/Cluster_Activities', '/home/rony/anaconda3/lib/python39.zip', '/home/rony/anaconda3/lib/python3.9', '/home/rony/anaconda3/lib/python3.9/lib-dynload', '/home/rony/anaconda3/lib/python3.9/site-packages', '/home/rony/anaconda3/lib/python3.9/site-packages/locket-0.2.1-py3.9.egg', '/home/rony/Projects_Code/Cluster_Activities/modules']
+host name: 127.0.1.1
+ * Serving Flask app "Flask" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off

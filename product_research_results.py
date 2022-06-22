@@ -3,6 +3,7 @@ import re
 import ast
 import pandas as pd
 import mysql.connector as mysql
+import json
 from modules.evaluate import *
 from modules.config import *
 
@@ -11,42 +12,51 @@ def result_from_table(experiment_id, result_key):
     WHERE experiment_id={eid}".format(eid=experiment_id), conn)
     result = result_df[result_key].values[0]
     if result_key == 'result':
-        result = ast.literal_eval(result)['clusters']
+	    result = ast.literal_eval(result)['clusters']
     else:
         result = result_df[result_key].values[0]
     return result
 
 def prepare_results(experiment_id):
+	# Read metadata
 	md_path = os.path.join(os.getcwd(),'results','experiment_{n}'.format(n=str(experiment_id)),\
 	                       'parsed_data.xlsx')
 	md = pd.read_excel(md_path)
-	print(md.info())
-	print(md['TaskType'].value_counts())
-	# Unique task ids by source file
+	# print(md.info())
+	# print(md['TaskType'].value_counts())
 	file_names = [re.findall('file_(.*)\.graphml', n)[0] for n in list(md['File'])]
 	md['File'] = file_names
 	md['ID'] = md['ID']+'_'+md['File']
 	# Cluster keys per tasks
 	results = []
 	no_ids = []
-	clusters = result_from_table(experiment_id, result_key='result')
+	# Read clusters
+	#clusters = result_from_table(experiment_id, result_key='result')
+	clusters_path = os.path.join(os.getcwd(), 'results', 'experiment_{n}'.format(n=str(experiment_id)), \
+	                       'clusters.npy')
+	clusters = np.load(clusters_path, allow_pickle=True)[()]
 	file_name = result_from_table(experiment_id, result_key='file_name')
 	print('file_name:', file_name)
 	file_name = re.findall('file_(.*)\.graphml', file_name)[0]
 	for key, names in clusters.items():
-		key_tuple = ast.literal_eval(key)
-		ClusterName = key_tuple[1]
-		ClusterID = '{ck}_{fn}'.format(ck=key_tuple[0], fn=file_name)
+		cluster_name_id, CoC_name_id = key
+		ClusterName = cluster_name_id[1]
+		ClusterID = '{ck}_{fn}'.format(ck=cluster_name_id[0], fn=file_name)
+		if CoC_name_id[0] == 'not grouped':
+			CoCName, CoCID = 'not grouped', 'not grouped'
+		else:
+			CoCName = CoC_name_id[1]
+			CoCID = '{ck}_{fn}'.format(ck=CoC_name_id[0], fn=file_name)
 		for name in names:
 			# Encoding issue tasks filter
 			#if 'Passenger door systems' in name: print(name)
-			if type(name) == list:
-				result = ['{n1}_{n2}'.format(n1=name[1], n2=file_name), name[0], ClusterID, ClusterName]
+			if type(name) == tuple:
+				result = ['{n1}_{n2}'.format(n1=name[1], n2=file_name), name[0], ClusterID, ClusterName, CoCID, CoCName]
 				results.append(result)
 			else:
 				result = [name, ClusterID, ClusterName]
 				no_ids.append(result)
-	results_df = pd.DataFrame(results, columns=['ID', 'Name', 'ClusterID', 'ClusterName'])
+	results_df = pd.DataFrame(results, columns=['ID', 'Name', 'ClusterID', 'ClusterName', 'CoCID', 'CoCName'])
 	no_ids_df = pd.DataFrame(no_ids, columns=['Name', 'ClusterID', 'ClusterName'])
 
 	# Counts
@@ -82,8 +92,8 @@ def prepare_results(experiment_id):
 	results['ID'] = [i.replace('_'+i.split('_')[-1], '') for i in list(results['Unique_ID'])]
 	results = results[['ID', 'Unique_ID', 'TaskType', 'Label', 'PlannedStart', \
 	                    'PlannedEnd', 'ActualStart', 'ActualEnd',  'PlannedDuration',  'ActualDuration', \
-	                   'Float', 'Status', 'File', 'ClusterID', 'ClusterName']]
+	                   'Float', 'Status', 'File', 'ClusterID', 'ClusterName', 'CoCID', 'CoCName']]
 	return results
-experiment_id = 447
+experiment_id = 505
 results = prepare_results(experiment_id)
 results.to_excel('product_research_results.xlsx', index=False)

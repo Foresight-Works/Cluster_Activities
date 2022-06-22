@@ -1,3 +1,5 @@
+import ast
+
 from modules.libraries import *
 from modules.config import *
 from modules.utils import *
@@ -186,7 +188,8 @@ def key_clusters(clusters, num_executors, to_group=True):
     # Cluster names by cluster keys
     named_clusters = {}
     for cluster_id, cluster_key in executor.map(parts_to_texts, ids_norm_names):
-        cluster_id_key = str((cluster_id, cluster_key))
+        cluster_id_key = (cluster_id, cluster_key)
+        #cluster_id_key = str(cluster_id_key)
         cluster_tasks_ids = clusters[cluster_id]
         named_clusters[cluster_id_key] = cluster_tasks_ids
         executor.shutdown()
@@ -211,7 +214,6 @@ def key_clusters(clusters, num_executors, to_group=True):
             #cluster_tasks_ids = [str(cid) for cid in cluster_tasks_ids]
             cluster_id_tasks[cluster_id] = cluster_tasks_ids
             merged_cluster_id_clusters_keys.append((cluster_id, norm_names))
-        np.save('cluster_id_tasks.npy', cluster_id_tasks)
         # Rename the merged clusters using their tasks
         executor = ProcessPoolExecutor(num_executors)
         for cluster_id, merged_clsuters_key \
@@ -220,10 +222,40 @@ def key_clusters(clusters, num_executors, to_group=True):
             a = 0
         executor.shutdown()
 
+    ## Build the results with the cluster id and name and the cluster or clusters id and name.
+    # If the tasks' cluster has not been grouped, place 'not_grouped' for both cluster and cluster id
+    print('grouped: {n1} clusters | not grouped: {n2} clusters'.format(n1=len(grouped_clusters),
+                                                                       n2=len(named_clusters)))
+    # Index clusters names and ids, and task names, by tasks ids
+    tasks_clusters, tasks_grouped_clusters = {}, {}
+    for cluster_name_id, tasks_names_ids in named_clusters.items():
+        for task_name, task_id in tasks_names_ids:
+            tasks_clusters[task_id] = (cluster_name_id, task_name)
+    for cluster_name_id, tasks_names_ids in grouped_clusters.items():
+        for task_name, task_id in tasks_names_ids:
+            tasks_grouped_clusters[task_id] = (cluster_name_id, task_name)
+
+    tasks_in_clusters = list(tasks_clusters.keys())
+    tasks_in_grouped = list(tasks_grouped_clusters.keys())
+
+    clusters = {}
+    for task_id in tasks_in_clusters:
+        cluster_id_name = tasks_clusters[task_id][0]
+        cluster_tasks = named_clusters[cluster_id_name]
+        if task_id in tasks_in_grouped:
+            grouped_cluster_id_name = tasks_grouped_clusters[task_id][0]
+            key = (cluster_id_name, grouped_cluster_id_name)
+            #key = str(key)
+        else:
+            #cluster_id_name = ast.literal_eval(cluster_id_name)
+            key = (cluster_id_name, ('not grouped', 'not grouped'))
+            # key = str(key)
+        clusters[key] = cluster_tasks
+
     # Exclude grouped clusters from named clusters
-    named_clusters = {k: v for k, v in named_clusters.items() if k not in keys_merged}
-    print('{n} clusters that were not grouped'.format(n=len(named_clusters)))
-    print('{n} clusters that were grouped'.format(n=len(grouped_clusters)))
-    clusters = {**named_clusters, **grouped_clusters}
-    print('{n} grouped and not grouped clusters'.format(n=len(clusters)))
+    # named_clusters = {k: v for k, v in named_clusters.items() if k not in keys_merged}
+    # print('{n} clusters that were not grouped'.format(n=len(named_clusters)))
+    # print('{n} clusters that were grouped'.format(n=len(grouped_clusters)))
+    # clusters = {**named_clusters, **grouped_clusters}
+    # print('{n} grouped and not grouped clusters'.format(n=len(clusters)))
     return clusters
