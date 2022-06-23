@@ -51,23 +51,18 @@ def activities_duration_product_research(project_df, calculate):
     if calculate == 'planned':
         headers = ['PlannedStart', 'PlannedEnd']
     else: headers = ['ActualStart', 'ActualEnd']
-    print('Calculating {c} duration'.format(c=calculate))
-    print('{n} tasks'.format(n=len(project_df)))
+    print('{c} duration: {n} tasks'.format(c=calculate, n=len(project_df)))
     project_df = project_df[['ID'] + headers].replace('', np.nan).dropna().astype(str)
-    #project_df = project_df[['ID'] + ['File'] + headers].replace('', np.nan).dropna().astype(str)
-    #project_df['ID'] = project_df['ID'] + '_' + project_df['File']
-    #del project_df['File']
-    print('{n} tasks have {c} start/end data'.format(n=len(project_df), c=calculate))
+    # Infer date time data types and convert the dates data to the format identified
     for header in headers:
         header_sample = project_df[header].values[0]
         dt_format = infer_dt_format(header_sample)
         project_df[header] = [datetime.strptime(date_string, dt_format) for date_string in list(project_df[header])]
     project_df['Duration'] = (project_df[headers[1]] - project_df[headers[0]]).dt.days.astype(int)
-    print('{n} tasks in results'.format(n=len(project_df)))
-    duration_results = project_df[['ID', 'Duration']]
-    duration_results = duration_results.rename(columns=\
+    project_df = project_df[['ID', 'Duration']]
+    project_df = project_df.rename(columns=\
                     {'Duration':'{p}Duration'.format(p=calculate.capitalize())})
-    return duration_results
+    return project_df
 
 
 def clusters_duration_std(clusters_dict, id_planned_duration):

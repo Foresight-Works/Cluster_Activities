@@ -11,7 +11,10 @@ import pika
 ## Server
 serviceLocation = 'Local'
 num_executors = 6
-locationIP = {'Local': '0.0.0.0', 'Remote': '172.31.15.123'}
+instance_name = 'DS_Rony_clone1'
+# Todo: generate the instances_IPs, locationIPmq  using the get instance info on aws repo
+instances_IPs = {'DS_Rony': '172.31.15.123', 'DS_Rony_clone1': '172.31.3.120', 'DS_Rony_clone2': '172.31.5.254'}
+locationIP = {'Local': '0.0.0.0', 'Remote': instances_IPs[instance_name]}
 locationPort = {'Local': 6002, 'Remote': 5000}
 serviceIP = locationIP[serviceLocation]
 servicePort = locationPort[serviceLocation]
@@ -57,10 +60,9 @@ headers = ['ID', 'TaskType', 'Label', 'PlannedStart', 'PlannedEnd', 'ActualStart
 #server_db_params = {'Local': {'host': 'localhost', 'user':'rony', 'password': 'exp8546$fs', 'database': db_name},\
 #                    'Remote': {'host': serviceIP, 'user': 'researchUIuser', 'password':'query1234$fs', 'database': db_name}}
 print('connecting to mysql')
-private_serviceIP = '172.31.15.123'
 user, password, db_name = 'rony', 'exp8546$fs', 'CAdb'
 server_db_params = {'Local': {'host': 'localhost', 'user': user, 'password': password, 'database': db_name},\
-                    'Remote': {'host': private_serviceIP, 'user': user, 'password': password, 'database': db_name}}
+                    'Remote': {'host': instances_IPs[instance_name], 'user': user, 'password': password, 'database': db_name}}
 conn_params = server_db_params[serviceLocation]
 conn = mysql.connect(**conn_params)
 c = conn.cursor()

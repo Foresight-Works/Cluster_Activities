@@ -277,7 +277,7 @@ def run_pipeline(projects, experiment_id, experiment_dir, runs_dir, num_files, f
                                    .format(db=db_name, eid=experiment_id, rid=best_run_id)
             cur.execute(result_row_query)
             results_row = [i for i in cur.fetchall()[0]]
-            del results_cols_types['Result']
+            #del results_cols_types['Result']
             results_cols.remove('Result')
             statement = insert_into_table_statement('{db}.results'.format(db=db_name), results_cols, results_row)
             # cur.execute(statement)

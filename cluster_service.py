@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 modules_dir = os.path.join(os.getcwd(), 'modules')
 if modules_dir not in sys.path:
@@ -107,6 +108,9 @@ def run_service():
 
         # Clean names of underlines
         projects['Label'] = [name.replace('_', ' ') for name in list(projects['Label'])]
+        generatedIDs = list(projects['ID'] + '<>' + projects['File'])
+        generatedIDs1 = [re.sub('file_|.graphml', '', id) for id in generatedIDs]
+        projects['ID'] = generatedIDs1
         projects.to_excel(os.path.join(experiment_dir, 'parsed_data.xlsx'), index=False)
 
         if len(projects) > 0:
